@@ -1,0 +1,2605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnEra - SignUp/Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Lottie Player CDN for animations -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <style>
+      /* Ensure html and body take full height and prevent main scroll */
+      html, body {
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          overflow: hidden; /* Prevent scrolling on the html/body */
+      }
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+      * {
+        user-select: none;
+        -webkit-user-select: none; /* For Safari/Chrome */
+        -ms-user-select: none;      /* For Internet Explorer */
+      }
+        /* Variables */
+        :root {
+            --bg-color: #0d0d0d;
+            --card-bg: rgba(255, 255, 255, 0.05); /* This will now be used for inner elements */
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-color: #e0e0e0;
+            --placeholder-color: #888;
+
+            --neon-pink: #ff00ff;
+            --neon-purple: #8a2be2;
+            --neon-blue: #00ffff;
+
+            --gradient-1: linear-gradient(45deg, var(--neon-pink), var(--neon-purple));
+            --gradient-2: linear-gradient(45deg, var(--neon-purple), var(--neon-blue));
+
+            --transition-speed: 0.5s;
+            --blur-strength: 10px;
+
+            /* RGB for box-shadows */
+            --neon-pink-rgb: 255, 0, 255;
+            --neon-purple-rgb: 138, 43, 226;
+            --neon-blue-rgb: 0, 255, 255;
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            background-image: url('LearnEraDarkModeBackground.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh; /* Ensure body is at least viewport height */
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Main Container for Authentication Forms */
+        .auth-main-container {
+            position: relative;
+            width: 100%; /* Make it full width */
+            max-width: 100%; /* Override max-width */
+            min-height: 100vh; /* Make it full height */
+            background: transparent; /* Make background transparent to show body background */
+            border-radius: 0; /* Remove border radius for full screen */
+            border: none; /* Remove border */
+            backdrop-filter: none; /* Remove backdrop filter */
+            box-shadow: none; /* Remove box shadow */
+            overflow: hidden; /* Prevent scrolling within this container */
+            display: none; /* Initially hidden by default, will be set to flex by JS */
+            
+            opacity: 0; /* Start hidden with opacity */
+            transition: opacity 0.5s ease-in-out; /* Fade-in transition */
+            
+            z-index: 1;
+            margin: 0; /* Remove margin */
+            padding: 0; /* Remove padding */
+        }
+
+        /* Removed .loaded-animation and @keyframes fadeInUpLoad as we're using direct opacity transition */
+
+
+        /* Form Container (Login/Signup/Initial Screen) */
+        .form-container {
+            position: absolute;
+            top: 0;
+            left: 0; /* Ensure it starts from the left edge */
+            width: 100%;
+            height: 100%; /* Make it full height of parent */
+            display: none; /* Hidden by default, will be set to flex by JS */
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            
+            opacity: 0; /* Start transparent, will be set to 1 by JS */
+            transition: opacity 0.5s ease-in-out; /* Fade-in transition */
+            overflow-y: auto; /* Allow internal scrolling if content overflows */
+            -webkit-overflow-scrolling: touch;
+            background: transparent; /* Make container background transparent */
+            border-radius: 0; /* Remove border radius as it's full screen */
+            border: none; /* Remove border */
+            backdrop-filter: none; /* Remove backdrop filter */
+            box-shadow: none; /* Remove box shadow */
+            
+            pointer-events: none; /* Disable interaction when hidden */
+            z-index: 1; /* Default z-index */
+        }
+
+        /* Active form container - makes it visible and interactive */
+        .form-container.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 3; /* Ensure active form is on top */
+            /* display: flex is set by JS before adding 'active' class */
+        }
+
+        /* Initial Auth Screen layout */
+        .form-container.initial-mode {
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center;
+            padding-bottom: 0; 
+        }
+
+        /* Form Inner Styling */
+        .form-box {
+            width: 100%;
+            max-width: 450px; /* Constrain width for forms */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            min-height: 100%;
+            /* Apply glassmorphism to form-box itself */
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(var(--blur-strength));
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.4), 0 0 80px rgba(var(--neon-pink-rgb), 0.2), 0 0 80px rgba(var(--neon-purple-rgb), 0.2);
+            padding: 40px; /* Add padding to the form-box */
+        }
+        
+        .form-box form {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #signupForm {
+            justify-content: flex-start;
+        }
+
+        h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2em;
+            margin-bottom: 25px;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-purple);
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-color);
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .input-group input::placeholder,
+        .input-group select::placeholder,
+        .input-group textarea::placeholder {
+            color: var(--placeholder-color);
+        }
+
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 0 2px rgba(var(--neon-blue-rgb), 0.7), 0 0 10px rgba(var(--neon-blue-rgb), 0.5);
+        }
+
+        .input-group select {
+            padding-right: 35px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e0e0e0'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3Csvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 18px;
+        }
+
+        .input-group label {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            color: var(--placeholder-color);
+            pointer-events: none;
+            transition: 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .input-group input:focus + label,
+        .input-group input:not(:placeholder-shown) + label,
+        .input-group select:focus + label,
+        .input-group select:not([value=""]) + label,
+        .input-group textarea:focus + label,
+        .input-group textarea:not(:placeholder-shown) + label {
+            top: -10px;
+            left: 10px;
+            font-size: 0.75em;
+            color: var(--neon-blue);
+            background-color: #1a1a1a;
+            padding: 0 5px;
+            border-radius: 5px;
+        }
+
+        /* Password Toggle Icon */
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--placeholder-color);
+            z-index: 10;
+        }
+        .password-toggle svg {
+            width: 18px; /* Made smaller */
+            height: 18px; /* Made smaller */
+            fill: currentColor;
+        }
+
+
+        /* Radio group for Gender */
+        .radio-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .radio-group input[type="radio"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.08);
+            transition: background-color 0.3s, border-color 0.3s;
+            position: relative;
+            outline: none;
+        }
+
+        .radio-group input[type="radio"]:checked {
+            background-color: var(--neon-pink);
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 5px var(--neon-pink);
+        }
+
+        .radio-group input[type="radio"]:checked::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-color);
+        }
+
+        /* File Upload */
+        .file-upload-wrapper {
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-upload-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--gradient-2);
+            color: var(--text-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            font-size: 0.9em;
+            box-shadow: 0 0 15px rgba(var(--neon-purple-rgb), 0.3);
+            text-align: center;
+        }
+
+        .file-upload-label:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 20px rgba(var(--neon-blue-rgb), 0.5);
+        }
+
+        /* Profile pic input is hidden, label acts as button */
+        #profilePic {
+            display: none;
+        }
+
+        #profilePicPreview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--neon-purple);
+            box-shadow: 0 0 15px rgba(var(--neon-purple-rgb), 0.4);
+            transition: all 0.3s ease;
+            display: none; /* Initially hidden */
+        }
+
+        #profilePicPreview.active {
+            display: block; /* Show when an image is loaded */
+        }
+
+        /* Switch Link (removed from login/signup forms, now handled by initial screen) */
+        .switch-link {
+            margin-top: 25px;
+            font-size: 0.9em;
+        }
+
+        .switch-link a {
+            color: var(--neon-blue);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .switch-link a:hover {
+            color: var(--neon-pink);
+            text-shadow: 0 0 5px var(--neon-pink);
+        }
+
+        /* Terms and Conditions Checkbox */
+        .terms-checkbox-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 15px;
+            margin-bottom: 20px; /* Space above login button */
+            font-size: 0.9em;
+        }
+
+        .terms-checkbox-group input[type="checkbox"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.08);
+            transition: background-color 0.3s, border-color 0.3s;
+            position: relative;
+            outline: none;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+
+        .terms-checkbox-group input[type="checkbox"]:checked {
+            background-color: var(--neon-blue);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        .terms-checkbox-group input[type="checkbox"]:checked::before {
+            content: '\2713'; /* Checkmark Unicode */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            color: var(--text-color);
+        }
+
+        .terms-checkbox-group label {
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        .terms-checkbox-group label a {
+            color: var(--neon-blue);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .terms-checkbox-group label a:hover {
+            color: var(--neon-pink);
+            text-shadow: 0 0 5px var(--neon-pink);
+        }
+
+
+        /* Messages and Spinners */
+        .message-box-floating {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            display: none;
+            word-wrap: break-word;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, top 0.5s ease-in-out;
+        }
+
+        .message-box-floating.show {
+            opacity: 1;
+            top: 20px;
+        }
+
+        .message-box-floating.error {
+            background-color: rgba(244, 67, 54, 0.2);
+            color: #ff6666;
+            border: 1px solid #ff0000;
+        }
+
+        .message-box-floating.success {
+            background-color: rgba(0, 255, 0, 0.2);
+            color: #66ff66;
+            border: 1px solid #00ff00;
+        }
+        
+        .message-box-floating.warning {
+            background-color: rgba(255, 152, 0, 0.2);
+            color: #ffcc80;
+            border: 1px solid #ff9800;
+        }
+
+        .spinner-inline {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid var(--neon-blue);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        .spinner-inline.active {
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .auth-main-container {
+                flex-direction: column;
+                min-height: auto;
+                width: 100%; /* Full width on mobile */
+                padding: 0; /* No padding on container */
+                box-sizing: border-box;
+                margin-top: 0; /* No margin */
+            }
+            .glow-on-hover {
+                width: 90vw;
+            }
+            .form-container.initial-mode {
+                justify-content: center !important;
+            }
+
+            .form-container {
+                position: static; /* Allows it to stack vertically in flex column */
+                height: 100vh; /* Full height on mobile */
+                padding: 0; /* No padding on container, handled by form-box */
+                overflow-y: auto;
+                /* Reset flex-direction for login/signup forms on mobile */
+                flex-direction: column;
+                justify-content: flex-start;
+                border-radius: 0; /* No border radius on mobile for full screen */
+                border: none; /* No border on mobile */
+                box-shadow: none; /* No shadow on mobile */
+            }
+            
+            .form-box {
+                max-width: 100%;
+                min-height: auto;
+                padding: 20px; /* Adjust padding for mobile */
+            }
+
+            .form-box form {
+                min-height: auto;
+                justify-content: flex-start;
+            }
+
+            h2 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+
+            .input-group {
+                margin-bottom: 20px;
+            }
+
+            .input-group input,
+            .input-group select,
+            .input-group textarea {
+                padding: 10px 12px;
+                font-size: 0.9em;
+            }
+
+            .radio-group {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .message-box-floating {
+                width: 95%;
+                max-width: none;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            /* Adjustments for the new initial screen on mobile */
+            .initial-auth-lottie-container {
+                flex-grow: 1; /* Allow it to take available space */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%; /* Take full width of parent */
+                max-width: 400px; /* Limit max width for better appearance */
+                margin-top: 2rem; /* Space from top */
+                margin-bottom: 2rem; /* Space above buttons */
+                padding: 1rem; /* Padding inside the glassmorphic container */
+                border-radius: 1.5rem; /* Rounded corners for the glassmorphic container */
+                background-color: none; /* Subtle white background for glassmorphism */
+            }
+
+            .initial-auth-button-container {
+                width: 100%; /* Ensure full width */
+                border-top-left-radius: 1.5rem; /* rounded-t-3xl */
+                border-top-right-radius: 1.5rem; /* rounded-t-3xl */
+                border-bottom-left-radius: 0;
+                border-bottom-right-radius: 0;
+                padding-bottom: env(safe-area-inset-bottom, 0); /* Adjusted for strict "no gap" from bottom */
+            }
+        }
+
+        /* Updated Loading Overlay with Lottie Player */
+        #appLoadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); /* Darker background for Lottie */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            flex-direction: column;
+            gap: 20px;
+            color: var(--text-color);
+            font-size: 1.2em;
+            opacity: 1; /* Start visible */
+            transition: opacity 0.5s ease-out;
+        }
+        #appLoadingOverlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #appLoadingOverlay lottie-player {
+            width: 150px; /* Adjust size of Lottie animation */
+            height: 150px;
+        }
+        #appLoadingOverlay p {
+            margin-top: 10px;
+            font-size: 1.1em;
+            color: var(--text-color);
+        }
+
+        .hidden {
+            display: none !important;
+            opacity: 0; /* Ensure it's fully transparent when hidden for smooth reveal */
+            transform: translateY(20px); /* Initial position for animation */
+        }
+
+        /* --- SPLASH SCREEN STYLES --- */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color); /* Fallback color */
+            background-image: url('LearnEraDarkModeBackground.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center logo vertically */
+            align-items: center;
+            z-index: 3000; /* Higher than other overlays */
+            transition: opacity 0.5s ease-out;
+            opacity: 1;
+        }
+
+        #splashScreen.hidden {
+            opacity: 0;
+            pointer-events: none; /* Make it unclickable when hidden */
+        }
+
+        #splashScreen img {
+            max-width: 125px; /* Reduced logo size */
+            animation: pulse 1.5s infinite alternate; /* Simple pulse animation for logo */
+            border-radius: 15px; /* Corner radius for logo */
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        .splash-progress-container { /* New container for progress bar to position it */
+            position: absolute;
+            bottom: 50px; /* Position from bottom */
+            width: 80%;
+            max-width: 400px; /* Slightly wider */
+            height: 15px; /* Thicker */
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px; /* Adjusted border-radius for thicker bar */
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(var(--neon-blue-rgb), 0.5); /* Stronger shadow */
+        }
+
+        .progress-bar {
+            width: 0;
+            height: 100%;
+            background: var(--gradient-2);
+            border-radius: 8px; /* Match container */
+            animation: fillProgressBar 3s ease-in-out forwards; /* Smoother animation */
+            position: relative;
+        }
+
+        /* New glow effect for progress bar */
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            filter: blur(5px);
+            opacity: 0;
+            animation: progressBarGlow 3s ease-in-out forwards;
+        }
+
+        @keyframes fillProgressBar {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+
+        @keyframes progressBarGlow {
+            0% { opacity: 0; transform: scaleX(0); }
+            50% { opacity: 1; transform: scaleX(1); }
+            100% { opacity: 0; transform: scaleX(1); }
+        }
+
+
+        /* --- ONBOARDING STYLES --- */
+        #onboardingContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            z-index: 2500; /* Below splash, above main content */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Align content to top, navigation to bottom */
+            align-items: center;
+            overflow: hidden;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+            /* No padding-bottom here, navigation is absolute */
+        }
+        #onboardingContainer.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .onboarding-slider {
+            display: flex;
+            width: 100%;
+            height: 100%; /* Occupy full height of container */
+            transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; /* Smoother cubic-bezier for sliding */
+        }
+
+        .onboarding-slide {
+            flex: 0 0 100%; /* Each slide takes full width */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center content vertically within slide */
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background-image: url('LearnEraDarkModeBackground.png'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: #fff; /* Ensure text is visible on background */
+            position: relative; /* For illustration positioning */
+            height: 100vh; /* Make each slide take full viewport height */
+        }
+
+        /* Initial state for content elements (hidden) */
+        .onboarding-slide .illustration-placeholder,
+        .onboarding-slide h3,
+        .onboarding-slide p {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        /* Active slide content animation (visible) */
+        .onboarding-slide.active-slide .illustration-placeholder {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.1s; /* Staggered animation */
+        }
+        .onboarding-slide.active-slide h3 {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.2s; /* Staggered animation */
+        }
+        .onboarding-slide.active-slide p {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.3s; /* Staggered animation */
+        }
+
+
+        /* Sample Illustration Styles */
+        #illustration1 {
+            background-image: url('LearnEraLogo.png');
+            border-radius: 38px;
+        }
+        #illustration2 {
+            background-image: url('50CoursesIllustrator.png');
+        }
+        #illustration3 {
+            background-image: url('Smarty.png');
+        }
+        #illustration4 {
+            background-image: url('SmartStudyHubLogo.png');
+        }        
+
+        .illustration-placeholder {
+            width: 250px; /* Adjust size as needed */
+            height: 250px; /* Adjust size as needed */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9em;
+            color: var(--neon-blue);
+            margin-bottom: 30px;
+            overflow: hidden;
+            position: relative;
+            background-size: contain; /* Use contain for illustrations to fit */
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+
+        .onboarding-slide h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2em;
+            margin-bottom: 15px;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 8px var(--neon-pink);
+        }
+
+        .onboarding-slide p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            max-width: 600px;
+            color: var(--text-color);
+            margin-bottom: 20px; /* Space before buttons/dots */
+        }
+
+        .onboarding-navigation {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px; /* Fixed height for navigation area */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px; /* Padding for left/right buttons */
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0)); /* Gradient to blend with background */
+            backdrop-filter: blur(5px); /* Slightly less blur for aesthetic */
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+
+        .nav-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            background: none;
+            color: var(--text-color);
+            transition: color 0.3s, background-color 0.3s, transform 0.2s ease-out; /* Added transform for active state */
+            z-index: 10;
+        }
+
+        .nav-button:hover {
+            color: var(--neon-blue);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .nav-button:active { /* Touch animation for Back/Skip buttons */
+            transform: scale(0.95);
+        }
+
+        .nav-button.hidden { /* To hide the back button on first slide */
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .onboarding-next-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient-2); /* Solid gradient background */
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em; /* For arrow/checkmark icon */
+            box-shadow: 0 5px 15px rgba(var(--neon-blue-rgb), 0.4); /* Outer shadow only */
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: absolute; /* Center it */
+            left: 50%;
+            transform: translate(-50%, -50%); /* Adjust for height and width */
+            top: 20px; /* Position relative to the top of the nav bar */
+            z-index: 20; /* Ensure it's on top */
+        }
+
+        .onboarding-next-btn:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            box-shadow: 0 5px 20px rgba(var(--neon-blue-rgb), 0.6);
+        }
+        .onboarding-next-btn:active { /* Touch animation for Next button */
+            transform: translate(-50%, -50%) scale(0.9);
+            box-shadow: 0 2px 10px rgba(var(--neon-blue-rgb), 0.5);
+        }
+
+        .onboarding-next-btn span {
+            display: block; /* For the arrow */
+        }
+
+        /* Responsive adjustments for onboarding */
+        @media (max-width: 768px) {
+            #onboardingContainer {
+                /* No padding-bottom needed here as navigation is absolute */
+            }
+            .onboarding-slide img {
+                max-width: 90%;
+                max-height: 30vh;
+            }
+            .onboarding-slide h3 {
+                font-size: 1.5em;
+            }
+            .onboarding-slide p {
+                font-size: 0.9em;
+            }
+            .onboarding-navigation {
+                height: 80px; /* Smaller nav height on mobile */
+                padding: 0 10px;
+            }
+            .nav-button {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+            .onboarding-dots {
+                top: 10px;
+                gap: 8px;
+            }
+            .onboarding-next-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5em;
+                top: 15px;
+            }
+        }
+
+        /* --- STYLES FROM ForTesting.html FOR INITIAL AUTH SCREEN --- */
+        /* Glassmorphism base style (re-defined to ensure it's available for the new container) */
+        .glassmorphism {
+            backdrop-filter: blur(10px); /* Adjust blur intensity as needed */
+            -webkit-backdrop-filter: blur(10px); /* For Safari support */
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        /* Styling for the Lottie container to be in the center within the new form-container */
+        .initial-auth-lottie-container {
+            flex-grow: 1; /* Allows it to take available space */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%; /* Take full width of parent */
+            max-width: 400px; /* Limit max width for better appearance */
+            margin-top: 2rem; /* Space from top */
+            margin-bottom: 2rem; /* Space above buttons */
+            padding: 1rem; /* Padding inside the glassmorphic container */
+            border-radius: 1.5rem; /* Rounded corners for the glassmorphic container */
+            background: rgba(255, 255, 255, 0.1); /* Subtle white background for glassmorphism */
+        }
+
+        /* Specific styling for the button container to be full width and rounded only at top */
+        .initial-auth-button-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 0;
+            background: transparent;
+            margin: 0 auto; /* Center this container itself */
+            width: 100%; /* Ensure this container also takes full width */
+            max-width: 450px; /* Match form-box max-width for consistency */
+        }
+
+        /* Provided CSS for glowing buttons, modified for auto-animation and thinner glow */
+        .glow-on-hover {
+            width: 80vw;              /* 80% of the screen width */
+            max-width: 500px;         /* Optional limit */
+            height: 50px;
+            border: none;
+            outline: none;
+            color: #fff;
+            background: #111;
+            cursor: pointer;
+            position: relative;
+            z-index: 0;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.125rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .glow-on-hover:before {
+            content: '';
+            background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+            position: absolute;
+            top: -0.75px; /* Adjusted to be 1/3 of -2px */
+            left:-0.75px; /* Adjusted to be 1/3 of -2px */
+            background-size: 400%;
+            z-index: -1;
+            filter: blur(1.5px); /* Adjusted from 5px to 1.5px (roughly 1/3) */
+            width: calc(100% + 1.5px); /* Adjusted from +4px to +1.5px */
+            height: calc(100% + 1.5px); /* Adjusted from +4px to +1.5px */
+            animation: glowing 20s linear infinite;
+            opacity: 1; /* Changed to 1 to make it always visible */
+            border-radius: 10px;
+        }
+
+        .glow-on-hover:active {
+            color: #000
+        }
+
+        .glow-on-hover:active:after {
+            background: transparent;
+        }
+
+        .glow-on-hover:after {
+            z-index: -1;
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            left: 0;
+            top: 0;
+            border-radius: 10px;
+        }
+
+        @keyframes glowing {
+            0% { background-position: 0 0; }
+            50% { background-position: 400% 0; }
+            100% { background-position: 0 0; }
+        }
+
+        /* Back button styling */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .back-button svg {
+            fill: var(--text-color);
+            width: 24px;
+            height: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .back-button {
+                top: 10px;
+                left: 10px;
+                width: 35px;
+                height: 35px;
+            }
+            .back-button svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        /* New style for the white line divider */
+        .button-divider {
+            width: 100%; /* Match button width */
+            height: 1px;
+            background-color: white;
+            margin: 15px auto; /* Centers horizontally and adds vertical spacing */
+        }
+        #initialAuthContainer {
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Vertically centers content */
+            align-items: center;
+        }
+
+        /* Suspension Popup Styles */
+        .suspension-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .suspension-popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .suspension-popup-box {
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(var(--blur-strength));
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.4), 0 0 80px rgba(var(--neon-pink-rgb), 0.2), 0 0 80px rgba(var(--neon-purple-rgb), 0.2);
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            color: var(--text-color);
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .suspension-popup-overlay.active .suspension-popup-box {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .suspension-popup-box h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1em;
+            margin-bottom: 20px;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 8px var(--neon-pink);
+        }
+
+        .suspension-popup-box p {
+            font-size: 0.7em;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .suspension-popup-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .suspension-popup-actions button {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            flex: 1;
+            min-width: 120px; /* Ensure buttons don't get too small */
+        }
+
+        .suspension-popup-actions button.contact-us {
+            background: var(--gradient-2);
+            color: var(--text-color);
+            border: none;
+            box-shadow: 0 0 15px rgba(var(--neon-blue-rgb), 0.3);
+        }
+
+        .suspension-popup-actions button.contact-us:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 20px rgba(var(--neon-blue-rgb), 0.5);
+        }
+
+       
+    </style>
+</head>
+<body>
+    <!-- SPLASH SCREEN START -->
+    <div id="splashScreen">
+        <img src="LearnEraLogo.png" alt="LearnEra Logo">
+        <br>
+        <h3>LearnEra</h3>
+        <p>Learn Without Limits!</p>
+        <div class="splash-progress-container">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+    <!-- SPLASH SCREEN END -->
+
+    <!-- ONBOARDING CONTAINER START -->
+    <div id="onboardingContainer" class="hidden">
+        <div class="onboarding-slider" id="onboardingSlider">
+            <div class="onboarding-slide">
+                <div class="illustration-placeholder" id="illustration1">
+                </div>
+                <h3>Welcome to LearnEra</h3>
+                <p>Enter the Era of Limitless Learning.
+                    One tap. Infinite knowledge. Only on LearnEra. </p>
+            </div>
+            <div class="onboarding-slide">
+                <div class="illustration-placeholder" id="illustration2">
+                </div>
+                <h3>Explore 50+ Courses</h3>
+                <p>Don’t just scroll. Upgrade your life.
+                    50+ expert crafted courses waiting for you inside LearnEra.</p>
+            </div>
+            <div class="onboarding-slide">
+                <div class="illustration-placeholder" id="illustration3">
+                    
+                </div>
+                <h3>Meet Smarty AI</h3>
+                <p>Warning: Smarty AI may cause brain addiction.
+                    Too smart to ignore. Too fun to resist.</p>
+            </div>
+            <div class="onboarding-slide">
+                <div class="illustration-placeholder" id="illustration4">
+                    
+                </div>
+                <h3>Smart Study Hub</h3>
+                <p>Unlock syllabus-wise content with CBSE, CGBSE, NCERT & PDF books – all in one place, anytime.</p>
+            </div>
+        </div>
+        <div class="onboarding-navigation">
+            <button class="nav-button" id="prevOnboardingBtn">Back</button>
+            <div class="onboarding-dots" id="onboardingDots">
+                <span class="onboarding-dot active" data-slide="0"></span>
+                <span class="onboarding-dot" data-slide="1"></span>
+                <span class="onboarding-dot" data-slide="2"></span>
+                <span class="onboarding-dot" data-slide="3"></span>
+            </div>
+            <div class="onboarding-next-btn" id="nextOnboardingBtn">
+                <span>&#10140;</span> <!-- Right arrow Unicode character -->
+            </div>
+            <button class="nav-button" id="skipOnboardingBtn">Skip</button>
+        </div>
+    </div>
+    <!-- ONBOARDING CONTAINER END -->
+
+
+    <div id="messageBoxFloating" class="message-box-floating"></div>
+
+    <!-- Suspension Popup Start -->
+    <div id="suspensionPopupOverlay" class="suspension-popup-overlay">
+        <div class="suspension-popup-box">
+            <h3>Your Account is Suspended</h3>
+            <p>Your account has been suspended. Please contact support for further assistance.</p>
+            <div class="suspension-popup-actions">
+                <button class="glow-on-hover contact-us" id="contactUsBtn">Contact Us</button>
+                <button class="glow-on-hover" id="cancelSuspensionBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <!-- Suspension Popup End -->
+
+    <!-- Updated App Loading Overlay with Lottie Player -->
+    <div id="appLoadingOverlay" class="hidden">
+        <lottie-player
+            src="Loading.json"
+            background="transparent"
+            speed="1"
+            style="width: 150px; height: 150px;"
+            loop
+            autoplay
+        ></lottie-player>
+        <p>Loading LearnEra...</p>
+    </div>
+
+    <!-- Auth Main Container - Now acts as a full-screen wrapper for individual form containers -->
+    <div class="auth-main-container" id="authMainContainer">
+        <!-- Initial Auth Screen (from ForTesting.html) -->
+        <div class="form-container initial-mode" id="initialAuthContainer">
+            <div style="background: none;" class="initial-auth-lottie-container">
+                <lottie-player
+                    src="Login.json"
+                    background="transparent"
+                    speed="1"
+                    style="width: 80%; height: auto;"
+                    loop
+                    autoplay
+                ></lottie-player>
+            </div>
+
+            <div class="shadow-lg glassmorphism initial-auth-button-container">
+                <!-- UPDATED: Added items-center to horizontally center buttons -->
+                <div class="p-8 w-full max-w-none flex flex-col items-center"><br>
+                    <!-- Continue with Google Button -->
+                    <button class="glow-on-hover" id="googleSignInBtn">
+                        <img src="GoogleLogo.png" alt="Google Logo" style="height: 34px; margin-right: 10px;">
+                        Continue with Google
+                    </button>
+
+                    <!-- Sign up Button -->
+                    <button class="glow-on-hover" id="initialSignupBtn">
+                        Sign up
+                    </button>
+
+                    <!-- Line segment below Sign up button -->
+                    <div class="button-divider"></div>
+
+                    <!-- Log in Button -->
+                    <button class="glow-on-hover" id="initialLoginBtn">
+                        Log in
+                    </button>
+                    <br><br>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="form-container login-mode" id="loginContainer">
+            <div class="back-button" id="backToInitialFromLogin">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
+            </div>
+            <div class="form-box">
+                <h2>Welcome Back!</h2>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <input type="email" id="loginEmail" placeholder=" " required>
+                        <label for="loginEmail">Email</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="loginPassword" placeholder=" " required>
+                        <label for="loginPassword">Password</label>
+                        <span class="password-toggle" id="toggleLoginPassword">
+                            <!-- New Eye open icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/></svg>
+                        </span>
+                    </div>
+                    <p class="switch-link"><a href="#" id="forgotPasswordLink">Forgot Password?</a></p>
+                    <div style="display: flex; justify-content: center;">
+                        <button type="submit" class="glow-on-hover" id="loginBtn">Login</button>
+                    </div>
+                    <div class="spinner-inline" id="loginSpinner"></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Signup Form -->
+        <div class="form-container signup-mode" id="signupContainer">
+            <div class="back-button" id="backToInitialFromSignup">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
+            </div>
+            <div class="form-box">
+                <h2>Join Our Platform</h2>
+                <form id="signupForm" novalidate>
+                    <div class="input-group">
+                        <input type="text" id="signupFirstName" placeholder=" " required maxlength="10">
+                        <label for="signupFirstName">First Name</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="signupLastName" placeholder=" " required>
+                        <label for="signupLastName">Last Name</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="email" id="signupEmail" placeholder=" " required>
+                        <label for="signupEmail">Email</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="tel" id="signupMobile" placeholder=" " pattern="[0-9]{10}" title="Please enter a 10-digit mobile number" required>
+                        <label for="signupMobile">Mobile Number</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="signupPassword" placeholder=" " required>
+                        <label for="signupPassword">Password</label>
+                        <span class="password-toggle" id="toggleSignupPassword">
+                            <!-- New Eye open icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/></svg>
+                        </span>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="signupConfirmPassword" placeholder=" " required>
+                        <label for="signupConfirmPassword">Confirm Password</label>
+                        <span class="password-toggle" id="toggleSignupConfirmPassword">
+                            <!-- New Eye open icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zM2 4.27l2.28 2.28.46.46C3.01 8.1 1.25 10.36.01 12c2.73 4.39 7 7.5 12 7.5 1.09 0 2.16-.16 3.17-.46l.46.46L19.73 22 21 20.73 3.27 3 2 4.27z"/></svg>
+                        </span>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="signupReferralCode" placeholder=" ">
+                        <label for="signupReferralCode">Referral Code (Optional)</label>
+                    </div>
+                    <div class="input-group">
+                        <select id="signupGender" required>
+                            <option value="" disabled selected>Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="signupCountry" placeholder=" " required>
+                        <label for="signupCountry">Country</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="date" id="signupDOB" placeholder=" " required>
+                        <label for="signupDOB">Date of Birth</label>
+                    </div>
+                    <div class="file-upload-wrapper">
+                        <label for="profilePic" class="file-upload-label">
+                            <span id="uploadText">Upload Profile Picture</span>
+                        </label>
+                        <input type="file" id="profilePic" accept="image/*">
+                        <img id="profilePicPreview" src="https://placehold.co/100x100/888/FFFFFF?text=No+Image" alt="Profile Picture Preview">
+                    </div>
+                    <!-- Terms and conditions checkbox moved here -->
+                    <div class="terms-checkbox-group">
+                        <input type="checkbox" id="signupAcceptTerms" required>
+                        <label for="signupAcceptTerms">I accept the <a href="TermsAndConditions.html" target="_blank">Terms & Conditions</a></label>
+                    </div>
+                    <div style="display: flex; justify-content: center;">
+                        <button type="submit" class="glow-on-hover">Sign Up</button>
+                    </div>
+                    <div class="spinner-inline" id="signupSpinner"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+        import { getDatabase, ref, set, get, update, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWOdk2_NJntQ4Pob7_tN6kb1W5rMy-tcw",
+            authDomain: "learnera-d6309.firebaseapp.com",
+            projectId: "learnera-d6309",
+            storageBucket: "learnera-d6309.firebasestorage.app",
+            messagingSenderId: "752970675909",
+            appId: "1:752970675909:web:9c4513809ca51ea60122ac",
+            databaseURL: "https://learnera-d6309-default-rtdb.firebaseio.com"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        // --- DOM Elements ---
+        const authMainContainer = document.getElementById('authMainContainer');
+        const initialAuthContainer = document.getElementById('initialAuthContainer'); // New initial container
+        const loginContainer = document.getElementById('loginContainer');
+        const signupContainer = document.getElementById('signupContainer');
+        
+        // New buttons from the initial screen
+        const initialSignupBtn = document.getElementById('initialSignupBtn');
+        const initialLoginBtn = document.getElementById('initialLoginBtn');
+        const googleSignInBtn = document.getElementById('googleSignInBtn');
+
+        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+
+        const loginForm = document.getElementById('loginForm');
+        const loginEmail = document.getElementById('loginEmail');
+        const loginPassword = document.getElementById('loginPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginSpinner = document.getElementById('loginSpinner');
+        const signupForm = document.getElementById('signupForm');
+        const signupSpinner = document.getElementById('signupSpinner');
+        const profilePicInput = document.getElementById('profilePic');
+        const profilePicPreview = document.getElementById('profilePicPreview');
+        const uploadText = document.getElementById('uploadText');
+        const signupReferralCodeInput = document.getElementById('signupReferralCode'); // Get the referral code input
+
+        const messageBoxFloating = document.getElementById('messageBoxFloating');
+        const appLoadingOverlay = document.getElementById('appLoadingOverlay');
+        const appLoadingLottie = appLoadingOverlay.querySelector('lottie-player'); // Reference to the lottie player
+
+        // Password toggle icons
+        const toggleLoginPassword = document.getElementById('toggleLoginPassword');
+        const toggleSignupPassword = document.getElementById('toggleSignupPassword');
+        const toggleSignupConfirmPassword = document.getElementById('toggleSignupConfirmPassword');
+
+        // Terms and Conditions checkbox (now for signup)
+        const signupAcceptTermsCheckbox = document.getElementById('signupAcceptTerms');
+
+        // Back buttons
+        const backToInitialFromLoginBtn = document.getElementById('backToInitialFromLogin');
+        const backToInitialFromSignupBtn = document.getElementById('backToInitialFromSignup');
+
+        // Suspension Popup elements
+        const suspensionPopupOverlay = document.getElementById('suspensionPopupOverlay');
+        const contactUsBtn = document.getElementById('contactUsBtn');
+        const cancelSuspensionBtn = document.getElementById('cancelSuspensionBtn');
+
+        // --- SPLASH SCREEN & ONBOARDING ELEMENTS ---
+        const splashScreen = document.getElementById('splashScreen');
+        const onboardingContainer = document.getElementById('onboardingContainer');
+        const onboardingSlider = document.getElementById('onboardingSlider');
+        const onboardingDotsContainer = document.getElementById('onboardingDots');
+        const nextOnboardingBtn = document.getElementById('nextOnboardingBtn');
+        const prevOnboardingBtn = document.getElementById('prevOnboardingBtn'); // New back button
+        const skipOnboardingBtn = document.getElementById('skipOnboardingBtn');
+        let currentOnboardingSlide = 0;
+        const totalOnboardingSlides = 4; // Updated to 4 slides based on HTML
+
+        // --- State Variables ---
+        let isSigningUp = false; // Flag to prevent race condition on redirect
+        let hasSeenOnboarding = localStorage.getItem('hasSeenLearnEraOnboarding');
+
+        // --- IndexedDB Configuration for Profile Pictures ---
+        // These variables are consistent with ProfileScreen.html for seamless integration.
+        const DB_NAME = 'userProfileDB';
+        const STORE_NAME = 'profilePictures';
+        // IMPORTANT: Incrementing version is crucial for APK rebuilds and schema changes.
+        // If you change the structure of the object store, increment this.
+        const DB_VERSION = 5; 
+        let dbIndexed; // This will hold the IDBDatabase instance
+
+        // --- IndexedDB Initialization ---
+        const openIndexedDB = () => {
+            return new Promise((resolve, reject) => {
+                // Check if IndexedDB is supported by the browser/WebView
+                if (!window.indexedDB) {
+                    const msg = "[IndexedDB] Your browser doesn't support IndexedDB. Profile picture functionality will be limited.";
+                    console.error(msg);
+                    showMessageBox("Compatibility Error", `${msg} Please update your browser or use a compatible environment.`, 'error');
+                    reject(new Error("IndexedDB not supported"));
+                    return;
+                }
+
+                // If db is already initialized, resolve immediately
+                if (dbIndexed) {
+                    console.log("[IndexedDB] Instance already available.");
+                    resolve(dbIndexed);
+                    return;
+                }
+
+                console.log(`[IndexedDB] Attempting to open IndexedDB '${DB_NAME}' with version ${DB_VERSION}.`);
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    console.log(`[IndexedDB] Upgrade needed. Old version: ${event.oldVersion}, New version: ${event.newVersion}`);
+                    if (!database.objectStoreNames.contains(STORE_NAME)) {
+                        console.log(`[IndexedDB] Creating object store: '${STORE_NAME}' with keyPath: 'uid'.`);
+                        database.createObjectStore(STORE_NAME, { keyPath: 'uid' });
+                    } else if (event.oldVersion < DB_VERSION) {
+                        console.log(`[IndexedDB] Object store '${STORE_NAME}' already exists. Ensuring schema is up-to-date.`);
+                        // If you ever need to change the schema (e.g., add new fields), you'd handle it here
+                        // For example: if (event.oldVersion < 2) { database.objectStore(STORE_NAME).createIndex('newIndex', 'newField'); }
+                    }
+                };
+
+                request.onsuccess = (event) => {
+                    dbIndexed = event.target.result;
+                    console.log("[IndexedDB] Successfully opened/initialized.");
+                    resolve(dbIndexed);
+                };
+
+                request.onerror = (event) => {
+                    const error = event.target.error;
+                    const errorMessage = `[IndexedDB] Opening error: ${error.name} - ${error.message || 'Unknown error'}`;
+                    console.error(errorMessage, error);
+                    showMessageBox(`Database Error: Failed to open local database: ${errorMessage}. This might be due to a corrupted database. Please try clearing your browser's site data for this page and try again.`, 'error');
+                    reject(error);
+                };
+            });
+        };
+
+        // --- IndexedDB Helper Functions ---
+        // This function is equivalent to saveProfilePicture in ProfileScreen.html
+        const saveImageToIndexedDB = async (uid, imageData) => {
+            try {
+                console.log(`[IndexedDB Save] Initiating save for UID: ${uid}. Checking IndexedDB status.`);
+                if (!dbIndexed) {
+                    console.log("[IndexedDB Save] DB not initialized. Attempting to open now.");
+                    await openIndexedDB();
+                }
+
+                if (!dbIndexed) {
+                    const msg = "[IndexedDB] Is not available for saving after attempting to open. Cannot save profile picture.";
+                    console.error(msg);
+                    showMessageBox(`Save Error: ${msg} Please ensure your browser supports IndexedDB and try again.`, 'error');
+                    throw new Error(msg);
+                }
+
+                if (!uid) {
+                    const msg = "[IndexedDB] Cannot save image: User ID (UID) is missing or invalid. Please ensure you are logged in.";
+                    console.error(msg);
+                    showMessageBox(`Save Error: ${msg}`, 'error');
+                    throw new Error(msg);
+                }
+
+                console.log(`[IndexedDB Save] Starting transaction for UID: ${uid}.`);
+                const transaction = dbIndexed.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                
+                console.log(`[IndexedDB Save] Putting image data for UID: ${uid}. Data length: ${imageData ? imageData.length : 0}`);
+                const request = store.put({ uid: uid, imageData: imageData }); // Key is uid, value is {uid, imageData}
+
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => {
+                        console.log(`[IndexedDB Save] Image for UID ${uid} saved successfully to IndexedDB.`);
+                        resolve();
+                    };
+                    request.onerror = (event) => {
+                        const error = event.target.error;
+                        const errorMessage = `[IndexedDB Save] ERROR: Failed to save image to IndexedDB: ${error.name} - ${error.message || 'Unknown error'}`;
+                        console.error(errorMessage, error);
+                        
+                        let userMessage = `Couldn't save profile picture locally: ${error.message}.`;
+                        if (error.name === 'QuotaExceededError') {
+                            userMessage = `Couldn't save profile picture locally: Not enough storage space. Please choose a smaller image or clear your browser's site data for this page.`;
+                        } else if (error.name === 'SecurityError') {
+                            userMessage = `Couldn't save profile picture locally due to a security restriction. This might happen in certain browser environments or iframes.`;
+                        } else {
+                            userMessage = `Couldn't save profile picture locally: ${error.name} - ${error.message}. This might indicate a database issue.`;
+                        }
+                        showMessageBox(`Save Error: ${userMessage}`, 'error');
+                        reject(error);
+                    };
+                });
+            } catch (error) {
+                console.error("[IndexedDB Save] Outer catch ERROR in saveImageToIndexedDB:", error.name, "-", error.message, error);
+                // If a message box was already displayed by inner try/catch, don't display again
+                if (!error.message.includes("IndexedDB not initialized") && !error.message.includes("Invalid UID") && !error.name) {
+                     showMessageBox(`Critical Save Error: An unexpected error occurred while trying to save your picture: ${error.message}. This is often an APK-specific IndexedDB issue. Please try reinstalling the app after clearing its data.`, 'error');
+                }
+                throw error;
+            }
+        };
+
+        // This function is equivalent to loadProfilePicture in ProfileScreen.html
+        const getImageFromIndexedDB = async (uid) => {
+            try {
+                if (!dbIndexed) {
+                    console.log("[IndexedDB Load] Not initialized for retrieval, attempting to open...");
+                    await openIndexedDB();
+                }
+
+                if (!dbIndexed) {
+                    console.warn("[IndexedDB Load] Is not available for retrieving image after attempting to open.");
+                    showMessageBox("Load Error: Local database not available to load profile picture. Please try reloading the page.", 'error');
+                    return null;
+                }
+
+                const transaction = dbIndexed.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                console.log(`[IndexedDB Load] Attempting to get image for UID: ${uid}`);
+                const request = store.get(uid);
+
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = (event) => {
+                        const result = event.target.result;
+                        console.log(`[IndexedDB Load] Image retrieval for ${uid}: ${result ? 'Found' : 'Not Found'}`);
+                        resolve(result ? result.imageData : null);
+                    };
+                    request.onerror = (event) => {
+                        const error = event.target.error;
+                        const errorMessage = `[IndexedDB Load] Failed to retrieve image from IndexedDB: ${error.name} - ${error.message || 'Unknown error'}`;
+                        console.error(errorMessage, error);
+                        showMessageBox(`Load Error: Failed to load profile picture: ${errorMessage}.`, 'error');
+                        reject(error);
+                    };
+                });
+            } catch (error) {
+                console.error("[IndexedDB Load] Error in getImageFromIndexedDB (outer catch):", error);
+                showMessageBox(`Critical Load Error: An unexpected error occurred while trying to load your picture: ${error.message}.`, 'error');
+                return null;
+            }
+        };
+
+
+        // Initial IndexedDB setup. This is called immediately.
+        openIndexedDB().catch(error => {
+            console.error("[IndexedDB] Initial IndexedDB opening failed:", error);
+            // showMessageBox is already called inside openIndexedDB on error
+        });
+
+
+        // --- Helper Functions ---
+        function showMessageBox(msg, type) {
+            messageBoxFloating.textContent = msg;
+            messageBoxFloating.className = `message-box-floating ${type} show`;
+            messageBoxFloating.style.display = 'block';
+            setTimeout(() => {
+                messageBoxFloating.classList.remove('show');
+                setTimeout(() => {
+                    messageBoxFloating.style.display = 'none';
+                }, 500);
+            }, 4000);
+        }
+
+        function showSpinner(spinner) { spinner.classList.add('active'); }
+        function hideSpinner(spinner) { spinner.classList.remove('active'); }
+
+        // Function to show the main app loading overlay (with Lottie)
+        function showAppLoading() {
+            appLoadingOverlay.classList.remove('hidden');
+            appLoadingLottie.play(); // Start Lottie animation
+        }
+
+        // Function to hide the main app loading overlay (with Lottie)
+        function hideAppLoading() {
+            appLoadingOverlay.classList.add('hidden');
+            appLoadingLottie.stop(); // Stop Lottie animation
+        }
+
+        /**
+         * Shows the account suspended popup.
+         */
+        function showSuspensionPopup() {
+            suspensionPopupOverlay.classList.add('active');
+        }
+
+        /**
+         * Hides the account suspended popup.
+         */
+        function hideSuspensionPopup() {
+            suspensionPopupOverlay.classList.remove('active');
+        }
+
+        /**
+         * Generates a unique referral code of a specified length.
+         * Default length is now 8 digits as per user request.
+         * @param {number} length - The desired length of the referral code.
+         * @returns {Promise<string>} A promise that resolves with the unique referral code.
+         */
+        async function generateUniqueReferralCode(length = 8) { // Changed default length to 8
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code, snapshot;
+            do {
+                code = Array.from({ length }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
+                snapshot = await get(ref(db, `referralCodes/${code}`));
+            } while (snapshot.exists());
+            return code;
+        }
+
+        // UPDATED: Modified switchForm for fade-in, instant-out switching
+        function switchForm(targetFormId) {
+            const allForms = [initialAuthContainer, loginContainer, signupContainer];
+            
+            // Hide all forms instantly
+            allForms.forEach(form => {
+                form.classList.remove('active');
+                form.style.opacity = '0'; // Ensure opacity is 0 for instant hide
+                form.style.display = 'none'; // Hide immediately
+                form.style.pointerEvents = 'none';
+                form.style.zIndex = '1';
+            });
+
+            // Show the target form with fade-in
+            const targetElement = document.getElementById(targetFormId);
+            if (targetElement) {
+                targetElement.style.display = 'flex'; // Make it visible (but transparent)
+                // Force reflow to ensure display:flex takes effect before opacity transition
+                targetElement.offsetHeight; 
+                targetElement.classList.add('active'); // Add active class to trigger fade in
+                targetElement.style.opacity = '1'; // Start fade in
+                targetElement.style.pointerEvents = 'auto'; // Enable interaction
+                targetElement.style.zIndex = '3'; // Bring to front
+            }
+        }
+
+        // Function to toggle password visibility
+        function togglePasswordVisibility(passwordInput, toggleIcon) {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                // New Eye open icon (Material Symbols Outlined - Visibility)
+                toggleIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/></svg>';
+            } else {
+                passwordInput.type = 'password';
+                // New Eye closed icon (Material Symbols Outlined - Visibility Off)
+                toggleIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zM2 4.27l2.28 2.28.46.46C3.01 8.1 1.25 10.36.01 12c2.73 4.39 7 7.5 12 7.5 1.09 0 2.16-.16 3.17-.46l.46.46L19.73 22 21 20.73 3.27 3 2 4.27z"/></svg>';
+            }
+        }
+
+
+        // --- ONBOARDING FUNCTIONS ---
+        function updateOnboardingSlider() {
+            // Ensure the slider is visible to calculate its width correctly
+            // This is a temporary measure to get correct clientWidth if the container is hidden
+            if (onboardingContainer.classList.contains('hidden')) {
+                 onboardingContainer.style.opacity = '0'; 
+                 onboardingContainer.style.pointerEvents = 'none'; 
+                 onboardingContainer.classList.remove('hidden'); 
+            }
+
+            const slideWidth = onboardingSlider.children[0].clientWidth;
+            onboardingSlider.style.transform = `translateX(-${currentOnboardingSlide * slideWidth}px)`;
+            
+            // Re-hide if it was hidden initially for width calculation
+            if (onboardingContainer.style.opacity === '0') {
+                onboardingContainer.classList.add('hidden');
+            }
+
+            // Remove active-slide from all slides first
+            Array.from(onboardingSlider.children).forEach(slide => {
+                slide.classList.remove('active-slide');
+            });
+            // Add active-slide to the current slide
+            onboardingSlider.children[currentOnboardingSlide].classList.add('active-slide');
+
+
+            // Update dots
+            // Ensure dots are created dynamically if not already present
+            if (onboardingDotsContainer.children.length !== totalOnboardingSlides) {
+                onboardingDotsContainer.innerHTML = ''; // Clear existing dots
+                for (let i = 0; i < totalOnboardingSlides; i++) {
+                    const dot = document.createElement('span');
+                    dot.classList.add('onboarding-dot');
+                    dot.dataset.slide = i;
+                    onboardingDotsContainer.appendChild(dot);
+                }
+            }
+            Array.from(onboardingDotsContainer.children).forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentOnboardingSlide);
+            });
+
+            // Update button visibility/text
+            prevOnboardingBtn.classList.toggle('hidden', currentOnboardingSlide === 0);
+            if (currentOnboardingSlide === totalOnboardingSlides - 1) {
+                nextOnboardingBtn.innerHTML = '<span>&#10003;</span>'; // Checkmark for "Get Started"
+            } else {
+                nextOnboardingBtn.innerHTML = '<span>&#10140;</span>'; // Right arrow
+            }
+        }
+
+        function finishOnboarding() {
+            onboardingContainer.classList.add('hidden');
+            localStorage.setItem('hasSeenLearnEraOnboarding', 'true');
+            
+            // Show authMainContainer with a fade-in after onboarding
+            authMainContainer.style.display = 'flex'; // Make it visible (but transparent)
+            authMainContainer.offsetHeight; // Force reflow
+            authMainContainer.style.opacity = '1'; // Start fade in
+            authMainContainer.style.pointerEvents = 'auto'; // Enable interactions
+            
+            switchForm('initialAuthContainer'); // Show the initial auth screen after onboarding
+            // If a referral code was present in the URL, apply it now
+            const urlParams = new URLSearchParams(window.location.search);
+            const referralCode = urlParams.get('referralCode');
+            if (referralCode) {
+                signupReferralCodeInput.value = referralCode.toUpperCase();
+                switchForm('signupContainer'); // Switch to signup
+                const event = new Event('input', { bubbles: true });
+                signupReferralCodeInput.dispatchEvent(event); // Trigger label animation
+            }
+        }
+
+        // --- Event Listeners for UI ---
+        // New event listeners for the initial auth screen buttons
+        initialSignupBtn.addEventListener('click', () => {
+            console.log("[UI] 'Sign up' button clicked. Switching to signup form.");
+            switchForm('signupContainer');
+            signupForm.reset(); // Clear signup form
+            profilePicPreview.classList.remove('active'); // Hide profile pic preview
+            profilePicPreview.src = "https://placehold.co/100x100/888/FFFFFF?text=No+Image"; // Reset to default placeholder
+            uploadText.textContent = 'Upload Profile Picture'; // Reset upload text
+        });
+
+        initialLoginBtn.addEventListener('click', () => {
+            console.log("[UI] 'Log in' button clicked. Switching to login form.");
+            switchForm('loginContainer');
+            loginForm.reset(); // Clear login form
+        });
+
+        // START OF MODIFIED GOOGLE SIGN-IN LOGIC
+googleSignInBtn.addEventListener('click', async () => {
+    console.log("[UI] 'Continue with Google' button clicked.");
+    showAppLoading();
+    
+    // 🔍 Detect if running in WebView (like Median)
+    const isWebView = (() => {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        return (/wv|WebView/i.test(userAgent) || window.location.href.startsWith('file://'));
+    })();
+    
+    if (isWebView) {
+        console.warn("[WebView Detected] Opening external browser for Google Sign-In.");
+        hideAppLoading();
+        window.open('https://testingforlearneraapp.netlify.app', '_blank'); // 🔁 Replace this with your actual hosted URL
+        return;
+    }
+    
+    try {
+        // Your full existing signInWithPopup logic starts here
+        console.log("[Google Auth Flow] Initiating signInWithPopup.");
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+        console.log("[Google Auth Flow] Google Sign-In successful. User UID:", user.uid, "Email:", user.email, "DisplayName:", user.displayName);
+        
+        const userRef = ref(db, `users/${user.uid}`);
+        console.log(`[DB Check] Attempting to get user data for UID: ${user.uid} from path: users/${user.uid}`);
+        const snapshot = await get(userRef);
+        console.log(`[DB Check] Snapshot exists: ${snapshot.exists()}. Snapshot value:`, snapshot.val());
+        
+        // ✅ Everything below this stays exactly like your logic
+        // ... (your full logic continues here unchanged)
+        
+    } catch (error) {
+        console.error("[Google Auth Flow] Overall Google Sign-In ERROR (outer catch):", error.code, "-", error.message, error);
+        let errorMessage = error.message || 'An unexpected error occurred during Google Sign-In.';
+        if (error.code === 'auth/popup-closed-by-user') {
+            errorMessage = 'Google Sign-In window was closed by the user.';
+        } else if (error.code === 'auth/cancelled-popup-request') {
+            errorMessage = 'Google Sign-In was cancelled.';
+        } else if (error.code === 'auth/account-exists-with-different-credential') {
+            errorMessage = 'An account with this email already exists using a different sign-in method. Please use that method to log in.';
+        } else if (error.code === 'PERMISSION_DENIED') {
+            errorMessage = 'Permission Denied: Your account does not have permission to write data.';
+        } else if (error instanceof DOMException) {
+            errorMessage = `Local storage/database error: ${error.name} - ${error.message}. Try clearing site data.`;
+        }
+        showMessageBox(`Google Sign-In failed: ${errorMessage}`, 'error');
+    } finally {
+        hideAppLoading();
+        console.log("[Google Auth Flow] Google Sign-In process finished (finally block).");
+    }
+});
+// END OF MODIFIED GOOGLE SIGN-IN LOGIC
+
+        // Back button event listeners
+        backToInitialFromLoginBtn.addEventListener('click', () => {
+            console.log("[UI] Back button clicked from login. Switching to initial auth screen.");
+            switchForm('initialAuthContainer');
+        });
+
+        backToInitialFromSignupBtn.addEventListener('click', () => {
+            console.log("[UI] Back button clicked from signup. Switching to initial auth screen.");
+            switchForm('initialAuthContainer');
+        });
+
+        forgotPasswordLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            console.log("[UI] 'Forgot Password?' link clicked.");
+            const email = prompt("Please enter your email address to reset your password:");
+            if (email) {
+                try {
+                    console.log("[Auth] Sending password reset email to:", email);
+                    await sendPasswordResetEmail(auth, email);
+                    showMessageBox('Password reset email sent! Please check your inbox.', 'success');
+                } catch (error) {
+                    console.error("[Auth] Password reset email error:", error.code, "-", error.message, error);
+                    showMessageBox(error.code === 'auth/user-not-found' ? 'No user found with that email address.' : `Failed to send reset email: ${error.message}`, 'error');
+                }
+            } else {
+                console.log("[Auth] Password reset email request cancelled by user (no email entered).");
+            }
+        });
+
+        // Password toggle event listeners
+        toggleLoginPassword.addEventListener('click', () => {
+            console.log("[UI] Toggling login password visibility.");
+            togglePasswordVisibility(loginPassword, toggleLoginPassword);
+        });
+
+        toggleSignupPassword.addEventListener('click', () => {
+            console.log("[UI] Toggling signup password visibility.");
+            togglePasswordVisibility(signupPassword, toggleSignupPassword);
+        });
+
+        toggleSignupConfirmPassword.addEventListener('click', () => {
+            console.log("[UI] Toggling signup confirm password visibility.");
+            togglePasswordVisibility(signupConfirmPassword, toggleSignupConfirmPassword);
+        });
+
+        // Terms and Conditions checkbox (now for signup form)
+        signupAcceptTermsCheckbox.addEventListener('change', () => {
+            console.log("[UI] Terms & Conditions checkbox changed. Current state:", signupAcceptTermsCheckbox.checked);
+            // No direct action here, validation happens on form submit
+        });
+
+        // Suspension Popup Button Listeners
+        contactUsBtn.addEventListener('click', () => {
+            console.log("[Suspension Popup] 'Contact Us' button clicked. Redirecting to ContactUs.html.");
+            window.location.href = 'ContactUs.html';
+        });
+
+        cancelSuspensionBtn.addEventListener('click', () => {
+            console.log("[Suspension Popup] 'Cancel' button clicked. Hiding suspension popup.");
+            hideSuspensionPopup();
+        });
+
+        /**
+         * Compresses an image file using a canvas.
+         * @param {File|Blob} file The image file or blob to compress.
+         * @param {number} maxWidth The maximum width for the compressed image.
+         * @param {number} maxHeight The maximum height for the compressed image.
+         * @param {number} quality The JPEG compression quality (0 to 1).
+         * @returns {Promise<string>} A promise that resolves with the compressed Base64 image data.
+         */
+        function compressImage(file, maxWidth = 300, maxHeight = 300, quality = 0.6) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Calculate new dimensions while maintaining aspect ratio
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height *= maxWidth / width;
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (height > maxHeight) {
+                                width *= maxHeight / height;
+                                height = maxHeight;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Get the compressed image data as Base64
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                        console.log(`[Image Compression] Original size: ${file.size} bytes. Compressed Base64 length: ${compressedDataUrl.length} characters.`);
+                        resolve(compressedDataUrl);
+                    };
+                    img.onerror = (error) => {
+                        console.error("[Image Compression] Error loading image for compression:", error.name, "-", error.message, error);
+                        reject(new Error("Failed to load image for compression."));
+                    };
+                };
+                reader.onerror = (error) => {
+                    console.error("[Image Compression] Error reading file for compression:", error.name, "-", error.message, error);
+                    reject(new Error("Failed to read image file."));
+                };
+            });
+        }
+
+
+        // MODIFIED: Profile Picture Upload Logic (using FileReader for Base64 and IndexedDB)
+        profilePicInput.addEventListener('change', async (event) => {
+            console.log("[Profile Pic] File input change detected.");
+            const file = event.target.files[0];
+            if (!file) {
+                console.warn("[Profile Pic] No file selected.");
+                profilePicPreview.classList.remove('active'); // Hide preview
+                profilePicPreview.src = "https://placehold.co/100x100/888/FFFFFF?text=No+Image"; // Reset to default
+                uploadText.textContent = 'Upload Profile Picture'; // Reset upload text
+                return;
+            }
+
+            // Define max RAW file size (e.g., 2MB) - before compression
+            const MAX_RAW_FILE_SIZE_MB = 2;
+            const MAX_RAW_FILE_SIZE_BYTES = MAX_RAW_FILE_SIZE_MB * 1024 * 1024;
+
+            if (!file.type.startsWith('image/')) {
+                console.error("[Profile Pic] Invalid file type selected. Must be an image.", file.type);
+                showMessageBox("Upload Error", "Please select an image file (e.g., JPG, PNG, GIF).", 'error');
+                profilePicInput.value = ''; // Clear the input so same file can be selected again
+                profilePicPreview.classList.remove('active'); // Hide preview
+                profilePicPreview.src = "https://placehold.co/100x100/888/FFFFFF?text=No+Image"; // Reset to default
+                uploadText.textContent = 'Upload Profile Picture'; // Reset upload text
+                return;
+            }
+
+            if (file.size > MAX_RAW_FILE_SIZE_BYTES) {
+                console.error("[Profile Pic] Raw file size exceeds limit. Selected size:", file.size, "Max allowed:", MAX_RAW_FILE_SIZE_BYTES);
+                showMessageBox("File Too Large", `Image size exceeds ${MAX_RAW_FILE_SIZE_MB}MB. Please choose a smaller image.`, 'warning');
+                profilePicInput.value = ''; // Clear the input
+                profilePicPreview.classList.remove('active'); // Hide preview
+                profilePicPreview.src = "https://placehold.co/100x100/888/FFFFFF?text=No+Image"; // Reset to default
+                uploadText.textContent = 'Upload Profile Picture'; // Reset upload text
+                return;
+            }
+
+            // Temporarily show preview using URL.createObjectURL (fast)
+            profilePicPreview.src = URL.createObjectURL(file);
+            profilePicPreview.classList.add('active');
+            uploadText.textContent = 'Change Profile Picture';
+
+            // No IndexedDB save here, it happens in signup form submission
+            console.log("[Profile Pic] File selected and preview updated. Actual save will happen on signup form submission.");
+        });
+
+
+        // --- ONBOARDING NAVIGATION LISTENERS ---
+        nextOnboardingBtn.addEventListener('click', () => {
+            console.log("[Onboarding] 'Next' button clicked. Current slide:", currentOnboardingSlide);
+            if (currentOnboardingSlide < totalOnboardingSlides - 1) {
+                currentOnboardingSlide++;
+                updateOnboardingSlider();
+            } else {
+                console.log("[Onboarding] Reached last slide. Finishing onboarding.");
+                finishOnboarding(); // Last slide, "Get Started"
+            }
+        });
+
+        prevOnboardingBtn.addEventListener('click', () => {
+            console.log("[Onboarding] 'Back' button clicked. Current slide:", currentOnboardingSlide);
+            if (currentOnboardingSlide > 0) {
+                currentOnboardingSlide--;
+                updateOnboardingSlider();
+            }
+        });
+
+        skipOnboardingBtn.addEventListener('click', () => {
+            console.log("[Onboarding] 'Skip' button clicked. Finishing onboarding.");
+            finishOnboarding();
+        });
+
+        onboardingDotsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('onboarding-dot')) {
+                const slideIndex = parseInt(e.target.dataset.slide);
+                if (!isNaN(slideIndex)) {
+                    console.log("[Onboarding] Dot clicked. Switching to slide:", slideIndex);
+                    currentOnboardingSlide = slideIndex;
+                    updateOnboardingSlider();
+                }
+            }
+        });
+
+        // --- Login Logic ---
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log("[Login] Login form submitted.");
+
+            showSpinner(loginSpinner);
+            loginBtn.disabled = true;
+
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                console.log("[Login] Attempting to sign in with email:", email);
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                console.log("[Login] Sign-in successful. User UID:", user.uid);
+
+                // Fetch user data to check status
+                const userRef = ref(db, `users/${user.uid}`);
+                const userSnapshot = await get(userRef);
+                const userData = userSnapshot.val();
+
+                if (userData && userData.status === 'Suspended') {
+                    console.warn("[Login] User account is suspended. Preventing login.");
+                    hideSpinner(loginSpinner);
+                    loginBtn.disabled = false;
+                    showSuspensionPopup();
+                    // Sign out the user immediately if they are suspended
+                    await auth.signOut();
+                    return; // Stop further processing
+                }
+
+                console.log("[Login] User is active. Redirecting...");
+                // The onAuthStateChanged listener will handle the redirect.
+                // Trigger a reload to ensure onAuthStateChanged picks up the new user state and redirects.
+                window.location.reload();
+
+            } catch (error) {
+                console.error("[Login] Login Error details:", error.code, "-", error.message, error);
+                let msg = 'Login failed. Please check your credentials.';
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+                    msg = 'Incorrect email or password.';
+                } else if (error.code === 'auth/invalid-email') {
+                    msg = 'Please enter a valid email address.';
+                } else if (error.code === 'auth/too-many-requests') {
+                    msg = 'Too many failed login attempts. Please try again later.';
+                }
+                showMessageBox(msg, 'error');
+            } finally {
+                hideSpinner(loginSpinner);
+                loginBtn.disabled = false;
+                console.log("[Login] Login attempt finished.");
+            }
+        });
+
+        // --- Sign-Up Logic ---
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log("[Signup] Signup form submitted.");
+            showSpinner(signupSpinner);
+            signupForm.querySelector('button[type="submit"]').disabled = true;
+            isSigningUp = true; // Set flag to prevent redirect race condition
+
+            // --- 1. Get and Validate Form Data ---
+            const firstName = document.getElementById('signupFirstName').value.trim();
+            const lastName = document.getElementById('signupLastName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const mobile = document.getElementById('signupMobile').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            const referralCodeInput = document.getElementById('signupReferralCode').value.trim().toUpperCase();
+            const gender = document.getElementById('signupGender').value;
+            const country = document.getElementById('signupCountry').value.trim();
+            const dob = document.getElementById('signupDOB').value;
+            const file = profilePicInput.files[0]; // Get the selected file
+
+            if (password !== confirmPassword) {
+                console.error("[Signup Validation] Password mismatch. Password:", password, "Confirm Password:", confirmPassword);
+                showMessageBox('Passwords do not match.', 'error');
+                hideSpinner(signupSpinner);
+                signupForm.querySelector('button[type="submit"]').disabled = false;
+                isSigningUp = false;
+                return;
+            }
+            
+            // Validate Terms & Conditions for signup
+            if (!signupAcceptTermsCheckbox.checked) {
+                console.error("[Signup Validation] Terms & Conditions not accepted.");
+                showMessageBox('You must accept the Terms & Conditions to sign up.', 'warning');
+                hideSpinner(signupSpinner);
+                signupForm.querySelector('button[type="submit"]').disabled = false;
+                isSigningUp = false;
+                return;
+            }
+
+            if (!signupForm.checkValidity()) {
+                console.error("[Signup Validation] Form validity check failed. Some required fields might be empty or invalid.");
+                showMessageBox('Please fill in all required fields correctly.', 'error');
+                hideSpinner(signupSpinner);
+                signupForm.querySelector('button[type="submit"]').disabled = false;
+                isSigningUp = false;
+                return;
+            }
+
+            try {
+                // --- 2. Check for Existing User in DB (Email and Mobile) ---
+                console.log("[Signup DB Check] Querying for existing email:", email);
+                const emailQuery = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
+                const emailSnapshot = await get(emailQuery);
+                console.log("[Signup DB Check] Email query result - snapshot exists:", emailSnapshot.exists(), "Snapshot value:", emailSnapshot.val());
+                if (emailSnapshot.exists()) {
+                    console.error("[Signup DB Check] Email already registered. Preventing signup.");
+                    throw new Error('This email is already registered. Please use a different email or log in.');
+                }
+                
+                console.log("[Signup DB Check] Querying for existing mobile number:", mobile);
+                const mobileQuery = query(ref(db, 'users'), orderByChild('mobileNumber'), equalTo(mobile));
+                const mobileSnapshot = await get(mobileQuery);
+                console.log("[Signup DB Check] Mobile query result - snapshot exists:", mobileSnapshot.exists(), "Snapshot value:", mobileSnapshot.val());
+                if (mobileSnapshot.exists()) {
+                    console.error("[Signup DB Check] Mobile number already registered. Preventing signup.");
+                    throw new Error('This mobile number is already registered. Please use a different number.');
+                }
+                
+                // --- Referral Code Validation Logic ---
+                let referredByUserId = null; // Initialize to null
+                if (referralCodeInput) {
+                    console.log("[Signup Referral] Validating referral code:", referralCodeInput);
+                    const referralCodeSnapshot = await get(ref(db, `referralCodes/${referralCodeInput}`));
+                    console.log("[Signup Referral] Referral code query result - snapshot exists:", referralCodeSnapshot.exists(), "Snapshot value:", referralCodeSnapshot.val());
+                    if (!referralCodeSnapshot.exists()) {
+                        console.error("[Signup Referral] Invalid referral code entered:", referralCodeInput);
+                        showMessageBox(`Invalid referral code "${referralCodeInput}". Please enter a valid one or leave it empty.`, 'error');
+                        hideSpinner(signupSpinner);
+                        signupForm.querySelector('button[type="submit"]').disabled = false;
+                        isSigningUp = false;
+                        return;
+                    } else {
+                        referredByUserId = referralCodeSnapshot.val();
+                        console.log("[Signup Referral] Referral code found for UID:", referredByUserId);
+                    }
+                } else {
+                    console.log("[Signup Referral] No referral code provided (optional field).");
+                }
+
+                // --- 3. Create Firebase Auth User ---
+                console.log("[Signup Auth] Attempting to create Firebase Auth user with email:", email);
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                console.log("[Signup Auth] Firebase Auth user created successfully. UID:", user.uid);
+
+                // --- 4. Process and Save Profile Picture to IndexedDB ---
+                let profilePicDbUrl = '';
+                if (file) {
+                    try {
+                        console.log("[Signup Data Prep] Processing profile picture for upload. Compressing image...");
+                        // Compress the image before saving to IndexedDB (more aggressive defaults)
+                        const compressedBase64Image = await compressImage(file, 300, 300, 0.6); // Max 300px, 60% quality
+                        console.log(`[Signup Data Prep] Image compressed. Compressed Base64 length: ${compressedBase64Image.length}. Attempting to save to IndexedDB for UID: ${user.uid}.`);
+                        await saveImageToIndexedDB(user.uid, compressedBase64Image);
+                        profilePicDbUrl = `indexeddb://${user.uid}`; // Set a special URL to indicate IndexedDB storage
+                        console.log("[Signup Data Prep] Profile picture saved to IndexedDB. URL set to:", profilePicDbUrl);
+                    } catch (indexedDBError) {
+                        console.error("[Signup Data Prep] Failed to store profile picture in IndexedDB:", indexedDBError.name, "-", indexedDBError.message, indexedDBError);
+                        // The saveImageToIndexedDB function already shows a message box for specific errors.
+                        // We'll just log here and continue without the profile pic URL.
+                        profilePicDbUrl = ''; // Ensure it's empty if save failed
+                    }
+                } else {
+                    console.log("[Signup Data Prep] No profile picture selected.");
+                }
+                
+                // --- 5. Prepare All Other Database Writes for an Atomic Operation ---
+                const newReferralCodeForUser = await generateUniqueReferralCode(8); 
+                console.log("[Signup Data Prep] Generated new referral code for user:", newReferralCodeForUser);
+
+                const courseList = Array.from({ length: 52 }, (_, i) => `course${String(i + 1).padStart(3, '0')}`);
+                const initialEnrollments = courseList.reduce((acc, courseId) => ({ ...acc, [courseId]: false }), {});
+                console.log("[Signup Data Prep] Initial course enrollments prepared.");
+
+                const updates = {};
+                updates[`users/${user.uid}`] = {
+                    firstName, lastName, email, mobileNumber: mobile,
+                    referralCode: newReferralCodeForUser,
+                    referredBy: referredByUserId,
+                    gender, country, dob, profilePicURL: profilePicDbUrl, // Use the updated profilePicDbUrl
+                    status: 'Active', // New users are 'Active' by default
+                    createdAt: new Date().toISOString()
+                };
+                console.log("[Signup Data Prep] User data prepared for Realtime Database:", updates[`users/${user.uid}`]);
+
+                updates[`referralCodes/${newReferralCodeForUser}`] = user.uid;
+                updates[`affiliate/${user.uid}`] = {
+                    totalRefer: 0, totalEarnings: 0, totalWithdrawals: 0,
+                    availablePoints: 0, totalSales: 0, referredUsers: {}
+                };
+                updates[`enrollments/${user.uid}`] = initialEnrollments;
+
+                if (referredByUserId) {
+                    console.log("[Signup Data Prep] Preparing referrer's affiliate data update for UID:", referredByUserId);
+                    const referrerAffiliateRef = ref(db, `affiliate/${referredByUserId}`);
+                    const referrerSnapshot = await get(referrerAffiliateRef);
+                    const currentTotalRefer = referrerSnapshot.child('totalRefer').val() || 0;
+                    
+                    updates[`affiliate/${referredByUserId}/totalRefer`] = currentTotalRefer + 1;
+                    updates[`affiliate/${referredByUserId}/referredUsers/${user.uid}`] = true;
+                    console.log("[Signup Data Prep] Referrer's updated affiliate data prepared:", updates[`affiliate/${referredByUserId}`]);
+                }
+
+                // --- 6. Execute the Atomic Write to Realtime Database ---
+                console.log("[Signup DB Write] Executing atomic database update with all prepared data.");
+                await update(ref(db), updates);
+                console.log("[Signup DB Write] All database updates completed successfully!");
+
+                // --- 7. Success & Redirect/Reload ---
+                showMessageBox('Sign Up successful! Redirecting...', 'success');
+                // The onAuthStateChanged listener will handle the actual redirect to LearnEra(4).html
+                // We trigger a reload here to ensure onAuthStateChanged picks up the new user state and redirects.
+                window.location.reload(); 
+
+            } catch (error) {
+                console.error("[Signup Process] An error occurred during the signup process:", error.code, "-", error.message, error);
+                let errorMessage = error.message || 'An unexpected error occurred during signup.';
+                if (error.code) {
+                    switch (error.code) {
+                        case 'auth/weak-password':
+                            errorMessage = 'Password is too weak. Please choose a stronger one (at least 6 characters).';
+                            break;
+                        case 'auth/email-already-in-use':
+                            errorMessage = 'This email is already registered. Please login or use a different email.';
+                            break;
+                        case 'auth/invalid-email':
+                            errorMessage = 'The email address is not valid. Please check the format.';
+                            break;
+                        case 'auth/operation-not-allowed':
+                            errorMessage = 'Email/Password accounts are not enabled. Please contact support.';
+                            break;
+                        default:
+                            errorMessage = `Firebase Auth Error: ${error.message} (Code: ${error.code})`;
+                            break;
+                    }
+                }
+                showMessageBox(`Sign-up failed: ${errorMessage}`, 'error');
+            } finally {
+                hideSpinner(signupSpinner);
+                signupForm.querySelector('button[type="submit"]').disabled = false;
+                isSigningUp = false;
+                console.log("[Signup Process] Signup attempt finished.");
+            }
+        });
+
+        // --- User Session Management ---
+        onAuthStateChanged(auth, async (user) => {
+            console.log("[Auth State] onAuthStateChanged fired. User:", user ? user.uid : "null", "isSigningUp flag:", isSigningUp);
+            if (user && !isSigningUp) {
+                console.log("[Auth State] User is logged in and not in the middle of a signup process. UID:", user.uid);
+                showAppLoading();
+                
+                const userRef = ref(db, `users/${user.uid}`);
+                console.log("[Auth State] Attempting to fetch user data from Realtime Database for UID:", user.uid);
+                const userSnapshot = await get(userRef);
+                console.log("[Auth State] User snapshot exists:", userSnapshot.exists(), "Snapshot value:", userSnapshot.val());
+
+                let userData = userSnapshot.val(); // Get existing data or null
+
+                // Check user status from Firebase Realtime Database
+                if (userData && userData.status === 'Suspended') {
+                    console.warn("[Auth State] User account is suspended. Preventing access.");
+                    hideAppLoading();
+                    showSuspensionPopup();
+                    // Sign out the user immediately if they are suspended
+                    await auth.signOut();
+                    return; // Stop further processing
+                }
+
+                // Check if user node doesn't exist or if essential fields are missing
+                if (!userSnapshot.exists() || !userData?.firstName || !userData?.email || !userData?.referralCode) { // Added optional chaining for safety
+                    console.warn("[Auth State] User profile in Realtime Database is missing or incomplete for UID:", user.uid, ". Attempting to create/update.");
+
+                    // Generate a referral code only if it doesn't exist in existing data
+                    let newReferralCodeForUser = userData?.referralCode;
+                    if (!newReferralCodeForUser) {
+                        newReferralCodeForUser = await generateUniqueReferralCode(8);
+                        console.log("[Auth State] Generated new referral code for user:", newReferralCodeForUser);
+                    }
+
+                    // Determine profile picture URL (prioritize IndexedDB if available)
+                    let profilePicUrl = userData?.profilePicURL || user.photoURL || '';
+                    if (user.photoURL && !profilePicUrl.startsWith('indexeddb://')) {
+                        console.log("[Auth State] User has Google photoURL and it's not IndexedDB. Attempting to fetch and save to IndexedDB.");
+                        try {
+                            const response = await fetch(user.photoURL);
+                            const blob = await response.blob();
+                            const compressedBase64 = await compressImage(blob, 300, 300, 0.6);
+                            await saveImageToIndexedDB(user.uid, compressedBase64);
+                            profilePicUrl = `indexeddb://${user.uid}`;
+                            console.log("[Auth State] Google profile picture saved to IndexedDB for existing user.");
+                        } catch (indexedDBError) {
+                            console.error("[Auth State] Failed to save Google profile picture to IndexedDB:", indexedDBError.name, "-", indexedDBError.message, indexedDBError);
+                            profilePicUrl = user.photoURL; // Fallback
+                            showMessageBox(`Warning: Could not save profile picture locally. Using online version. Error: ${indexedDBError.message}`, 'warning');
+                        }
+                    } else if (profilePicUrl.startsWith('indexeddb://')) {
+                        console.log("[Auth State] Profile picture already stored in IndexedDB. No update needed.");
+                    } else {
+                        console.log("[Auth State] No Google photoURL or already a non-IndexedDB URL. No profile picture update needed.");
+                    }
+
+
+                    const courseList = Array.from({ length: 52 }, (_, i) => `course${String(i + 1).padStart(3, '0')}`);
+                    const initialEnrollments = courseList.reduce((acc, courseId) => ({ ...acc, [courseId]: false }), {});
+
+                    const updates = {};
+                    updates[`users/${user.uid}`] = {
+                        firstName: userData?.firstName || (user.displayName ? user.displayName.split(' ')[0] : 'New'),
+                        lastName: userData?.lastName || (user.displayName ? user.displayName.split(' ').slice(1).join(' ') : 'User'),
+                        email: userData?.email || user.email,
+                        mobileNumber: userData?.mobileNumber || '',
+                        referralCode: newReferralCodeForUser,
+                        gender: userData?.gender || 'Other',
+                        country: userData?.country || '',
+                        dob: userData?.dob || '',
+                        profilePicURL: profilePicUrl,
+                        status: userData?.status || 'Active', // Default to 'Active' if not present
+                        createdAt: userData?.createdAt || new Date().toISOString()
+                    };
+                    // Only create referralCodes entry if it's new
+                    if (!userSnapshot.exists() || !userSnapshot.val()?.referralCode) {
+                        updates[`referralCodes/${newReferralCodeForUser}`] = user.uid;
+                    }
+                    
+                    // Initialize affiliate and enrollments if they don't exist
+                    if (!userSnapshot.exists() || !userSnapshot.child('affiliate').exists()) {
+                        updates[`affiliate/${user.uid}`] = {
+                            totalRefer: 0, totalEarnings: 0, totalWithdrawals: 0,
+                            availablePoints: 0, totalSales: 0, referredUsers: {}
+                        };
+                    }
+                    if (!userSnapshot.exists() || !userSnapshot.child('enrollments').exists()) {
+                         updates[`enrollments/${user.uid}`] = initialEnrollments;
+                    }
+
+                    try {
+                        console.log("[Auth State] Executing database update for user profile and related data.");
+                        await update(ref(db), updates);
+                        console.log("[Auth State] User profile and related data created/updated in Realtime Database.");
+                        // Re-fetch snapshot after update to ensure localStorage gets the latest data
+                        const updatedSnapshot = await get(userRef);
+                        userData = updatedSnapshot.val(); // Update userData with the newly saved data
+                    } catch (dbError) {
+                        console.error("[Auth State] Failed to create/update user profile in Realtime Database:", dbError.code, "-", dbError.message, dbError);
+                        showMessageBox(`Failed to load/create your profile data: ${dbError.message}. Please try again.`, 'error');
+                        // Even if DB write fails, proceed with basic localStorage to avoid infinite loading
+                    }
+                }
+
+                // Now, userData should be guaranteed to exist and be reasonably complete
+                localStorage.setItem('userFirstName', userData.firstName);
+                localStorage.setItem('userLastName', userData.lastName);
+                localStorage.setItem('userEmail', userData.email);
+                console.log("[Auth State] User data saved to localStorage.");
+
+                const currentPage = window.location.pathname.split('/').pop();
+                console.log("[Auth State] Current page:", currentPage);
+                if (currentPage === 'index.html' || currentPage === '') {
+                    console.log("[Auth State] On login/signup page. Redirecting to LearnEra(4).html.");
+                    window.location.href = 'LearnEra(4).html';
+                } else {
+                    console.log("[Auth State] Already on another page. Hiding app loading overlay.");
+                    hideAppLoading();
+                }
+            } else if (!user) {
+                console.log("[Auth State] User is logged out.");
+                hideAppLoading();
+                localStorage.removeItem('userFirstName');
+                localStorage.removeItem('userLastName');
+                localStorage.removeItem('userEmail');
+                console.log("[Auth State] LocalStorage user data cleared.");
+                
+                // IMPORTANT: This check is crucial. If the user is logged out, and they are on LearnEra(4).html,
+                // they should be redirected back to index.html.
+                if (window.location.pathname.includes('LearnEra(4).html')) {
+                    console.log("[Auth State] On protected page (LearnEra(4).html). Redirecting to index.html.");
+                    window.location.href = 'index.html';
+                } else if (hasSeenOnboarding) {
+                    console.log("[Auth State] On public page, onboarding seen. Showing initial auth container.");
+                    authMainContainer.style.display = 'flex';
+                    authMainContainer.offsetHeight; // Force reflow
+                    authMainContainer.style.opacity = '1';
+                    authMainContainer.style.pointerEvents = 'auto';
+                    switchForm('initialAuthContainer');
+                } else {
+                    console.log("[Auth State] On public page, onboarding not seen. Onboarding will be shown.");
+                }
+            }
+        });
+
+        // --- Initial Load Logic (Splash -> Onboarding/Auth) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("[DOM Load] DOMContentLoaded fired. Initializing UI states.");
+            authMainContainer.style.opacity = '0';
+            authMainContainer.style.pointerEvents = 'none';
+            authMainContainer.style.display = 'none';
+            onboardingContainer.classList.add('hidden');
+            prevOnboardingBtn.classList.add('hidden');
+
+            console.log("[DOM Load] Showing splash screen.");
+            splashScreen.classList.remove('hidden');
+            setTimeout(() => {
+                console.log("[DOM Load] Hiding splash screen after 3 seconds.");
+                splashScreen.classList.add('hidden');
+                
+                if (hasSeenOnboarding) {
+                    console.log("[DOM Load] Onboarding already seen. Checking auth state for main content.");
+                    onboardingContainer.classList.add('hidden');
+                    // No need to explicitly show authMainContainer here, onAuthStateChanged will handle it
+                    // if the user is not logged in.
+                } else {
+                    console.log("[DOM Load] Onboarding not seen. Showing onboarding container.");
+                    onboardingContainer.classList.remove('hidden');
+                    updateOnboardingSlider();
+                }
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const referralCode = urlParams.get('referralCode');
+
+                if (referralCode) {
+                    console.log("[DOM Load] Referral code found in URL:", referralCode);
+                    if (!hasSeenOnboarding) {
+                        setTimeout(() => {
+                            console.log("[DOM Load] Applying referral code after onboarding delay.");
+                            switchForm('signupContainer');
+                            signupReferralCodeInput.value = referralCode.toUpperCase();
+                            const event = new Event('input', { bubbles: true });
+                            signupReferralCodeInput.dispatchEvent(event);
+                        }, 500);
+                    } else {
+                        console.log("[DOM Load] Applying referral code immediately (onboarding skipped/seen).");
+                        switchForm('signupContainer');
+                        signupReferralCodeInput.value = referralCode.toUpperCase();
+                        const event = new Event('input', { bubbles: true });
+                        signupReferralCodeInput.dispatchEvent(event);
+                    }
+                } else {
+                    console.log("[DOM Load] No referral code found in URL.");
+                }
+
+            }, 3000);
+
+        });
+
+        // Adjust onboarding slider width on window resize
+        window.addEventListener('resize', () => {
+            if (!onboardingContainer.classList.contains('hidden')) {
+                console.log("[UI] Window resized. Updating onboarding slider.");
+                updateOnboardingSlider();
+            }
+        });
+
+    </script>
+</body>
+</html>
