@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LearnEra - Board Contents</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css?family=Inter:600,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
+  <!-- Lottie Player CDN for animations -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    :root {
+        /* Base Neumorphism inherited from LearnEra.html */
+        --body-bg: #e6edf7; 
+        --neu-shadow-light: #ffffff;
+        --neu-shadow-dark: #c8d3e4;
+        --text-color: #8A2BE2; 
+        
+        --search-bar-bg: var(--body-bg);
+        --search-icon-theme: #FF69B4;
+        --search-input-color: #8A2BE2;
+        --search-input-placeholder-color: #a3b1c6;
+        --search-bar-inner-shadow: inset 4px 4px 8px rgba(255, 105, 180, 0.15), inset -4px -4px 8px var(--neu-shadow-light);
+
+        --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+        --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+        --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+        --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+
+        /* Board specifics injected dynamically via JS */
+        --board-color: #FF69B4;
+        --header-gradient: linear-gradient(45deg, #6a008f, #ff007f);
+        --active-cat-gradient: linear-gradient(90deg, #ff007f 0%, #ff69b4 100%);
+        --book-pdf-gradient: linear-gradient(90deg, #ff007f 0%, #ff69b4 100%);
+        --solution-pdf-gradient: linear-gradient(90deg, #00cfff 0%, #89CFF0 100%);
+    }
+
+    body[data-theme="dark"] {
+        --body-bg: #1e1e24; 
+        --neu-shadow-dark: #101014;
+        --text-color: #ffffff80; 
+        
+        --search-icon-theme: #bb86fc;
+        --search-bar-inner-shadow: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+
+        --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+        --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+        --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+        --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+    }
+
+    body[data-theme="dark"] .board-neumorphic-card {
+        box-shadow: 8px 8px 16px #000, -8px -8px 16px #1a1a20 !important;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+      background-color: var(--body-bg);
+      color: var(--text-color);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideInUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Global Header */
+    .global-header {
+      width: 100%;
+      background: var(--header-gradient);
+      padding: 15px 25px;
+      text-align: center;
+      font-size: 1.5em;
+      font-weight: 600;
+      color: white;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .global-header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 3s infinite;
+    }
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* Refined Sharper Back Button */
+    .global-header .back-button {
+      position: absolute;
+      left: 20px;
+      background: var(--body-bg);
+      border: none;
+      padding: 8px 15px;
+      border-radius: 20px;
+      color: var(--text-color);
+      font-size: 0.9em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      z-index: 3;
+      box-shadow: 3px 3px 6px var(--neu-shadow-dark), -3px -3px 6px var(--neu-shadow-light);
+    }
+    .global-header .back-button:active {
+      transform: translateY(0);
+      box-shadow: inset 2px 2px 4px var(--neu-shadow-dark), inset -2px -2px 4px var(--neu-shadow-light);
+    }
+
+    .global-header h1 {
+      color: white;
+      font-size: 1em;
+      font-weight: 600;
+      margin: 0;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    .fixed-controls {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: var(--body-bg);
+      z-index: 90;
+      padding: 15px 20px;
+      transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    .fixed-controls.hidden {
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Neumorphism Search Bar */
+    .search-bar-container {
+      width: 100%;
+      background: var(--search-bar-bg);
+      border-radius: 25px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      box-shadow: var(--search-bar-inner-shadow);
+      max-width: 400px;
+    }
+    .search-bar-container input {
+      flex-grow: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--search-input-color);
+      font-size: 1em;
+      font-weight: 500;
+    }
+    .search-bar-container input::placeholder {
+      color: var(--search-input-placeholder-color);
+    }
+    .search-icon-mask {
+      width: 20px; height: 20px;
+      background-color: var(--search-icon-theme);
+      -webkit-mask: url('https://ik.imagekit.io/lssafvcmr/magnifying-glass%20(1).png') no-repeat center / contain;
+      mask: url('https://ik.imagekit.io/lssafvcmr/magnifying-glass%20(1).png') no-repeat center / contain;
+      opacity: 0.7;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+
+    /* Category Buttons (horizontal scroll) */
+    .category-buttons-horizontal {
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 10px;
+      gap: 10px;
+      justify-content: flex-start;
+      width: 100%;
+    }
+    .category-btn {
+      flex-shrink: 0;
+      background: var(--body-bg);
+      border: none;
+      border-radius: 20px;
+      padding: 10px 20px;
+      color: var(--text-color);
+      font-size: 0.9em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--card-shadow-micro);
+      white-space: nowrap;
+    }
+    .category-btn:active {
+      transform: scale(0.95);
+      box-shadow: var(--card-shadow-inset);
+    }
+    .category-btn.active {
+      background: var(--active-cat-gradient);
+      color: white;
+      box-shadow: none;
+    }
+
+    /* Main Content Area */
+    .content-section {
+      width: calc(100% - 40px);
+      max-width: 500px;
+      margin: 20px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      z-index: 1;
+      padding: 0;
+    }
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Neumorphic Cards matching LearnEra's "For You" cards */
+    .board-neumorphic-card {
+      background: var(--body-bg);
+      border-radius: 20px;
+      box-shadow: var(--card-shadow);
+      padding: 20px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border: 4px solid var(--body-bg);
+      transition: all 0.3s ease-in-out;
+      animation: slideInUp 0.6s ease-out forwards;
+      opacity: 0;
+    }
+    .board-neumorphic-card:hover {
+      transform: translateY(-5px);
+    }
+    .board-card-class {
+      margin: 0;
+      font-size: 1.25rem;
+      color: var(--board-color);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.4rem;
+    }
+    .board-card-subject {
+      margin: 0;
+      font-size: 1.05rem;
+      color: var(--text-color);
+      opacity: 0.95;
+      font-weight: 500;
+    }
+    .board-neumorphic-card p {
+      margin: 0.1rem 0;
+      color: var(--text-color);
+      opacity: 0.8;
+      font-size: 0.95rem;
+    }
+    .board-actions {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    /* PDF Buttons */
+    .board-actions a {
+      flex-grow: 1;
+      text-align: center;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.8rem 1.2rem;
+      border-radius: 12px;
+      transition: all 0.2s ease-in-out;
+      box-shadow: var(--card-shadow-sm);
+    }
+    .board-book-pdf-btn {
+      background: var(--book-pdf-gradient);
+      color: #fff;
+    }
+    .board-book-pdf-btn:active {
+      transform: scale(0.95);
+    }
+    .board-solution-pdf-btn {
+      background: var(--solution-pdf-gradient);
+      color: #fff;
+    }
+    .board-solution-pdf-btn:active {
+      transform: scale(0.95);
+    }
+
+    .no-results {
+      text-align: center;
+      color: var(--text-color);
+      opacity: 0.7;
+      margin: 2rem 0;
+      font-size: 1.1rem;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .loading-spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        display: none;
+        background: transparent;
+        width: 150px;
+        height: 150px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .loading-spinner lottie-player {
+        width: 100%;
+        height: 100%;
+    }
+
+    .category-buttons-horizontal::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+        display: none;
+    }
+    .category-buttons-horizontal, body {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    @media (max-width: 768px) {
+      .global-header .back-button { left: 15px; padding: 6px 12px; font-size: 0.8em; }
+      .global-header h1 { font-size: 0.8em; }
+      .fixed-controls { padding: 10px 15px; gap: 15px; }
+      .search-bar-container { padding: 8px 15px; }
+      .search-bar-container input { font-size: 0.9em; }
+      .category-buttons-horizontal { gap: 10px; }
+      .category-btn { padding: 8px 18px; font-size: 0.9em; }
+      .content-section { width: calc(100% - 20px); margin: 15px auto; }
+      .board-neumorphic-card { padding: 15px 12px; }
+      .board-card-class { font-size: 1.1rem; }
+      .board-card-subject { font-size: 0.95rem; }
+      .board-actions a { padding: 0.6rem 1rem; font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="loadingSpinner" class="loading-spinner">
+      <lottie-player src="Loading.json" background="transparent" speed="1" loop autoplay></lottie-player>
+  </div>
+
+  <header class="global-header">
+      <button class="back-button" onclick="goBack()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Back
+      </button>
+      <h1 id="boardTitle">Board</h1>
+  </header>
+
+  <div id="fixedControls" class="fixed-controls">
+      <div class="search-bar-container">
+          <div class="search-icon-mask"></div>
+          <input type="text" id="searchInput" placeholder="Search content..." autocomplete="off">
+      </div>
+
+      <div class="category-buttons-horizontal" id="filterRow">
+          <button class="category-btn active" data-type="all">All</button>
+          <button class="category-btn" data-type="classes">Classes</button>
+          <button class="category-btn" data-type="subjects">Subjects</button>
+          <button class="category-btn" data-type="streams">Streams</button>
+          <button class="category-btn" data-type="books">Books</button>
+          <button class="category-btn" data-type="solutions">Solutions</button>
+          <button class="category-btn" data-medium="English">English Medium</button>
+          <button class="category-btn" data-medium="Hindi">Hindi Medium</button>
+      </div>
+  </div>
+
+  <div class="content-section" id="contentArea">
+    <div class="card-list" id="cardList" style="display:none;"></div>
+    <div class="no-results" id="noResults" style="display:none;">No records found.</div>
+  </div>
+
+  <script>
+    function goBack() {
+        window.parent.postMessage('closeHSContent', '*');
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const BOARD_NAME = urlParams.get('board') || 'CGBSE';
+    const THEME = urlParams.get('theme') || 'default';
+    
+    document.body.setAttribute('data-theme', THEME);
+    document.getElementById('boardTitle').textContent = `${BOARD_NAME} Board`;
+
+    // Dynamic Board Theming Logic
+    let root = document.documentElement;
+    if(BOARD_NAME === 'CGBSE') {
+        root.style.setProperty('--board-color', '#FF69B4');
+        root.style.setProperty('--header-gradient', 'linear-gradient(45deg, #6a008f, #ff007f)');
+        root.style.setProperty('--active-cat-gradient', 'linear-gradient(90deg, #ff007f 0%, #ff69b4 100%)');
+        root.style.setProperty('--book-pdf-gradient', 'linear-gradient(90deg, #ff007f 0%, #ff69b4 100%)');
+        root.style.setProperty('--solution-pdf-gradient', 'linear-gradient(90deg, #00cfff 0%, #89CFF0 100%)');
+    } else if(BOARD_NAME === 'CBSE') {
+        root.style.setProperty('--board-color', '#1E90FF');
+        root.style.setProperty('--header-gradient', 'linear-gradient(45deg, #000080, #00cfff)');
+        root.style.setProperty('--active-cat-gradient', 'linear-gradient(45deg, #007bff, #00cfff)');
+        root.style.setProperty('--book-pdf-gradient', 'linear-gradient(90deg, #00cfff 0%, #89CFF0 100%)');
+        root.style.setProperty('--solution-pdf-gradient', 'linear-gradient(90deg, #ff007f 0%, #ff69b4 100%)');
+    } else if(BOARD_NAME === 'NCERT') {
+        root.style.setProperty('--board-color', '#8A2BE2');
+        root.style.setProperty('--header-gradient', 'linear-gradient(45deg, #30004a, #8a2be2)');
+        root.style.setProperty('--active-cat-gradient', 'linear-gradient(90deg, #8A2BE2 0%, #BB86FC 100%)');
+        root.style.setProperty('--book-pdf-gradient', 'linear-gradient(90deg, #8A2BE2 0%, #BB86FC 100%)');
+        root.style.setProperty('--solution-pdf-gradient', 'linear-gradient(90deg, #FF69B4 0%, #FFB6C1 100%)');
+    }
+
+    const AIRTABLE_API_KEY = 'pat4Diu9A7xCD5Jal.2f772d29d849fb3d75f726d95925a9a832232e61c2d3f9ef5ea78523637c0732';
+    const AIRTABLE_BASE_ID = 'app06DCrKCbLfHMMB';
+    const AIRTABLE_TABLE_NAME = BOARD_NAME; 
+
+    const globalHeader = document.querySelector('.global-header');
+    const fixedControls = document.getElementById('fixedControls');
+    const searchInput = document.getElementById('searchInput');
+    const filterRow = document.getElementById('filterRow');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const cardList = document.getElementById('cardList');
+    const noResults = document.getElementById('noResults');
+
+    let allRecords = [];
+    let filteredRecords = [];
+    let activeFilter = 'all';
+    let activeMedium = null;
+    let searchTerm = '';
+    let fuse; 
+
+    const showLoading = (show) => {
+        if (show) {
+            loadingSpinner.style.display = 'flex';
+            loadingSpinner.querySelector('lottie-player').play();
+        } else {
+            loadingSpinner.style.display = 'none';
+            loadingSpinner.querySelector('lottie-player').stop();
+        }
+    };
+
+    async function fetchAirtableRecords() {
+      let records = [];
+      let offset = '';
+      try {
+        do {
+          let url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}?pageSize=100${offset ? '&offset=' + offset : ''}`;
+          let response = await fetch(url, {
+            headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` }
+          });
+          if (!response.ok) {
+            throw new Error(`Airtable API error: ${response.status} ${response.statusText}`);
+          }
+          let data = await response.json();
+          records = records.concat(data.records.map(r => r.fields));
+          offset = data.offset || '';
+        } while (offset);
+      } catch (error) {
+        console.error("Failed to fetch records:", error);
+        throw error; 
+      }
+      return records;
+    }
+
+    function renderCards(records) {
+      cardList.innerHTML = '';
+      if (!records.length) {
+        noResults.style.display = '';
+        cardList.style.display = 'none';
+        return;
+      }
+      noResults.style.display = 'none';
+      cardList.style.display = '';
+      let delay = 0;
+
+      for (const r of records) {
+        let bookPDF = r.BookPDF ? `<a href="${r.BookPDF}" target="_blank" class="board-book-pdf-btn">Book PDF</a>` : '';
+        let solutionPDF = r.SolutionPDF ? `<a href="${r.SolutionPDF}" target="_blank" class="board-solution-pdf-btn">Solution PDF</a>` : '';
+        let streamLine = '';
+        if (r.Stream && r.Stream.trim().toLowerCase() !== 'nothing') {
+          streamLine = `<p><strong>Stream:</strong> ${r.Stream}</p>`;
+        }
+
+        let classDisplay = r.Class ? r.Class.toString().trim() : '-';
+        if (classDisplay !== '-' && !classDisplay.toLowerCase().startsWith('class ')) {
+            if (/^\d+$/.test(classDisplay) || /^(I|V|X|L|C|D|M)+$/i.test(classDisplay)) {
+                classDisplay = `Class ${classDisplay}`;
+            }
+        }
+
+        const cardHtml = `
+          <div class="board-neumorphic-card" style="animation-delay: ${delay}ms;">
+            <h3 class="board-card-class">${classDisplay}</h3>
+            <p class="board-card-subject"><strong>Subject:</strong> ${r.Subject || 'Unknown Subject'}</p>
+            ${streamLine}
+            <p><strong>Medium:</strong> ${r.Medium || '-'}</p>
+            <div class="board-actions">
+              ${bookPDF}
+              ${solutionPDF}
+            </div>
+          </div>
+        `;
+        cardList.innerHTML += cardHtml;
+        delay += 100;
+      }
+    }
+
+    function debounce(func, delay) {
+      let timeout;
+      return function(...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), delay);
+      };
+    }
+
+    const fuseSearchOptions = {
+        keys: [
+            { name: 'Class', weight: 0.8 }, 
+            { name: 'Subject', weight: 0.9 }, 
+            { name: 'Stream', weight: 0.5 },
+            { name: 'Medium', weight: 0.3 },
+            { name: 'syntheticClassText', getFn: (item) => `Class ${item.Class}`.toLowerCase(), weight: 0.7 }
+        ],
+        threshold: 0.25,
+        ignoreLocation: true,
+        findAllMatches: true,
+        caseSensitive: false,
+    };
+
+    function applyFilters() {
+      let recordsToProcess = allRecords;
+
+      if (activeMedium) {
+        recordsToProcess = recordsToProcess.filter(r => r.Medium && r.Medium.toLowerCase() === activeMedium.toLowerCase());
+      }
+
+      if (activeFilter === 'classes') {
+        recordsToProcess = recordsToProcess.filter(r => r.Class);
+      } else if (activeFilter === 'subjects') {
+        recordsToProcess = recordsToProcess.filter(r => r.Subject);
+      } else if (activeFilter === 'streams') {
+        recordsToProcess = recordsToProcess.filter(r => r.Stream && r.Stream.trim().toLowerCase() !== 'nothing');
+      } else if (activeFilter === 'books') {
+        recordsToProcess = recordsToProcess.filter(r => r.BookPDF);
+      } else if (activeFilter === 'solutions') {
+        recordsToProcess = recordsToProcess.filter(r => r.SolutionPDF);
+      }
+
+      if (searchTerm && fuse) {
+        const currentFuse = new Fuse(recordsToProcess, fuseSearchOptions);
+        const fuseResults = currentFuse.search(searchTerm);
+        filteredRecords = fuseResults.map(result => result.item);
+      } else {
+        filteredRecords = recordsToProcess;
+      }
+
+      renderCards(filteredRecords);
+    }
+
+    function setupFilterListeners() {
+      filterRow.querySelectorAll('.category-btn').forEach(btn => {
+        btn.onclick = function() {
+          filterRow.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          if (btn.dataset.type) {
+            activeFilter = btn.dataset.type;
+            activeMedium = null;
+            filterRow.querySelectorAll('.category-btn[data-medium]').forEach(b => b.classList.remove('active'));
+          }
+          if (btn.dataset.medium) {
+            activeMedium = btn.dataset.medium;
+            activeFilter = 'all';
+            filterRow.querySelectorAll('.category-btn[data-type]').forEach(b => b.classList.remove('active'));
+            const allTypeBtn = filterRow.querySelector('.category-btn[data-type="all"]');
+            if (allTypeBtn) allTypeBtn.classList.add('active');
+          }
+          searchTerm = '';
+          searchInput.value = '';
+          applyFilters();
+        }
+      });
+
+      searchInput.oninput = debounce(function(e) {
+        searchTerm = e.target.value.trim();
+        applyFilters();
+      }, 300);
+    }
+
+    async function init() {
+      showLoading(true);
+      cardList.style.display = 'none';
+      try {
+        allRecords = await fetchAirtableRecords();
+        fuse = new Fuse(allRecords, fuseSearchOptions);
+      } catch (e) {
+        console.error("Error during initialization:", e);
+        noResults.style.display = '';
+        noResults.textContent = 'Failed to load data. Please check your network connection. Error: ' + e.message;
+        showLoading(false);
+        return;
+      }
+      
+      showLoading(false);
+      applyFilters();
+    }
+
+    let lastScrollY = 0;
+
+    function updateBodyPadding() {
+        const headerHeight = globalHeader.offsetHeight;
+        fixedControls.style.top = `${headerHeight}px`;
+        const fixedControlsHeight = fixedControls.offsetHeight;
+        document.body.style.paddingTop = `${headerHeight + fixedControlsHeight + 20}px`;
+    }
+
+    window.addEventListener('resize', updateBodyPadding);
+
+    window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
+        const headerHeight = globalHeader.offsetHeight;
+        const fixedControlsTotalHeight = fixedControls.offsetHeight + headerHeight;
+
+        if (currentScrollY > lastScrollY && currentScrollY > fixedControlsTotalHeight) {
+            fixedControls.classList.add('hidden');
+        } else if (currentScrollY < lastScrollY || currentScrollY <= headerHeight) {
+            fixedControls.classList.remove('hidden');
+        }
+        lastScrollY = currentScrollY;
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setupFilterListeners();
+        init();
+        updateBodyPadding();
+    });
+  </script>
+</body>
+</html>
