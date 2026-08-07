@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Basic Laws for Humanity</title>
+    
+    <!-- External Font Assets -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- React & Babel CDN Engine -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <!-- Early theme bootstrap -->
+    <script>
+        (function () {
+            try {
+                const savedTheme = localStorage.getItem('appThemeMode') || 'system';
+                const isDark = savedTheme === 'dark' ||
+                    (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const darkStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+                    document.documentElement.setAttribute('data-dark-text', darkStyle);
+                } else {
+                    document.documentElement.removeAttribute('data-dark-text');
+                }
+            } catch (e) {}
+            const savedLang = localStorage.getItem('appLanguageSelection') || 'en';
+            document.documentElement.setAttribute('data-lang', savedLang);
+        })();
+    </script>
+
+    <style>
+        /* CSS Reset Elements */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        /* Color Tokens & Global Variables */
+        :root {
+            --body-bg: #e6edf7; 
+            --neu-shadow-light: #ffffff;
+            --neu-shadow-dark: #c8d3e4;
+            
+            --text-color: #2d3748; 
+            --sub-text-color: #718096; 
+            --blue: var(--learnera-purple);
+            --select-active-color: var(--learnera-purple);
+            --learnera-purple: #7c3aed;
+            --learnera-pink: #ec4899;
+            --themed-blue: var(--blue);
+            --header-outline-start: var(--learnera-purple);
+            --header-outline-end: var(--learnera-pink);
+            --icon-gradient-start: var(--learnera-purple);
+            --icon-gradient-end: var(--learnera-pink);
+            
+            --search-bar-bg: var(--body-bg);
+            --search-icon-theme: var(--learnera-purple);
+            --search-input-color: var(--learnera-purple);
+            --search-input-placeholder-color: #a3b1c6;
+
+            /* Neumorphic Shadow tokens */
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+            
+            --modal-overlay-bg: rgba(0, 0, 0, 0.25);
+            --transition-theme: background-color 0.8s ease, color 0.8s ease, box-shadow 0.8s ease, border-color 0.8s ease;
+        }
+
+        /* Standard Dark Mode Modifiers */
+        html[data-theme="dark"] {
+            --body-bg: #1e1e24; 
+            --neu-shadow-dark: #101014;
+            --neu-shadow-light: rgba(255, 255, 255, 0.05);
+            
+            --text-color: #d1d9e6; 
+            --sub-text-color: #a3b1c6; 
+            --search-icon-theme: var(--learnera-purple);
+            --search-input-color: var(--learnera-purple);
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px rgba(255, 255, 255, 0.02);
+            
+            --modal-overlay-bg: rgba(0, 0, 0, 0.45);
+        }
+
+        /* Deep Dark's monochrome setting replaces blue accent and outline */
+        html[data-theme="dark"][data-dark-text]:not([data-dark-text="colorful"]) {
+            --blue: #ffffff;
+            --select-active-color: #ffffff;
+            --themed-blue: #ffffff;
+            --search-input-color: #ffffff;
+            --search-input-placeholder-color: #9b9b9f;
+            --header-outline-start: #080808;
+            --header-outline-end: #ffffff;
+            --icon-gradient-start: #080808;
+            --icon-gradient-end: #ffffff;
+        }
+
+        ::-webkit-scrollbar {
+            display: none !important;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            overflow: hidden; 
+            overscroll-behavior: none;
+            font-family: 'Poppins', sans-serif !important;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-items: center;
+            font-size: 13px; 
+            transition: var(--transition-theme);
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
+
+        #root {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Desktop & Mobile Main Container */
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 15px 0 15px; 
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            justify-content: flex-start;
+            height: 100%;
+            max-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Neumorphic header card with gradient outline */
+        .header-card {
+            flex-shrink: 0;
+            border-top-left-radius: 0 !important;
+            border-top-right-radius: 0 !important;
+            border-bottom-left-radius: 20px !important;
+            border-bottom-right-radius: 20px !important;
+            padding: 20px;
+            box-shadow: none !important;
+            border: 1.5px solid transparent !important;
+            background:
+                linear-gradient(var(--body-bg), var(--body-bg)) padding-box,
+                linear-gradient(110deg, var(--header-outline-start), var(--header-outline-end)) border-box !important;
+            outline: none !important;
+            border-top: none !important;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: var(--transition-theme);
+            width: 100%;
+            position: relative;
+            z-index: 100;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+
+            .header-card {
+                width: 100% !important;
+                padding: 18px 15px !important;
+            }
+
+            .laws-scroller-container {
+                padding: 0 15px !important;
+            }
+        }
+
+        /* Custom Jurisdiction Trigger Pill */
+        .custom-select-trigger {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 14px;
+            background: var(--body-bg);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 0.95em;
+            font-weight: 500;
+            box-shadow: var(--card-shadow-micro);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .custom-select-trigger:active {
+            box-shadow: var(--card-shadow-inset) !important;
+            transform: scale(0.98);
+        }
+
+        .custom-select-trigger::after {
+            content: "▼";
+            font-size: 0.7em;
+            color: transparent;
+            background: linear-gradient(110deg, var(--icon-gradient-start), var(--icon-gradient-end));
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        /* Search Row & Bar */
+        .search-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            transition: gap 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .search-bar-container {
+            flex: 1;
+            min-width: 0;
+            background: var(--search-bar-bg);
+            border-radius: 25px;
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: var(--card-shadow-micro);
+            transition: box-shadow 0.3s ease, flex 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .search-bar-container:focus-within {
+            border-color: transparent;
+            box-shadow: var(--card-shadow-inset);
+            background:
+                linear-gradient(var(--search-bar-bg), var(--search-bar-bg)) padding-box,
+                linear-gradient(110deg, var(--header-outline-start), var(--header-outline-end)) border-box;
+        }
+
+        .search-icon-mask {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(110deg, var(--icon-gradient-start), var(--icon-gradient-end));
+            -webkit-mask: url('https://ik.imagekit.io/lssafvcmr/magnifying-glass%20(1).png') no-repeat center / contain;
+            mask: url('https://ik.imagekit.io/lssafvcmr/magnifying-glass%20(1).png') no-repeat center / contain;
+            opacity: 0.9;
+            margin-right: 10px;
+            flex-shrink: 0;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-bar-container input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: transparent;
+            background-image: linear-gradient(110deg, var(--icon-gradient-start), var(--icon-gradient-end));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            caret-color: var(--learnera-pink);
+            font-size: 0.95em;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif !important;
+            transition: color 0.3s ease;
+        }
+
+        .search-bar-container input::placeholder {
+            color: var(--search-input-placeholder-color);
+            -webkit-text-fill-color: var(--search-input-placeholder-color);
+            font-weight: 500;
+        }
+
+        /* Filter Toggle Button */
+        .filter-toggle-btn {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            cursor: pointer;
+            background: var(--body-bg);
+            color: var(--blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--card-shadow-micro);
+            transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                        opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                        margin 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                        box-shadow 0.3s ease, transform 0.2s ease, border-color 0.3s ease;
+        }
+
+        .filter-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: url(#learneraIconGradient) !important;
+            color: var(--themed-blue) !important;
+            transition: stroke 0.3s ease;
+        }
+
+        .filter-toggle-btn:active {
+            transform: scale(0.92);
+            box-shadow: var(--card-shadow-inset);
+        }
+
+        .filter-toggle-btn.active {
+            box-shadow: var(--card-shadow-inset) !important;
+            color: var(--blue);
+            border: 1px solid transparent !important;
+            background: 
+                linear-gradient(var(--body-bg), var(--body-bg)) padding-box,
+                linear-gradient(110deg, var(--icon-gradient-start), var(--icon-gradient-end)) border-box !important;
+        }
+
+        .search-row.search-active .filter-toggle-btn {
+            width: 0 !important;
+            opacity: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            pointer-events: none !important;
+        }
+
+        .search-row.search-active {
+            gap: 0 !important;
+        }
+
+        /* Categories Filter Scroller */
+        .categories-filter-wrapper {
+            display: flex;
+            overflow-x: auto;
+            width: 100%;
+            padding: 6px 2px 4px 2px;
+            gap: 10px;
+            max-height: 100px;
+            opacity: 1;
+            transition: max-height 0.35s ease, opacity 0.3s ease, padding 0.35s ease, margin 0.35s ease;
+        }
+
+        .categories-filter-wrapper.collapsed,
+        .search-row.search-active ~ .categories-filter-wrapper {
+            max-height: 0;
+            opacity: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .categories-filter-wrapper::-webkit-scrollbar { display: none; }
+
+        .category-pill {
+            flex-shrink: 0;
+            background: var(--body-bg);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 6px 16px;
+            margin: 2px 0;
+            color: var(--text-color);
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: var(--card-shadow-micro);
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .category-pill.active {
+            box-shadow: var(--card-shadow-inset);
+            border: 1px solid transparent !important;
+            background: 
+                linear-gradient(var(--body-bg), var(--body-bg)) padding-box,
+                linear-gradient(110deg, var(--icon-gradient-start), var(--icon-gradient-end)) border-box !important;
+            font-weight: 700;
+        }
+
+        .category-pill.active span {
+            background-image: linear-gradient(110deg, var(--icon-gradient-start), var(--icon-gradient-end));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Laws Cards List filling parent height */
+        .laws-scroller-container {
+            position: relative;
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            margin-top: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .laws-scroller {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 4px 10px 4px;
+            scroll-behavior: smooth;
+        }
+
+        .animated-item {
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+            opacity: 0;
+            transform: scale(0.7);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            will-change: transform, opacity;
+        }
+
+        .animated-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .animated-item.in-view {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Law Card with 1px Grey Outline */
+        .law-item-card {
+            background: var(--body-bg);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: var(--card-shadow-micro);
+            border: 1px solid rgba(128, 128, 128, 0.25);
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            text-align: left;
+        }
+
+        .law-item-card.selected {
+            box-shadow: var(--card-shadow-inset);
+        }
+
+        .law-item-card:active:not(.skeleton-loading) {
+            box-shadow: var(--card-shadow-inset) !important;
+            transform: scale(0.98);
+        }
+
+        .law-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .law-item-badge {
+            font-size: 0.68em;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: linear-gradient(110deg, var(--icon-gradient-start), var(--icon-gradient-end));
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        /* Law Title with Gradient (3-5 words max) */
+        .law-item-title {
+            font-size: 1.05em;
+            font-weight: 700;
+            background: linear-gradient(110deg, var(--icon-gradient-start), var(--icon-gradient-end));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.35;
+        }
+
+        .law-item-excerpt {
+            font-size: 0.82em;
+            color: var(--sub-text-color);
+            line-height: 1.45;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Overlay Popup Modal with Blur */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: var(--modal-overlay-bg) !important;
+            backdrop-filter: blur(5px) !important;
+            -webkit-backdrop-filter: blur(5px) !important;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 20000;
+        }
+
+        .custom-modal-overlay.show {
+            display: flex !important;
+        }
+
+        .custom-modal {
+            background: var(--body-bg);
+            border-radius: 24px;
+            padding: 22px;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            width: 90%;
+            max-width: 460px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: none !important;
+        }
+
+        .modal-body-scroller {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 5px;
+            max-height: 68vh;
+            overflow-y: auto;
+            padding: 4px;
+            scroll-behavior: smooth;
+        }
+
+        .modal-body-scroller .animated-item {
+            margin-bottom: 4px;
+        }
+
+        .modal-law-title {
+            font-size: 1.3em;
+            font-weight: 800;
+            background: linear-gradient(110deg, var(--icon-gradient-start), var(--icon-gradient-end));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+
+        /* Inset padding cards in detail modal */
+        .modal-info-card {
+            background: var(--body-bg);
+            padding: 10px 14px;
+            border-radius: 14px;
+            box-shadow: var(--settings-shadow-inset-sharp);
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            width: 100%;
+        }
+
+        .modal-info-label {
+            font-size: 0.72em;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: transparent;
+            background: linear-gradient(110deg, var(--icon-gradient-start), var(--icon-gradient-end));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-info-value {
+            font-size: 0.9em;
+            font-weight: 600;
+            color: var(--text-color);
+            line-height: 1.4;
+        }
+
+        .modal-law-subpoints {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: var(--body-bg);
+            padding: 12px 14px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow-micro);
+            border: 1px solid rgba(255,255,255,0.2);
+            width: 100%;
+        }
+
+        .modal-subpoint-item {
+            font-size: 0.82em;
+            line-height: 1.45;
+            color: var(--text-color);
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-subpoint-item i {
+            color: transparent;
+            background: linear-gradient(110deg, var(--icon-gradient-start), var(--icon-gradient-end));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+
+        .back-pill-button {
+            position: relative;
+            background: var(--body-bg);
+            color: var(--text-color);
+            border: 2px solid var(--body-bg);
+            border-radius: 16px;
+            padding: 12px 16px;
+            cursor: pointer;
+            box-shadow: var(--card-shadow-micro), inset 1px 1px 2px rgba(255,255,255,0.7);
+            transition: transform 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 6px;
+        }
+
+        .back-pill-button:active {
+            transform: scale(0.96);
+            box-shadow: var(--card-shadow-inset) !important;
+        }
+
+        .sharp-inner-item {
+            background: var(--body-bg) !important;
+            color: var(--text-color) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: var(--card-shadow-micro) !important;
+            border-radius: 12px !important;
+            padding: 10px 14px !important;
+            font-size: 0.92em !important;
+            font-weight: 500 !important;
+            margin-bottom: 0 !important;
+            text-align: left;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            transition: border 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .sharp-inner-item.selected {
+            box-shadow: var(--pressed-shadow) !important;
+            border: 1px solid transparent !important;
+            background: 
+                linear-gradient(var(--body-bg), var(--body-bg)) padding-box,
+                linear-gradient(110deg, var(--icon-gradient-start), var(--icon-gradient-end)) border-box !important;
+            font-weight: 700 !important;
+        }
+
+        /* Universal Laws SVG Icon Gradient */
+        .universal-laws-svg {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .universal-laws-svg path,
+        .universal-laws-svg circle,
+        .universal-laws-svg line {
+            stroke: url(#universalIconGradient);
+        }
+
+        /* Skeleton Shimmer Loading */
+        .skeleton-loading {
+            background: var(--body-bg) !important;
+            border-color: transparent !important;
+            box-shadow: var(--settings-shadow-inset-sharp) !important;
+            min-height: 85px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+        }
+
+        .skeleton-loading::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -150%;
+            width: 150%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+            animation: skeleton-shimmer-animation 1.5s infinite;
+        }
+
+        @keyframes skeleton-shimmer-animation {
+            0% { left: -150%; }
+            100% { left: 150%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="root" style="width: 100%; height: 100%;"></div>
+
+    <script type="text/babel">
+        // Sound FX Engine
+        (function initDashboardSoundFX(){
+            const LS_MASTER = 'touchSoundsEnabled';
+            let _ac = null;
+
+            function getAC(){
+                if (_ac) return _ac;
+                try {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (Ctx) { _ac = new Ctx(); }
+                } catch(e){}
+                return _ac;
+            }
+
+            function synthClick(n){
+                const ac = getAC();
+                if (!ac) return;
+                if (ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                const t0 = ac.currentTime;
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(n === 2 ? 450 : 750, t0);
+                gain.gain.setValueAtTime(0.0001, t0);
+                gain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.05);
+                osc.connect(gain).connect(ac.destination);
+                osc.start(t0);
+                osc.stop(t0 + 0.06);
+            }
+
+            window.playTouchSound = function(n) {
+                const isMasterOn = localStorage.getItem(LS_MASTER) === '1' || localStorage.getItem(LS_MASTER) === null;
+                if (!isMasterOn) return;
+                synthClick(n);
+            };
+        })();
+
+        // Firebase Setup - Points to admin/BasicLaws
+        const firebaseConfig = {
+          apiKey: "AIzaSyBWOdk2_NJntQ4Pob7_tN6kb1W5rMy-tcw",
+          authDomain: "learnera-d6309.firebaseapp.com",
+          projectId: "learnera-d6309",
+          messagingSenderId: "752970675909",
+          appId: "1:752970675909:web:9c4513809ca51ea60122ac",
+          databaseURL: "https://learnera-d6309-default-rtdb.firebaseio.com"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        const countriesList = [
+            { code: "all", name: "All Jurisdictions", isSvg: true },
+            { code: "UN", name: "Universal Charters", isSvg: true },
+            { code: "US", name: "United States", flag: "🇺🇸" },
+            { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
+            { code: "IN", name: "India", flag: "🇮🇳" },
+            { code: "CA", name: "Canada", flag: "🇨🇦" },
+            { code: "DE", name: "Germany", flag: "🇩🇪" },
+            { code: "AU", name: "Australia", flag: "🇦🇺" },
+            { code: "JP", name: "Japan", flag: "🇯🇵" },
+            { code: "FR", name: "France", flag: "🇫🇷" },
+            { code: "ZA", name: "South Africa", flag: "🇿🇦" },
+            { code: "BR", name: "Brazil", flag: "🇧🇷" }
+        ];
+
+        // Component for Universal SVG Icon
+        const UniversalIconSVG = () => (
+            <svg className="universal-laws-svg" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <defs>
+                    <linearGradient id="universalIconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="var(--icon-gradient-start)" />
+                        <stop offset="100%" stopColor="var(--icon-gradient-end)" />
+                    </linearGradient>
+                </defs>
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 3v18" />
+                <path d="M12 7h7M5 7h7" />
+                <path d="M5 12c0 2 1.5 3.5 3.5 3.5S12 14 12 12" />
+                <path d="M12 12c0 2 1.5 3.5 3.5 3.5S19 14 19 12" />
+            </svg>
+        );
+
+        const renderJurisdictionIcon = (country) => {
+            if (country.isSvg) {
+                return <UniversalIconSVG />;
+            }
+            return <span style={{ marginRight: '8px', fontSize: '1.15em' }}>{country.flag}</span>;
+        };
+
+        const categories = ["all", "civil", "judicial", "economic", "social", "labor", "digital", "environmental", "consumer", "political", "humanitarian"];
+
+        // Fallback list with 3-5 word concise titles
+        const fallbackList = [
+            {
+                id: "fb-1",
+                country: "UN",
+                article: "Article 1",
+                title: "Right to Universal Equality",
+                subtitle: "Inherent dignity of human beings.",
+                category: "civil",
+                knownBy: "Universal Equality Clause",
+                conditions: "Applicable universally to all individuals regardless of citizenship status.",
+                description: "Every individual is born with inherent value, agency, and independence. Human dignity is non-negotiable.",
+                bullets: ["Inherent equality of all human beings", "Right to exercise personal autonomy", "Mutual respect across institutions"],
+                conclusion: "Human dignity remains the essential foundation of global civil law.",
+                tag: "Universal Declaration"
+            },
+            {
+                id: "fb-2",
+                country: "US",
+                article: "1st Amendment",
+                title: "Freedom of Public Expression",
+                subtitle: "Cornerstone of civil expression.",
+                category: "political",
+                knownBy: "Free Speech Guarantee",
+                conditions: "Subject to established legal limits regarding direct public endangerment.",
+                description: "Prohibits legislative overreach abridging freedom of speech, assembly, or the press.",
+                bullets: ["Freedom of religious practice", "Uninhibited political discussion", "Protection for independent journalism"],
+                conclusion: "Individual expression stays protected against state interference.",
+                tag: "Bill of Rights"
+            },
+            {
+                id: "fb-3",
+                country: "IN",
+                article: "Article 21",
+                title: "Protection of Life Autonomy",
+                subtitle: "Right to personal liberty.",
+                category: "judicial",
+                knownBy: "Right to Personal Liberty",
+                conditions: "Enforceable through constitutional writ petitions.",
+                description: "No person shall be deprived of life or personal liberty except according to procedure established by law.",
+                bullets: ["Right to personal privacy", "Right to clean environment", "Access to legal counsel"],
+                conclusion: "Foundational core of judicial protections in India.",
+                tag: "Fundamental Rights"
+            }
+        ];
+
+        function App() {
+            const [loading, setLoading] = React.useState(true);
+            const [selectedCountryCode, setSelectedCountryCode] = React.useState("UN");
+            const [searchQuery, setSearchQuery] = React.useState("");
+            const [activeCategory, setActiveCategory] = React.useState("all");
+            const [selectedLaw, setSelectedLaw] = React.useState(null);
+            const [countrySelectorOpen, setCountrySelectorOpen] = React.useState(false);
+            const [lawsList, setLawsList] = React.useState([]);
+
+            const [filterCollapsed, setFilterCollapsed] = React.useState(true);
+            const [isSearchActive, setIsSearchActive] = React.useState(false);
+
+            const scrollListRef = React.useRef(null);
+            const [selectedIndex, setSelectedIndex] = React.useState(-1);
+
+            // Synchronize laws database dynamically from Firebase node admin/BasicLaws
+            React.useEffect(() => {
+                const ref = database.ref('admin/BasicLaws');
+                ref.once('value').then((snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        const parsedList = Array.isArray(data) ? data : Object.values(data);
+                        const cleanList = parsedList.filter(item => item !== null);
+                        if (cleanList.length > 0) {
+                            setLawsList(cleanList);
+                            setLoading(false);
+                            return;
+                        }
+                    }
+                    setLawsList(fallbackList);
+                    setLoading(false);
+                }).catch((err) => {
+                    console.error("Firebase fetch error, loading fallback dataset: ", err);
+                    setLawsList(fallbackList);
+                    setLoading(false);
+                });
+            }, []);
+
+            const triggerSound = (id) => {
+                if (window.playTouchSound) window.playTouchSound(id);
+            };
+
+            const toggleFilter = () => {
+                triggerSound(4);
+                setFilterCollapsed(!filterCollapsed);
+            };
+
+            const filteredLaws = lawsList.filter(law => {
+                const matchesCountry = selectedCountryCode === "all" || law.country === selectedCountryCode;
+                const matchesCategory = activeCategory === "all" || law.category === activeCategory;
+                const matchesSearch = 
+                    (law.title && law.title.toLowerCase().includes(searchQuery.toLowerCase())) || 
+                    (law.description && law.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                    (law.article && law.article.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                    (law.knownBy && law.knownBy.toLowerCase().includes(searchQuery.toLowerCase()));
+                return matchesCountry && matchesCategory && matchesSearch;
+            });
+
+            React.useEffect(() => {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('in-view');
+                        } else {
+                            entry.target.classList.remove('in-view');
+                        }
+                    });
+                }, { threshold: 0.15 });
+
+                const items = document.querySelectorAll('.animated-item');
+                items.forEach(el => observer.observe(el));
+
+                return () => observer.disconnect();
+            }, [loading, filteredLaws.length, activeCategory, selectedCountryCode, searchQuery, countrySelectorOpen, selectedLaw]);
+
+            React.useEffect(() => {
+                const scrollToSelected = (idx) => {
+                    const scrollList = scrollListRef.current;
+                    if (!scrollList || idx < 0) return;
+                    const el = scrollList.querySelector(`[data-index="${idx}"]`);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                };
+                const onKeyDown = (e) => {
+                    if (selectedLaw || countrySelectorOpen || !filteredLaws.length) return;
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        const next = Math.min(selectedIndex + 1, filteredLaws.length - 1);
+                        setSelectedIndex(next);
+                        scrollToSelected(next);
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const prev = Math.max(selectedIndex - 1, 0);
+                        setSelectedIndex(prev);
+                        scrollToSelected(prev);
+                    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                        e.preventDefault();
+                        triggerSound(1);
+                        setSelectedLaw(filteredLaws[selectedIndex]);
+                    }
+                };
+                window.addEventListener('keydown', onKeyDown);
+                return () => window.removeEventListener('keydown', onKeyDown);
+            }, [selectedIndex, filteredLaws, selectedLaw, countrySelectorOpen]);
+
+            const currentCountryObj = countriesList.find(c => c.code === selectedCountryCode) || countriesList[0];
+
+            return (
+                <div className="app-container">
+                    
+                    {/* Header Card Area */}
+                    <div className="header-card">
+                        <div 
+                            className="custom-select-trigger" 
+                            onClick={() => {
+                                triggerSound(4);
+                                setCountrySelectorOpen(true);
+                            }}
+                        >
+                            <span style={{ display: 'flex', alignItems: 'center' }}>
+                                {renderJurisdictionIcon(currentCountryObj)}
+                                {currentCountryObj.name}
+                            </span>
+                        </div>
+
+                        {/* Search Row & Filter Button */}
+                        <div className={`search-row ${isSearchActive ? "search-active" : ""}`}>
+                            <div className="search-bar-container">
+                                <div className="search-icon-mask"></div>
+                                <input 
+                                    type="text" 
+                                    placeholder="Search content..." 
+                                    autoComplete="off"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onFocus={() => {
+                                        setIsSearchActive(true);
+                                        setFilterCollapsed(true);
+                                    }}
+                                    onBlur={() => {
+                                        setTimeout(() => setIsSearchActive(false), 150);
+                                    }}
+                                />
+                            </div>
+                            <button 
+                                className={`filter-toggle-btn ${!filterCollapsed ? "active" : ""}`} 
+                                onClick={toggleFilter}
+                                aria-label="Toggle filters" 
+                                title="Toggle filters"
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                                    <defs>
+                                        <linearGradient id="learneraIconGradient" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+                                            <stop stopColor="var(--icon-gradient-start)" />
+                                            <stop offset="1" stopColor="var(--icon-gradient-end)" />
+                                        </linearGradient>
+                                    </defs>
+                                    <line x1="4" y1="6" x2="20" y2="6"></line>
+                                    <line x1="7" y1="12" x2="17" y2="12"></line>
+                                    <line x1="10" y1="18" x2="14" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Category Filter Pills */}
+                        <div className={`categories-filter-wrapper ${filterCollapsed ? "collapsed" : ""}`}>
+                            {categories.map((cat) => (
+                                <div 
+                                    key={cat}
+                                    className={`category-pill ${activeCategory === cat ? "active" : ""}`}
+                                    onClick={() => {
+                                        triggerSound(4);
+                                        setActiveCategory(cat);
+                                    }}
+                                >
+                                    <span>{cat.toUpperCase()}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Main Laws Cards Scroller */}
+                    <div className="laws-scroller-container">
+                        <div className="laws-scroller" ref={scrollListRef}>
+                            {loading ? (
+                                Array(8).fill(0).map((_, idx) => (
+                                    <div key={idx} className="animated-item in-view">
+                                        <div className="law-item-card skeleton-loading"></div>
+                                    </div>
+                                ))
+                            ) : filteredLaws.length > 0 ? (
+                                filteredLaws.map((law, idx) => (
+                                    <div
+                                        key={law.id || idx}
+                                        className="animated-item"
+                                        data-index={idx}
+                                        onMouseEnter={() => setSelectedIndex(idx)}
+                                    >
+                                        <div
+                                            className={`law-item-card ${selectedIndex === idx ? "selected" : ""}`}
+                                            onClick={() => {
+                                                triggerSound(1);
+                                                setSelectedIndex(idx);
+                                                setSelectedLaw(law);
+                                            }}
+                                        >
+                                            <div className="law-item-header">
+                                                <span style={{fontWeight: "800", color: "var(--sub-text-color)", fontSize: "0.82em"}}>
+                                                    {law.article}
+                                                </span>
+                                                <span className="law-item-badge">{law.category}</span>
+                                            </div>
+                                            <h3 className="law-item-title">{law.title}</h3>
+                                            <p className="law-item-excerpt">
+                                                {law.knownBy ? `Known as: ${law.knownBy} • ` : ''}{law.subtitle || law.description}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div style={{
+                                    textAlign: "center",
+                                    padding: "40px 10px",
+                                    color: "var(--sub-text-color)",
+                                    fontSize: "0.95em"
+                                }}>
+                                    No records matched your search query.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Detailed Legal Modal Dialog */}
+                    <div 
+                        className={`custom-modal-overlay ${selectedLaw ? "show" : ""}`} 
+                        onClick={() => {
+                            triggerSound(2);
+                            setSelectedLaw(null);
+                        }}
+                    >
+                        {selectedLaw && (
+                            <div className="custom-modal" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-body-scroller">
+                                    <div className="law-item-header">
+                                        <span style={{fontWeight: "800", color: "var(--sub-text-color)", fontSize: "0.85em"}}>
+                                            Jurisdiction: {selectedLaw.country}
+                                        </span>
+                                        <span className="law-item-badge">{selectedLaw.category}</span>
+                                    </div>
+                                    
+                                    <h2 className="modal-law-title">{selectedLaw.title}</h2>
+
+                                    {/* Section/Article Inset Card */}
+                                    <div>
+                                        <div className="modal-info-card">
+                                            <span className="modal-info-label">Section / Article Specification</span>
+                                            <span className="modal-info-value">{selectedLaw.article}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Commonly Known By Card */}
+                                    {selectedLaw.knownBy && (
+                                        <div>
+                                            <div className="modal-info-card">
+                                                <span className="modal-info-label">Popularly Known As</span>
+                                                <span className="modal-info-value">{selectedLaw.knownBy}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Conditions / Applicability Card */}
+                                    {selectedLaw.conditions && (
+                                        <div>
+                                            <div className="modal-info-card">
+                                                <span className="modal-info-label">Conditions & Applicability</span>
+                                                <span className="modal-info-value">{selectedLaw.conditions}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div style={{fontSize: "0.88em", color: "var(--sub-text-color)", lineHeight: "1.55", padding: "2px 0"}}>
+                                        {selectedLaw.description}
+                                    </div>
+
+                                    {selectedLaw.bullets && Array.isArray(selectedLaw.bullets) && (
+                                        <div>
+                                            <div className="modal-law-subpoints">
+                                                <span style={{fontWeight: "700", fontSize: "0.85em"}}>Legal Provisions Breakdown:</span>
+                                                {selectedLaw.bullets.map((prov, i) => (
+                                                    <div key={i} className="modal-subpoint-item">
+                                                        <i className="fa-solid fa-circle-check"></i>
+                                                        <span>{prov}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {selectedLaw.conclusion && (
+                                        <p style={{fontSize: "0.82em", fontStyle: "italic", color: "var(--sub-text-color)"}}>
+                                            {selectedLaw.conclusion}
+                                        </p>
+                                    )}
+
+                                    {selectedLaw.tag && (
+                                        <div style={{fontSize: "0.8em", color: "var(--sub-text-color)"}}>
+                                            <strong>Tag Area:</strong> {selectedLaw.tag}
+                                        </div>
+                                    )}
+
+                                    <button 
+                                        className="back-pill-button" 
+                                        onClick={() => {
+                                            triggerSound(2);
+                                            setSelectedLaw(null);
+                                        }}
+                                    >
+                                        Close Details
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Jurisdiction Selector Overlay Modal */}
+                    <div 
+                        className={`custom-modal-overlay ${countrySelectorOpen ? "show" : ""}`} 
+                        onClick={() => setCountrySelectorOpen(false)}
+                    >
+                        <div className="custom-modal" onClick={(e) => e.stopPropagation()}>
+                            <h3 style={{textAlign: "center", marginBottom: "12px", fontWeight: "800"}}>Select Jurisdiction</h3>
+                            <div className="modal-body-scroller" style={{maxHeight: "360px"}}>
+                                {countriesList.map((country) => (
+                                    <div key={country.code} className="animated-item in-view">
+                                        <button 
+                                            className={`sharp-inner-item ${selectedCountryCode === country.code ? 'selected' : ''}`}
+                                            onClick={() => {
+                                                triggerSound(1);
+                                                setSelectedCountryCode(country.code);
+                                                setCountrySelectorOpen(false);
+                                            }}
+                                        >
+                                            {renderJurisdictionIcon(country)}
+                                            {country.name}
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                            <button 
+                                className="back-pill-button" 
+                                onClick={() => setCountrySelectorOpen(false)}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            );
+        }
+
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+    </script>
+</body>
+</html>

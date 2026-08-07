@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Episode Player</title>
+
+  <!-- Google Fonts Preconnect & Imports matching LearnEra styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+
+  <!-- Dynamic Theme Loader -->
+  <script>
+    (function() {
+        try {
+            const savedTheme = localStorage.getItem('appThemeMode') || 'system';
+            const isDark = savedTheme === 'dark' || (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (isDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                const darkStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+                document.documentElement.setAttribute('data-dark-text', darkStyle);
+            } else {
+                document.documentElement.removeAttribute('data-dark-text');
+            }
+            
+            const topSp = localStorage.getItem('appTopSpace') || '5';
+            document.documentElement.style.setProperty('--top-space', topSp + 'vh');
+        } catch (e) {
+            document.documentElement.style.setProperty('--top-space', '5vh');
+        }
+    })();
+
+    // Mock SFX so UI buttons don't throw errors
+    window.playTouchSound = function() {};
+    function playClickSFX() {};
+  </script>
+
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none; 
+      -ms-user-select: none; 
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Core Neumorphic Variables aligned exactly with LearnEra.html */
+    :root {
+        --body-bg: #e6edf7; 
+        --neu-shadow-light: #ffffff;
+        --neu-shadow-dark: #c8d3e4;
+        
+        --text-color: #8A2BE2; 
+        --sub-text-color: #7a8b9e;
+
+        --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+        --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+        --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+        --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+        --settings-shadow-sharp: 4px 4px 6px var(--neu-shadow-dark), -4px -4px 6px var(--neu-shadow-light);
+        --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+
+        --top-space: 5vh;
+    }
+
+    body[data-theme="dark"] {
+        --body-bg: #1e1e24; 
+        --neu-shadow-dark: #101014;
+        --neu-shadow-light: rgba(255, 255, 255, 0.05);
+        
+        --text-color: rgba(255, 255, 255, 0.7); 
+        --sub-text-color: rgba(163, 71, 232, 0.6);
+
+        --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+        --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+        --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+        --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+        --settings-shadow-sharp: 4px 4px 6px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+        --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -2px -2px 4px rgba(255, 255, 255, 0.02);
+    }
+
+    body[data-dark-text="deep-dark"] {
+        --body-bg: #0c0c0f; 
+        --neu-shadow-dark: #050506;
+        --neu-shadow-light: rgba(255, 255, 255, 0.02);
+        --text-color: rgba(255, 255, 255, 0.35);
+        --sub-text-color: rgba(255, 255, 255, 0.3);
+    }
+
+    html, body {
+      height: 100%;
+      background-color: var(--body-bg);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    /* Protection layers against image downloading and dragging */
+    img {
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        pointer-events: none !important;
+    }
+
+    /* Exact Header Style from LearnEra.html (Smarty Screen) */
+    .header-bar { 
+        width: 100%; 
+        height: calc(var(--top-space) + 55px); 
+        padding-top: var(--top-space); 
+        background: var(--body-bg); 
+        display: flex; justify-content: center; align-items: center; 
+        position: fixed; top: 0; left: 0; z-index: 2000; box-sizing: border-box; 
+        box-shadow: var(--card-shadow-micro); 
+    }
+    
+    .back-button-container { 
+        position: absolute; left: 7px; height: calc(100% - var(--top-space)); top: var(--top-space); 
+        display: flex; align-items: center; z-index: 3; transition: transform 0.4s ease, opacity 0.4s ease; padding-left: 7px;
+    }
+    .back-button {
+        position: relative; background: var(--body-bg); color: var(--text-color); border: 2px solid var(--body-bg); 
+        border-radius: 16px; padding: 10px 14px; cursor: pointer; 
+        box-shadow: var(--card-shadow-micro), inset 1px 1px 2px rgba(255,255,255,0.7); 
+        z-index: 70; transition: opacity 0.4s ease, transform 0.4s ease, box-shadow 0.3s ease; 
+        display: inline-flex; align-items: center; justify-content: center; gap: 5px; margin-left: 0; outline: none;
+    }
+    .back-button:active {
+        transform: scale(0.95);
+        box-shadow: inset 2px 2px 4px var(--neu-shadow-dark);
+    }
+    .header-title-container { pointer-events: auto; z-index: 1; display: flex; align-items: center; justify-content: center; }
+    
+    .header-title { 
+        color: var(--text-color); 
+        font-weight: 700; 
+        text-shadow: none; 
+        margin: 0; 
+        white-space: nowrap; 
+        font-size: 1.1em; 
+    }
+    body:not([data-dark-text="deep-dark"]) .header-title {
+        background: linear-gradient(135deg, #8A2BE2, #a158e6, #DA70D6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+
+    body[data-dark-text="deep-dark"] .header-title,
+    body[data-dark-text="deep-dark"] .back-button {
+        fill: rgba(255,255,255,0.35) !important;
+        color: rgba(255,255,255,0.35) !important;
+        background: none !important;
+        -webkit-background-clip: initial !important;
+        -webkit-text-fill-color: rgba(255,255,255,0.35) !important;
+    }
+
+    /* Container Area */
+    .theme-content-area { 
+        width: 100%; 
+        min-height: 100vh;
+        display: flex; 
+        flex-direction: column; 
+        justify-content: flex-start; 
+        align-items: center; 
+        box-sizing: border-box; 
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        z-index: 1; 
+        padding: 20px;
+        padding-top: calc(var(--top-space) + 75px);
+        padding-bottom: 120px;
+    }
+
+    .settings-group { 
+        background: var(--body-bg); 
+        border-radius: 20px; 
+        padding: 20px 15px; 
+        width: 100%; 
+        max-width: 550px;
+        margin-bottom: 25px; 
+        box-shadow: var(--settings-shadow-inset-sharp); 
+        border: 1px solid rgba(255,255,255,0.3); 
+    }
+    body[data-theme="dark"] .settings-group,
+    body[data-theme="dark"] .episode-inset-details-card {
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Episode Details styling */
+    .episode-inset-details-card {
+        background: var(--body-bg); 
+        border-radius: 18px; 
+        padding: 15px 18px; 
+        margin-top: 18px; 
+        box-shadow: var(--settings-shadow-inset-sharp); 
+        text-align: left;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    body[data-dark-text="deep-dark"] #episodePlayTitle,
+    body[data-dark-text="deep-dark"] #episodeMetaEp,
+    body[data-dark-text="deep-dark"] #episodeMetaDuration,
+    body[data-dark-text="deep-dark"] .episode-inset-details-card div,
+    body[data-dark-text="deep-dark"] #episodePlayDesc {
+        color: #909095 !important;
+    }
+
+  </style>
+
+  <!-- Embedded Custom Video Player CSS -->
+  <style>
+    video-player, live-video-player { display: contents; }
+    video-player video, video-player [slot="poster"] { display: block; width: 100%; height: 100%; }
+
+    .media-default-skin:not(:fullscreen) .hide-on-normal { display: none !important; }
+    .media-default-skin:not(:fullscreen) .media-controls { display: none !important; }
+
+    .media-default-skin .play-pause-container { display: flex !important; transition: opacity 200ms ease, transform 200ms ease; }
+    .media-default-skin:not(:fullscreen) .play-pause-container { opacity: 1 !important; pointer-events: auto !important; transform: translate(-50%, -50%) scale(1) !important; }
+    .media-default-skin:fullscreen .play-pause-container.controls-hidden { opacity: 0 !important; pointer-events: none !important; transform: translate(-50%, -50%) scale(0.85) !important; }
+
+    .media-default-skin:fullscreen .circular-normal-fs-btn,
+    .media-default-skin:fullscreen .skip-indicator { display: none !important; }
+    .skip-indicator { display: none !important; }
+
+    .neumorph-shell:has(.media-default-skin:fullscreen), .neumorph-shell:fullscreen { box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; background: #000 !important; border: none !important;}
+
+    .custom-volume-wrapper { display: flex; align-items: center; gap: 6px; }
+    .simple-vol-slider { -webkit-appearance: none; width: 70px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 4px; outline: none; cursor: pointer; }
+    .simple-progress-slider { -webkit-appearance: none; width: 100% !important; height: 4px; background: rgba(255,255,255,0.3); border-radius: 4px; outline: none; cursor: pointer; }
+    .simple-vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: white; border-radius: 50%; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+    .simple-progress-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: white; border: 2px solid #8A2BE2; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: transform 0.1s ease; }
+    .simple-progress-slider::-webkit-slider-thumb:active { transform: scale(1.2); }
+
+    #customQualityMenu { display: none; flex-direction: column; position: absolute; bottom: 75px; right: 20px; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(10px); padding: 8px; border-radius: 16px; z-index: 100; min-width: 130px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .quality-option-btn { background: none; border: none; color: white; padding: 8px 14px; text-align: left; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+    .quality-option-btn:hover { background: rgba(255,255,255,0.2); }
+    .quality-option-btn.active { background: #ffffff !important; color: #000000 !important; }
+
+    #customToastNotification { position: absolute; top: 20px; left: 50%; transform: translateX(-50%) translateY(-10px); background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); color: #fff; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; z-index: 200; pointer-events: none; opacity: 0; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    #customToastNotification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    :host { display: grid; width: 100%; }
+    .media-default-skin { position: relative; display: block; width: 100%; height: 100%; container: media-root / inline-size; border-radius: 1.25rem; isolation: isolate; overflow: hidden; }
+
+    .media-default-skin:not(:fullscreen)::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 10px 10px 20px rgba(0,0,0,0.6), inset -10px -10px 20px rgba(255,255,255,0.1); z-index: 5; }
+    .media-default-skin:fullscreen::after { display: none; }
+
+    .media-default-skin:not(:fullscreen) .vol-container, .media-default-skin:not(:fullscreen) .bright-container, .media-default-skin:not(:fullscreen) .slider-active-title, .media-default-skin:not(:fullscreen) .fullscreen-logo-header, .media-default-skin:not(:fullscreen) #progressTooltip, .media-default-skin:not(:fullscreen) #motivationOverlay, .media-default-skin:not(:fullscreen) #customQualityMenu, .media-default-skin:not(:fullscreen) #customToastNotification { display: none !important; }
+    video-player:not(:fullscreen), video-player:not(:fullscreen) .media-default-skin, video-player:not(:fullscreen) video, .media-default-skin:not(:fullscreen) { touch-action: pan-y !important; }
+
+    .media-default-skin.slider-active .media-controls, .media-default-skin.slider-active .play-pause-container, .media-default-skin.slider-active .fullscreen-logo-header, .media-default-skin.slider-active .circular-normal-fs-btn, .media-default-skin.slider-active #customQualityMenu, .media-default-skin.slider-active .skip-indicator, .media-default-skin.slider-active #progressTooltip, .media-default-skin.slider-active #customToastNotification { opacity: 0 !important; pointer-events: none !important; visibility: hidden !important; }
+
+    .media-default-skin .media-surface { background-color: oklch(0 0 0 / 0.5); backdrop-filter: blur(16px) saturate(1.5); box-shadow: 0 0 0 1px oklch(1 1 1 / 0.1); }
+    .media-default-skin ::slotted(video), .media-default-skin video { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .media-default-skin:fullscreen { border-radius: 0; }
+    .media-default-skin:fullscreen video { object-fit: contain; }
+
+    .media-default-skin .media-overlay { position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(to top, oklch(0 0 0 / 0.7), transparent 30%); opacity: 0; transition: opacity 150ms ease-out; }
+    .media-default-skin .media-controls[data-visible] ~ .media-overlay { opacity: 1; }
+
+    .media-default-skin .media-controls { position: absolute; inset-inline: 0.75rem; bottom: 0.75rem; z-index: 10; display: flex; column-gap: 0.2rem; align-items: center; padding: 0.375rem; border-radius: 1.5rem; color: white; transition: opacity 150ms ease-out, transform 150ms; }
+    .media-default-skin .media-controls:not([data-visible]) { pointer-events: none; opacity: 0; transform: translateY(10px); }
+    .media-default-skin .media-time-controls { display: flex; flex: 1; gap: 0.75rem; align-items: center; padding-inline: 0.5rem; }
+
+    .media-default-skin .media-button { display: flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; cursor: pointer; border: none; border-radius: 50%; background: transparent; color: inherit; transition: 0.15s; }
+    .media-default-skin .media-button--icon { width: 2.5rem; height: 2.5rem; padding: 0; }
+    .media-default-skin .media-button:hover { background-color: rgba(255,255,255,0.1); }
+    .media-default-skin .media-button:active { transform: scale(0.9); }
+
+    .media-button--play .media-icon--play, .media-button--play .media-icon--pause { display: none; }
+    .media-button--play:not([data-paused]) .media-icon--pause, .media-button--play[data-paused] .media-icon--play { display: block; }
+    .media-button--mute .media-icon--volume-off, .media-button--mute .media-icon--volume-high { display: none; }
+    .media-button--mute[data-muted] .media-icon--volume-off, .media-button--mute:not([data-muted]) .media-icon--volume-high { display: block; }
+    .media-button--fullscreen .media-icon--fullscreen-enter, .media-button--fullscreen .media-icon--fullscreen-exit { display: none; }
+    .media-button--fullscreen:not([data-fullscreen]) .media-icon--fullscreen-enter, .media-button--fullscreen[data-fullscreen] .media-icon--fullscreen-exit { display: block; }
+
+    .play-pause-container { --color: white; --size: 60px; display: flex; justify-content: center; align-items: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; font-size: var(--size); fill: var(--color); background: rgba(0,0,0,0.3); border-radius: 50%; width: 80px; height: 80px; backdrop-filter: blur(4px); transition: opacity 250ms ease, transform 250ms ease; }
+    .play-pause-container .play { position: absolute; top: 50%; left: 53.5%; transform: translate(-50%, -50%); animation: keyframes-fill 0.3s; width: 32px; height: 32px; }
+    .play-pause-container .pause { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; animation: keyframes-fill 0.3s; width: 32px; height: 32px; }
+    .play-pause-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+    .play-pause-container input:checked ~ .play { display: none; }
+    .play-pause-container input:checked ~ .pause { display: block; }
+
+    @keyframes keyframes-fill { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.1); } }
+
+    .circular-normal-fs-btn { position: absolute; bottom: 20px; right: 20px; width: 45px; height: 45px; border-radius: 50%; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(4px); border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.15s, opacity 0.3s; }
+    .circular-normal-fs-btn:active { transform: scale(0.9); }
+
+    .vol-container, .bright-container { position: absolute; width: 16px; height: 160px; border-radius: 8px; background: #0c0c0c; box-shadow: inset 0 2px 3px #010101, inset 0 -1px 2px rgba(255,255,255,0.05), 0 1px 1px #585858; display: none; flex-direction: column; justify-content: flex-end; align-items: center; z-index: 100; cursor: pointer; touch-action: none; top: 50%; transform: translateY(-50%); padding: 3px; overflow: hidden; transition: opacity 0.3s ease, transform 0.15s; }
+    #volContainer { left: 8%; } #enhanceContainer { right: 8%; }
+
+    .vol-glass, .bright-glass { position: relative; width: 10px; height: 154px; bottom: 0; left: 0; border-radius: 5px; pointer-events: none; z-index: 15; will-change: transform; transform-origin: bottom center; border: none !important; background: transparent !important; overflow: hidden; }
+    .vol-clone, .bright-clone { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; border-radius: inherit; z-index: 1; will-change: filter; contain: strict; }
+    .use-backdrop-filter .vol-clone { display: none; }
+    .use-backdrop-filter .vol-inner { backdrop-filter: url(#volGlassFilter); -webkit-backdrop-filter: url(#volGlassFilter); }
+    .use-backdrop-filter .bright-clone { display: none; }
+    .use-backdrop-filter .bright-inner { backdrop-filter: url(#brightGlassFilter); -webkit-backdrop-filter: url(#brightGlassFilter); }
+
+    .vol-clone-world, .bright-clone-world { position: absolute; top: 0; left: 0; pointer-events: none; will-change: transform; transform-origin: bottom left; background: transparent; }
+    .vol-inner, .bright-inner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: inherit; z-index: 3; background: transparent; pointer-events: none; overflow: hidden; }
+
+    .vol-fill, .bright-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, #182552 0%, #8A2BE2 50%, #d962ff 100%); box-shadow: inset 0 1px 2px rgba(254,254,254,0.25); border-radius: inherit; z-index: 2; opacity: 1; }
+
+    .skip-indicator { position: absolute; top: 50%; transform: translate(-50%, -50%) scale(0.9); display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 120; opacity: 0; transition: all 0.3s; background: none; }
+    .skip-indicator.show { opacity: 1; transform: translate(-50%, -50%) scale(1.4); }
+    .skip-indicator.left-seek { left: 25%; } .skip-indicator.right-seek { left: 75%; }
+    .skip-indicator svg { width: 80px; height: 80px; color: #ffffff; stroke: #ffffff; filter: drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.6)); }
+
+    .slider-active-title { position: absolute; top: 30px; left: 50%; transform: translateX(-50%) translateY(-20px); font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; color: white; background: rgba(0, 0, 0, 0.78); backdrop-filter: blur(14px); padding: 8px 20px; border-radius: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 150; opacity: 0; pointer-events: none; transition: all 0.3s; }
+    .slider-active-title.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .fullscreen-logo-header { position: absolute; top: 25px; left: 25px; display: none; align-items: center; gap: 12px; z-index: 100; opacity: 0; transform: translateY(-10px); transition: opacity 300ms, transform 300ms; pointer-events: none; }
+    .media-default-skin:fullscreen .fullscreen-logo-header { display: flex; }
+    .shining-logo-wrapper { position: relative; overflow: hidden; border-radius: 12px; display: flex; justify-content: center; align-items: center; padding: 5px; background: rgba(0,0,0,0.5); width: 42px; height: 42px; }
+    .shining-text { font-family: 'Poppins', sans-serif !important; font-weight: 800 !important; font-size: 1.4em !important; background-image: linear-gradient(120deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%), linear-gradient(to bottom right, #FF69B4 0%, #8A2BE2 50%, #1E90FF 100%); background-size: 200% 100%, 100% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: logoShine 3.5s infinite ease-in-out; }
+    @keyframes logoShine { 0% { background-position: 200% center, 0% 0%; } 100% { background-position: -200% center, 0% 0%; } }
+
+    .progress-tooltip { position: absolute; bottom: 85px; background: rgba(20, 20, 25, 0.9); backdrop-filter: blur(12px); border: 1.5px solid rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 8px; display: none; flex-direction: column; align-items: center; gap: 6px; pointer-events: none; z-index: 250; box-shadow: 0 10px 30px rgba(0,0,0,0.4); transform: translateX(-50%); }
+    .tooltip-video-wrap { width: 120px; height: 68px; border-radius: 8px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.1); }
+    #tooltipVideo { width: 100%; height: 100%; object-fit: cover; }
+    #tooltipTime { font-size: 11px; font-weight: 700; background: linear-gradient(to bottom right, #FF69B4 0%, #8A2BE2 50%, #1E90FF 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .media-default-skin:fullscreen .media-controls { position: absolute !important; bottom: 20px !important; left: 20px !important; right: 20px !important; border: 2px solid transparent !important; background: linear-gradient(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)) padding-box, linear-gradient(to right, rgba(255,105,180,0.35), rgba(138,43,226,0.35), rgba(30,144,255,0.35)) border-box !important; backdrop-filter: blur(6px) !important; border-radius: 20px !important; padding: 8px 16px !important; color: #ffffff !important; box-shadow: none !important; }
+    .media-default-skin:fullscreen .media-button { color: #ffffff !important; }
+    .media-default-skin:fullscreen .media-icon, .media-default-skin:fullscreen .media-button svg { color: #ffffff !important; }
+
+    .motivation-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 600ms ease; }
+    .motivation-overlay.show { opacity: 1; pointer-events: auto; }
+    .motivation-card { background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 24px 36px; max-width: 80%; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); transform: translateY(20px); transition: transform 600ms; }
+    .motivation-overlay.show .motivation-card { transform: translateY(0); }
+    #motivationText { font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; color: white; line-height: 1.5; }
+
+    .media-default-skin .media-button--playback-rate { padding: 0 10px; min-width: 48px; height: 2.5rem; border-radius: 9999px; font-weight: 700; font-size: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); }
+    .media-default-skin .media-button--playback-rate::after { content: attr(data-rate) "\00D7"; }
+    .media-default-skin .media-menu--playback-rate { background: rgba(0,0,0,0.85); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.15); border-radius: 14px; padding: 6px; min-width: 130px; box-shadow: 0 12px 30px rgba(0,0,0,0.45); z-index: 250; }
+    .media-menu__item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 10px; cursor: pointer; gap: 12px; font-weight: 600; }
+    .media-menu__item[data-checked] { background: rgba(255,255,255,0.22); }
+    .media-menu__indicator { display: inline-flex; opacity: 0; }
+    .media-menu__item[data-checked] .media-menu__indicator { opacity: 1; }
+  </style>
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@videojs/html/cdn/video.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@videojs/html/cdn/video-ui.js"></script>
+
+</head>
+<body>
+
+  <!-- Smarty-style Header -->
+  <header class="header-bar generic-header">
+      <div class="back-button-container">
+          <button class="back-button" onclick="alert('Back button pressed')" title="Go Back">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </button>
+      </div>
+      <div class="header-title-container">
+          <h2 class="header-title" id="genericArrangementTitle">Episode Player</h2>
+      </div>
+  </header>
+
+  <div class="theme-content-area">
+      <!-- Neumorphic Card wrapping video -->
+      <div class="settings-group" style="padding: 2px; overflow: hidden; border: 1px solid rgba(255,255,255,0.3);">
+          
+          <!-- Video Player Shell -->
+          <div id="videoContainer" style="width:100%; margin: 0 0 20px 0;">
+              <div class="neumorph-shell" style="width: 100%; aspect-ratio: 16/9; border-radius: 1.25rem !important; position: relative; border: 2px solid var(--body-bg) !important; background: var(--body-bg); box-shadow: var(--settings-shadow-sharp) !important; outline: 0;">
+                  
+                  <video-player>
+                    <media-container class="media-default-skin">
+                      <video preload="metadata" loop playsinline webkit-playsinline x5-playsinline></video>
+
+                      <!-- CLONE WORLD REFERENCE PLACEMENTS -->
+                      <div id="volRealWorld" style="position:absolute; inset:0; pointer-events:none; overflow:hidden;"></div>
+                      <div id="brightRealWorld" style="position:absolute; inset:0; pointer-events:none; overflow:hidden;"></div>
+
+                      <!-- ORGANIC SQUISH GLASS SLIDERS -->
+                      <div class="vol-container" id="volContainer">
+                          <div class="vol-glass" id="volGlass">
+                              <div class="vol-clone" id="volClone">
+                                  <div class="vol-clone-world" id="volCloneWorld"></div>
+                              </div>
+                              <div class="vol-inner" id="volInner">
+                                  <div class="vol-fill" id="volFill"></div>
+                              </div>
+                          </div>
+                      </div>
+
+                      <div class="bright-container" id="enhanceContainer">
+                          <div class="bright-glass" id="enhanceGlass">
+                              <div class="bright-clone" id="enhanceClone">
+                                  <div class="bright-clone-world" id="enhanceCloneWorld"></div>
+                              </div>
+                              <div class="bright-inner" id="enhanceInner">
+                                  <div class="bright-fill" id="enhanceFill"></div>
+                              </div>
+                          </div>
+                      </div>
+
+                      <!-- DOUBLE-TAP SEEKING ANIMATION FEEDBACKS -->
+                      <div id="rewindIndicator" class="skip-indicator left-seek">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                              <polyline points="3 3 3 8 8 8" />
+                              <text x="12" y="15.5" font-family="'Poppins', sans-serif" font-size="8.5" font-weight="900" fill="currentColor" text-anchor="middle">5</text>
+                          </svg>
+                      </div>
+                      <div id="skipIndicator" class="skip-indicator right-seek">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                              <polyline points="21 3 21 8 16 8" />
+                              <text x="12" y="15.5" font-family="'Poppins', sans-serif" font-size="7.5" font-weight="900" fill="currentColor" text-anchor="middle">10</text>
+                          </svg>
+                      </div>
+
+                      <!-- CENTER PLAY/PAUSE BUTTON -->
+                      <label class="play-pause-container" id="centerPlayPause">
+                          <input type="checkbox" id="playCheck" />
+                          <svg class="play" viewBox="0 0 384 512"><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg>
+                          <svg class="pause" viewBox="0 0 320 512"><path d="M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z"/></svg>
+                      </label>
+
+                      <!-- CIRCULAR FULLSCREEN BUTTON -->
+                      <button id="normalFsBtn" class="circular-normal-fs-btn" title="Toggle Fullscreen">
+                          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5">
+                              <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                          </svg>
+                      </button>
+
+                      <!-- ACTIVE SWIPE GESTURE SLIDER TITLE -->
+                      <div id="sliderActiveTitle" class="slider-active-title">Volume</div>
+
+                      <!-- Fullscreen Logo Header -->
+                      <div id="fullscreenLogoHeader" class="fullscreen-logo-header">
+                        <div class="shining-logo-wrapper">
+                          <img src="https://i.ibb.co/bgWVZn48/LearnEra-Logo.webp" alt="LearnEra Logo" style="width: 32px; height: 32px; opacity: 0.85; border-radius: 12px; object-fit: contain; z-index: 2;">
+                        </div>
+                        <div class="app-header-text">
+                          <h2 class="shining-text" data-text="LearnEra">LearnEra</h2>
+                        </div>
+                      </div>
+
+                      <!-- Hover Timeline Preview Tooltip -->
+                      <div id="progressTooltip" class="progress-tooltip">
+                          <div class="tooltip-video-wrap">
+                              <video id="tooltipVideo" muted playsinline></video>
+                          </div>
+                          <div class="tooltip-text-wrap">
+                              <span id="tooltipTime">0:00</span>
+                          </div>
+                      </div>
+
+                      <!-- Glassmorphic Motivational Quote Slogan Overlay -->
+                      <div id="motivationOverlay" class="motivation-overlay">
+                          <div class="motivation-card">
+                              <p id="motivationText">Learn as a Learner, not as a Student.</p>
+                          </div>
+                      </div>
+
+                      <media-controls class="media-surface media-controls">
+                        
+                        <div class="media-button-group">
+                          <media-playback-rate-menu-trigger commandfor="playback-rate-menu" class="media-button media-button--icon media-button--playback-rate" title="Playback speed"></media-playback-rate-menu-trigger>
+                          <media-playback-rate-menu id="playback-rate-menu" side="top" align="center" class="media-popover media-menu media-menu--playback-rate">
+                            <media-playback-rate-options class="media-menu__group">
+                              <template>
+                                <media-menu-radio-item class="media-menu__item">
+                                  <span data-part="label"></span>
+                                  <media-menu-item-indicator force-mount class="media-menu__indicator">
+                                    <media-icon name="check" class="media-icon"></media-icon>
+                                  </media-menu-item-indicator>
+                                </media-menu-radio-item>
+                              </template>
+                            </media-playback-rate-options>
+                          </media-playback-rate-menu>
+
+                          <button class="media-button media-button--icon hide-on-normal" id="rewindBtn" title="Rewind 5s">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                <polyline points="3 3 3 8 8 8" />
+                                <text x="12" y="15.5" font-family="Arial, sans-serif" font-size="8.5" font-weight="900" fill="currentColor" stroke="none" text-anchor="middle">5</text>
+                            </svg>
+                          </button>
+
+                          <button class="media-button media-button--icon hide-on-normal" id="forwardBtn" title="Skip 10s">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;">
+                                <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                <polyline points="21 3 21 8 16 8" />
+                                <text x="12" y="15.5" font-family="Arial, sans-serif" font-size="7.5" font-weight="900" fill="currentColor" stroke="none" text-anchor="middle">10</text>
+                            </svg>
+                          </button>
+                        </div>
+
+                        <div class="media-time-controls hide-on-normal">
+                          <media-time type="current" class="media-time"></media-time>
+                          <div class="custom-progress-wrapper" style="flex: 1; display: flex; align-items: center; position: relative;">
+                              <input type="range" id="inlineProgressSlider" min="0" max="100" step="0.1" value="0" class="simple-progress-slider">
+                          </div>
+                          <media-time type="duration" class="media-time"></media-time>
+                        </div>
+
+                        <div class="media-button-group">
+                          <div class="custom-volume-wrapper hide-on-normal">
+                              <media-mute-button class="media-button media-button--icon media-button--mute" id="bottomMuteBtn">
+                                  <media-icon name="volume-off" class="media-icon media-icon--volume-off"></media-icon>
+                                  <media-icon name="volume-high" class="media-icon media-icon--volume-high"></media-icon>
+                              </media-mute-button>
+                              <input type="range" id="inlineVolSlider" min="0" max="1" step="0.01" value="1" class="simple-vol-slider">
+                          </div>
+
+                          <button id="customQualityBtn" class="media-button media-button--icon hide-on-normal" title="Quality">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;">
+                                  <circle cx="12" cy="12" r="3"/>
+                                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                              </svg>
+                          </button>
+
+                          <media-fullscreen-button class="media-button media-button--icon media-button--fullscreen">
+                            <media-icon name="fullscreen-enter" class="media-icon media-icon--fullscreen-enter"></media-icon>
+                            <media-icon name="fullscreen-exit" class="media-icon media-icon--fullscreen-exit"></media-icon>
+                          </media-fullscreen-button>
+                        </div>
+                        
+                      </media-controls>
+
+                      <div class="media-overlay"></div>
+
+                      <div id="customQualityMenu">
+                          <button class="quality-option-btn active" data-quality="auto">Auto</button>
+                          <button class="quality-option-btn" data-quality="1080p">1080p HD</button>
+                          <button class="quality-option-btn" data-quality="720p">720p</button>
+                          <button class="quality-option-btn" data-quality="480p">480p</button>
+                      </div>
+
+                      <div id="customToastNotification">Quality updated</div>
+
+                      <media-gesture type="tap" action="toggleControls" pointer="touch"></media-gesture>
+                      <media-hotkey keys="Space" action="togglePaused"></media-hotkey>
+                      <media-hotkey keys="f" action="toggleFullscreen"></media-hotkey>
+                      <media-hotkey keys="ArrowRight l" action="seekStep" value="10"></media-hotkey>
+                      <media-hotkey keys="ArrowLeft j" action="seekStep" value="-5"></media-hotkey>
+
+                    </media-container>
+                  </video-player>
+              </div>
+          </div>
+
+          <!-- Main Card content for Title, Subtitle, Episode Meta -->
+          <div id="episodeMetaDetails" style="width:100%; padding: 0 14px; box-sizing:border-box;">
+              <div id="episodePlayTitle" style="font-size: 0.898em; font-weight: 800; color: var(--text-color); line-height:1.25; margin: 6px 0 2px; text-align: left;">Episode Title</div>
+              <div id="episodePlaySubtitle" style="font-size: 0.686em; font-weight: 500; color: var(--sub-text-color); margin-bottom: 12px; text-align: left;"></div>
+              
+              <div id="episodePlayMeta" style="display:flex; justify-content: space-between; gap:10px; align-items:center; margin: 14px 0 14px;">
+                  <span id="episodeMetaEp" style="font-size:0.7em; font-weight:700; color: var(--text-color); background: var(--body-bg); border-radius: 12px; padding: 6px 12px; box-shadow: var(--card-shadow-inset) !important; width: 48%; text-align: center; display: inline-block;">Episode</span>
+                  <span id="episodeMetaDuration" style="font-size:0.7em; font-weight:700; color: var(--text-color); background: var(--body-bg); border-radius: 12px; padding: 6px 12px; box-shadow: var(--card-shadow-inset) !important; width: 48%; text-align: center; display: inline-block;">Duration</span>
+              </div>
+          </div>
+
+          <!-- Description & Sources inside sharp inset card -->
+          <div class="episode-inset-details-card">
+              <div style="font-size:0.82em; font-weight:700; color: var(--text-color); margin-bottom: 10px;">Description</div>
+              <p id="episodePlayDesc" style="color: var(--sub-text-color); font-size: 0.671em; line-height: 1.55; margin: 0 0 15px; text-align: left;">Loading course details...</p>
+              
+              <div id="episodeSourcesWrapper" style="display:none; text-align: left; margin-bottom: 10px;">
+                  <div style="font-size:0.82em; font-weight:700; color: var(--text-color); margin: 6px 0 8px;">Source Links</div>
+                  <div id="episodeSourceLinks" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 5px;"></div>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <!-- SVG Filters for Glassmorphism effects -->
+  <svg style="width: 0; height: 0; position: absolute;">
+      <defs>
+          <filter id="volGlassFilter" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="0.2" result="blurred" />
+              <feImage id="volDisplacementImage" href="" x="0" y="0" width="10" height="154" result="displacement_map" preserveAspectRatio="none" />
+              <feDisplacementMap id="volDisplacementMap" in="blurred" in2="displacement_map" scale="40" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+              <feColorMatrix in="displaced" type="saturate" values="1.1" result="displaced_saturated" />
+              <feImage id="volSpecularImage" href="" x="0" y="0" width="10" height="154" result="specular_layer" preserveAspectRatio="none" />
+              <feFuncA type="linear" slope="0.8" />
+              <feBlend in="specular_faded" in2="displaced_saturated" mode="screen" />
+          </filter>
+
+          <filter id="enhanceGlassFilter" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="0.2" result="blurred" />
+              <feImage id="enhanceDisplacementImage" href="" x="0" y="0" width="10" height="154" result="displacement_map" preserveAspectRatio="none" />
+              <feDisplacementMap id="enhanceDisplacementMap" in="blurred" in2="displacement_map" scale="40" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+              <feColorMatrix in="displaced" type="saturate" values="1.1" result="displaced_saturated" />
+              <feImage id="enhanceSpecularImage" href="" x="0" y="0" width="10" height="154" result="specular_layer" preserveAspectRatio="none" />
+              <feFuncA type="linear" slope="0.8" />
+              <feBlend in="specular_faded" in2="displaced_saturated" mode="screen" />
+          </filter>
+      </defs>
+  </svg>
+
+  <script>
+    const SurfaceEquations = { convex_squircle: (x) => Math.pow(1 - Math.pow(1 - x, 4), 1 / 4) };
+
+    class Spring { 
+        constructor(v, s = 300, d = 20) { this.value = v; this.target = v; this.velocity = 0; this.stiffness = s; this.damping = d; } 
+        setTarget(t) { this.target = t; } 
+        update(dt) { const f = (this.target - this.value) * this.stiffness; const df = this.velocity * this.damping; this.velocity += (f - df) * dt; this.value += this.velocity * dt; return this.value; } 
+        isSettled() { return Math.abs(this.target - this.value) < 0.001 && Math.abs(this.velocity) < 0.001; } 
+    }
+
+    function calculateDisplacementMap1D(gt, bw, sf, ri, s = 128) { 
+        const e = 1 / ri; const r =[]; 
+        for (let i = 0; i < s; i++) { 
+            const x = i / s; const y = sf(x); const dx = x < 1 ? 0.0001 : -0.0001;
+            const d = (sf(Math.max(0, Math.min(1, x + dx))) - y) / dx; const m = Math.sqrt(d * d + 1); const n =[-d / m, -1 / m];
+            const dt = n[1]; const k = 1 - e * e * (1 - dt * dt); 
+            if (k < 0) { r.push(0); } else { const rf =[ -(e * dt + Math.sqrt(k)) * n[0], e - (e * dt + Math.sqrt(k)) * n[1] ]; r.push(rf[0] * ((y * bw + gt) / rf[1])); } 
+        } return r; 
+    }
+
+    function calculateDisplacementMap2D(cw, ch, ow, oh, rad, bw, md, pMap) { 
+        const img = new ImageData(cw, ch); 
+        for (let i = 0; i < img.data.length; i += 4) { img.data[i] = 128; img.data[i + 1] = 128; img.data[i + 3] = 255; } 
+        const rSq = rad * rad, rp1Sq = (rad + 1) ** 2, rmBwSq = Math.max(0, rad - bw) ** 2; const wB = ow - rad * 2, hB = oh - rad * 2; const oX = (cw - ow) / 2, oY = (ch - oh) / 2; 
+        for (let y1 = 0; y1 < oh; y1++) {
+            for (let x1 = 0; x1 < ow; x1++) {
+                const idx = ((oY + y1) * cw + oX + x1) * 4; const x = x1 < rad ? x1 - rad : x1 >= ow - rad ? x1 - rad - wB : 0; const y = y1 < rad ? y1 - rad : y1 >= oh - rad ? y1 - rad - hB : 0; const dSq = x * x + y * y; 
+                if (dSq <= rp1Sq && dSq >= rmBwSq) {
+                    const dist = Math.sqrt(dSq); const op = dSq < rSq ? 1 : 1 - (dist - rad) / (Math.sqrt(rp1Sq) - rad); const bIdx = Math.floor(Math.max(0, Math.min(1, (rad - dist) / bw)) * pMap.length); const dVal = pMap[Math.max(0, Math.min(bIdx, pMap.length - 1))] || 0; const dX = md > 0 ? (-(dist > 0 ? x / dist : 0) * dVal) / md : 0; const dY = md > 0 ? (-(dist > 0 ? y / dist : 0) * dVal) / md : 0; 
+                    img.data[idx] = Math.max(0, Math.min(255, 128 + dX * 127 * op)); img.data[idx + 1] = Math.max(0, Math.min(255, 128 + dY * 127 * op));
+                }
+            }
+        } return img; 
+    }
+
+    function calculateSpecularHighlight(ow, oh, rad, bw) { 
+        const img = new ImageData(ow, oh); const sVec =[Math.cos(Math.PI / 3), Math.sin(Math.PI / 3)]; const rSq = rad * rad, rp1Sq = (rad + 1) ** 2, rmSSq = Math.max(0, (rad - 1.5) ** 2); 
+        for (let y1 = 0; y1 < oh; y1++) {
+            for (let x1 = 0; x1 < ow; x1++) {
+                const x = x1 < rad ? x1 - rad : x1 >= ow - rad ? x1 - rad - (ow - rad * 2) : 0; const y = y1 < rad ? y1 - rad : y1 >= oh - rad ? y1 - rad - (oh - rad * 2) : 0; const dSq = x * x + y * y; 
+                if (dSq <= rp1Sq && dSq >= rmSSq) {
+                    const dist = Math.sqrt(dSq); const op = dSq < rSq ? 1 : 1 - (dist - rad) / (Math.sqrt(rp1Sq) - rad); const dp = Math.abs((dist > 0 ? x / dist : 0) * sVec[0] + (dist > 0 ? -y / dist : 0) * sVec[1]); const cf = dp * Math.sqrt(1 - (1 - Math.max(0, Math.min(1, (rad - dist) / 1.5))) ** 2); const c = Math.min(255, 255 * cf); const idx = (y1 * ow + x1) * 4; 
+                    img.data[idx] = img.data[idx + 1] = img.data[idx + 2] = c; img.data[idx + 3] = Math.min(255, c * cf * op);
+                }
+            }
+        } return img; 
+    }
+
+    function imageDataToDataURL(img) { const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; c.getContext("2d").putImageData(img, 0, 0); return c.toDataURL(); }
+
+    let useBackdropFilter = false; 
+    function detectFeatures() { 
+        const t = document.createElement("div"); t.style.backdropFilter = "url(#test)"; useBackdropFilter = !!window.chrome && t.style.backdropFilter.includes("url"); 
+        if (useBackdropFilter) document.body.classList.add("use-backdrop-filter"); 
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        detectFeatures();
+
+        const video = document.querySelector('video');
+        const mediaContainer = document.querySelector('media-container');
+        if (!video || !mediaContainer) return;
+
+        // Mock Initial Data for Standalone Preview
+        video.src = "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_2MB.mp4";
+        video.poster = "https://ik.imagekit.io/lssafvcmr/Course%20Screen/IMG_20260518_222607.webp";
+        document.getElementById('episodePlayTitle').textContent = "Introduction to Tenses";
+        document.getElementById('episodeMetaEp').textContent = "Episode 1";
+        document.getElementById('episodeMetaDuration').textContent = "Duration: 2 Hours";
+        document.getElementById('episodePlayDesc').textContent = "Master English Grammar: This course provides a comprehensive understanding of English tenses.";
+
+        /* 1. Play / Pause & Center Play Button Logic */
+        const centerPlayPause = document.getElementById('centerPlayPause');
+        const playCheck = document.getElementById('playCheck');
+
+        function togglePlay() {
+            if (video.paused) video.play().catch(err => console.log(err));
+            else video.pause();
+        }
+
+        let centerRevealTimeout;
+        function revealCenterBriefly() {
+            if (!document.fullscreenElement) return;
+            centerPlayPause.classList.add('tap-reveal');
+            clearTimeout(centerRevealTimeout);
+            centerRevealTimeout = setTimeout(() => centerPlayPause.classList.remove('tap-reveal'), 2000);
+        }
+
+        video.addEventListener('play', () => {
+            playCheck.checked = true;
+            centerPlayPause.classList.add('video-playing');
+        });
+
+        video.addEventListener('pause', () => {
+            playCheck.checked = false;
+            centerPlayPause.classList.remove('video-playing');
+            centerPlayPause.classList.remove('tap-reveal');
+        });
+
+        function handleCenterToggle(e) {
+            e.preventDefault(); e.stopPropagation();
+            if (window.playTouchSound) window.playTouchSound(1); 
+            togglePlay();
+        }
+        centerPlayPause.addEventListener('click', handleCenterToggle);
+        centerPlayPause.addEventListener('touchend', handleCenterToggle);
+        playCheck.addEventListener('click', (e) => { e.preventDefault(); });
+
+        const normalFsBtn = document.getElementById('normalFsBtn');
+        if (normalFsBtn) {
+            normalFsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (window.playTouchSound) window.playTouchSound(8); 
+                if (!document.fullscreenElement) mediaContainer.requestFullscreen();
+                else document.exitFullscreen();
+            });
+        }
+
+        /* 2. Sliders Config */
+        const volSlider = document.getElementById('inlineVolSlider');
+        const progressSlider = document.getElementById('inlineProgressSlider');
+
+        function updateSliderGradient(el, val, max = 100) {
+            const pct = (val / max) * 100;
+            el.style.background = `linear-gradient(to right, white 0%, white ${pct}%, rgba(255,255,255,0.3) ${pct}%, rgba(255,255,255,0.3) 100%)`;
+        }
+
+        if (volSlider) {
+            video.addEventListener('volumechange', () => {
+                const curVol = video.muted ? 0 : video.volume;
+                volSlider.value = curVol;
+                updateSliderGradient(volSlider, curVol, 1);
+            });
+            volSlider.addEventListener('input', (e) => {
+                video.volume = e.target.value;
+                video.muted = (video.volume === 0);
+                updateSliderGradient(volSlider, e.target.value, 1);
+            });
+            updateSliderGradient(volSlider, video.volume, 1);
+        }
+
+        if (progressSlider) {
+            let isScrubbing = false;
+            function rafProgress() {
+                if (!isScrubbing && video.duration) {
+                    const pct = (video.currentTime / video.duration) * 100;
+                    progressSlider.value = pct;
+                    updateSliderGradient(progressSlider, pct, 100);
+                }
+                requestAnimationFrame(rafProgress);
+            }
+            requestAnimationFrame(rafProgress);
+            let __scrubWasPlaying = false;
+            const __endScrub = () => {
+                if (!isScrubbing) return;
+                isScrubbing = false;
+                if (__scrubWasPlaying) { video.play().catch(()=>{}); __scrubWasPlaying = false; }
+            };
+            progressSlider.addEventListener('pointerdown', () => {
+                isScrubbing = true;
+                __scrubWasPlaying = !video.paused;
+                if (__scrubWasPlaying) video.pause();
+            });
+            progressSlider.addEventListener('pointerup', __endScrub);
+            progressSlider.addEventListener('pointercancel', __endScrub);
+            window.addEventListener('pointerup', __endScrub);
+            progressSlider.addEventListener('input', (e) => {
+                if (video.duration) {
+                    const newTime = (e.target.value / 100) * video.duration;
+                    video.currentTime = newTime;
+                    updateSliderGradient(progressSlider, e.target.value, 100);
+                }
+            });
+        }
+
+        /* 3. Progress Tooltip */
+        const progressTooltip = document.getElementById('progressTooltip');
+        const tooltipTime = document.getElementById('tooltipTime');
+        const tooltipVideo = document.getElementById('tooltipVideo');
+
+        function formatTime(sec) {
+            if (!isFinite(sec) || sec < 0) sec = 0;
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        video.addEventListener('loadedmetadata', () => { tooltipVideo.src = video.src; });
+
+        function handleProgressHover(e) {
+            if (!video.duration) return;
+            const rect = progressSlider.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            if (!clientX) return;
+
+            let hoverX = Math.max(0, Math.min(clientX - rect.left, rect.width));
+            const pct = hoverX / rect.width;
+            const hoverTime = pct * video.duration;
+
+            const containerRect = mediaContainer.getBoundingClientRect();
+            let tooltipX = clientX - containerRect.left;
+            const tooltipWidth = progressTooltip.offsetWidth || 136;
+            const halfW = tooltipWidth / 2;
+            const edgePad = 8;
+            tooltipX = Math.max(rect.left - containerRect.left + halfW + edgePad, Math.min(tooltipX, rect.left - containerRect.left + rect.width - halfW + edgePad));
+
+            progressTooltip.style.left = `${tooltipX}px`;
+            progressTooltip.style.display = 'flex';
+            tooltipTime.textContent = formatTime(hoverTime);
+            tooltipVideo.currentTime = hoverTime;
+        }
+
+        progressSlider.addEventListener('mousemove', handleProgressHover);
+        progressSlider.addEventListener('touchmove', handleProgressHover);
+        progressSlider.addEventListener('mouseleave', () => progressTooltip.style.display = 'none');
+        progressSlider.addEventListener('touchend', () => progressTooltip.style.display = 'none');
+
+        /* 4. Real-Time SVG Filters */
+        const config = { width: 10, height: 154, radius: 5, bezelWidth: 2, glassThickness: 20, refractiveIndex: 1.6, maxDisp: 0 }; 
+        const precomputed = calculateDisplacementMap1D(config.glassThickness, config.bezelWidth, SurfaceEquations.convex_squircle, config.refractiveIndex); 
+        config.maxDisp = Math.max(...precomputed.map(Math.abs)); 
+
+        const displacementURL = imageDataToDataURL(calculateDisplacementMap2D(config.width, config.height, config.width, config.height, config.radius, config.bezelWidth, config.maxDisp || 1, precomputed));
+        const specularURL = imageDataToDataURL(calculateSpecularHighlight(config.width, config.height, config.radius, config.bezelWidth));
+
+        document.getElementById("volDisplacementImage").setAttribute("href", displacementURL); 
+        document.getElementById("volSpecularImage").setAttribute("href", specularURL); 
+        document.getElementById("enhanceDisplacementImage").setAttribute("href", displacementURL); 
+        document.getElementById("enhanceSpecularImage").setAttribute("href", specularURL); 
+
+        const volState = { value: 100, isDragging: false }; 
+        const volSprings = { fill: new Spring(100, 300, 25), squishY: new Spring(1.0, 400, 20), squishX: new Spring(1.0, 400, 20) }; 
+        const volContainer = document.getElementById('volContainer'); const volGlass = document.getElementById('volGlass'); const volFill = document.getElementById('volFill'); const volCloneWorld = document.getElementById('volCloneWorld'); 
+
+        const brightState = { value: 0, isDragging: false }; 
+        const brightSprings = { fill: new Spring(0, 300, 25), squishY: new Spring(1.0, 400, 20), squishX: new Spring(1.0, 400, 20) }; 
+        const brightContainer = document.getElementById('enhanceContainer'); const brightGlass = document.getElementById('enhanceGlass'); const brightFill = document.getElementById('brightFill'); const brightCloneWorld = document.getElementById('brightCloneWorld'); 
+
+        if (!useBackdropFilter) { 
+            volCloneWorld.innerHTML = document.getElementById('volRealWorld').outerHTML; document.getElementById('volClone').style.filter = "url(#volGlassFilter)"; 
+            brightCloneWorld.innerHTML = document.getElementById('brightRealWorld').outerHTML; document.getElementById('brightClone').style.filter = "url(#enhanceGlassFilter)"; 
+        } 
+
+        let physicsFrameId = null;
+        function runPhysicsLoop() {
+            const dt = Math.min(0.032, 1 / 60); 
+
+            let volOverpull = volState.value > 100 ? volState.value - 100 : (volState.value < 0 ? volState.value : 0); 
+            volSprings.squishY.setTarget(Math.max(0.65, Math.min(1.35, 1.0 + (volOverpull * 0.006)))); 
+            volSprings.squishX.setTarget(Math.max(0.75, Math.min(1.25, 1.0 - (volOverpull * 0.003)))); 
+            volSprings.fill.setTarget(Math.max(0, Math.min(100, volState.value))); 
+            
+            const vf = volSprings.fill.update(dt), vsy = volSprings.squishY.update(dt), vsx = volSprings.squishX.update(dt); 
+            volFill.style.height = `${vf}%`; volGlass.style.transform = `scale(${vsx}, ${vsy})`; 
+            document.getElementById("volDisplacementMap").setAttribute("scale", config.maxDisp * vsx); 
+            
+            let brightOverpull = brightState.value > 100 ? brightState.value - 100 : (brightState.value < 0 ? brightState.value : 0); 
+            brightSprings.squishY.setTarget(Math.max(0.65, Math.min(1.35, 1.0 + (brightOverpull * 0.006)))); 
+            brightSprings.squishX.setTarget(Math.max(0.75, Math.min(1.25, 1.0 - (brightOverpull * 0.003)))); 
+            brightSprings.fill.setTarget(Math.max(0, Math.min(100, brightState.value))); 
+            
+            const bf = brightSprings.fill.update(dt), bsy = brightSprings.squishY.update(dt), bsx = brightSprings.squishX.update(dt); 
+            brightFill.style.height = `${bf}%`; brightGlass.style.transform = `scale(${bsx}, ${bsy})`; 
+            document.getElementById("enhanceDisplacementMap").setAttribute("scale", config.maxDisp * bsx); 
+
+            if (!Object.values(volSprings).every(sp => sp.isSettled()) || !Object.values(brightSprings).every(sp => sp.isSettled())) {
+                physicsFrameId = requestAnimationFrame(runPhysicsLoop);
+            } else { physicsFrameId = null; }
+        }
+        function wakePhysics() { if (!physicsFrameId) physicsFrameId = requestAnimationFrame(runPhysicsLoop); }
+
+        function updateEnhancementFilters() {
+            let val = Math.max(0, Math.min(100, brightState.value));
+            video.style.filter = `contrast(${100 + (val/100)*20}%) saturate(${100 + (val/100)*25}%) brightness(100%)`;
+        }
+
+        /* 5. Fullscreen Logic */
+        document.addEventListener('fullscreenchange', async () => {
+            const controls = document.querySelector('.media-controls');
+            const brandHeader = document.getElementById('fullscreenLogoHeader');
+            
+            if (document.fullscreenElement) {
+                if (screen.orientation && screen.orientation.lock) try { await screen.orientation.lock('landscape'); } catch(e) {}
+                
+                if (controls) { controls.style.opacity = '0'; controls.style.pointerEvents = 'none'; controls.style.transform = 'translateY(10px)'; controls.style.transition = 'opacity 0.5s ease, transform 0.5s ease'; }
+                if (brandHeader) { brandHeader.style.opacity = '0'; brandHeader.style.pointerEvents = 'none'; brandHeader.style.transform = 'translateY(-10px)'; brandHeader.style.transition = 'opacity 0.5s ease, transform 0.5s ease'; }
+                
+                setTimeout(() => { if (document.fullscreenElement) showControls(); }, 1000);
+            } else {
+                if (screen.orientation && screen.orientation.unlock) try { screen.orientation.unlock(); } catch(e) {}
+                clearTimeout(controlsTimeout);
+                if (controls) { controls.style.opacity = ''; controls.style.pointerEvents = ''; controls.style.transform = ''; }
+                if (brandHeader) { brandHeader.style.opacity = ''; brandHeader.style.pointerEvents = ''; brandHeader.style.transform = ''; }
+                enforceNormalModeQuality(); 
+            }
+        });
+
+        let controlsTimeout;
+        function showControls() {
+            const controls = document.querySelector('.media-controls'); const overlay = document.querySelector('.media-overlay');
+            if (!controls) return;
+            controls.style.opacity = '1'; controls.style.pointerEvents = 'auto'; controls.style.transform = 'translateY(0)';
+            if (overlay) overlay.style.opacity = '1';
+
+            const brandHeader = document.getElementById('fullscreenLogoHeader');
+            if (brandHeader && document.fullscreenElement) { brandHeader.style.opacity = '1'; brandHeader.style.pointerEvents = 'auto'; brandHeader.style.transform = 'translateY(0)'; }
+            if (document.fullscreenElement) centerPlayPause.classList.remove('controls-hidden');
+
+            clearTimeout(controlsTimeout);
+            if (document.fullscreenElement) controlsTimeout = setTimeout(hideControls, 2000);
+        }
+
+        function hideControls() {
+            if (!document.fullscreenElement) return;
+            const controls = document.querySelector('.media-controls'); const overlay = document.querySelector('.media-overlay');
+            if (!controls) return;
+            controls.style.opacity = '0'; controls.style.pointerEvents = 'none'; controls.style.transform = 'translateY(10px)';
+            if (overlay) overlay.style.opacity = '0';
+
+            const brandHeader = document.getElementById('fullscreenLogoHeader');
+            if (brandHeader) { brandHeader.style.opacity = '0'; brandHeader.style.pointerEvents = 'none'; brandHeader.style.transform = 'translateY(-10px)'; }
+            centerPlayPause.classList.add('controls-hidden');
+
+            if (qualityMenu) qualityMenu.style.display = 'none';
+            const speedMenu = document.getElementById('playback-rate-menu');
+            if (speedMenu) { speedMenu.removeAttribute('open'); speedMenu.style.display = 'none'; setTimeout(() => { speedMenu.style.display = ''; }, 50); }
+        }
+
+        mediaContainer.addEventListener('mousemove', showControls);
+        mediaContainer.addEventListener('touchstart', showControls, {passive: true});
+        video.addEventListener('pause', () => { if (document.fullscreenElement) { clearTimeout(controlsTimeout); controlsTimeout = setTimeout(hideControls, 2000); } });
+        video.addEventListener('play', () => { if (document.fullscreenElement) { clearTimeout(controlsTimeout); controlsTimeout = setTimeout(hideControls, 2000); } });
+
+        /* 6. Swipe Gestures */
+        let touchStartX = 0, touchStartY = 0, startVolume = 1, startBrightness = 0, gestureType = null, gestureSide = null, sliderInactivityTimeout = null;
+        const activeTitle = document.getElementById('sliderActiveTitle');
+
+        function resetSliderInactivityTimer() {
+            clearTimeout(sliderInactivityTimeout);
+            sliderInactivityTimeout = setTimeout(() => {
+                volContainer.style.opacity = '0'; brightContainer.style.opacity = '0';
+                activeTitle.classList.remove('show'); mediaContainer.classList.remove('slider-active');
+                setTimeout(() => { volContainer.style.display = 'none'; brightContainer.style.display = 'none'; volState.isDragging = false; brightState.isDragging = false; gestureType = null; gestureSide = null; }, 300); 
+            }, 1000); 
+        }
+
+        mediaContainer.addEventListener('touchstart', (e) => {
+            if (!document.fullscreenElement) return;
+            const touch = e.touches[0]; touchStartX = touch.clientX; touchStartY = touch.clientY; startVolume = video.volume; startBrightness = brightState.value;
+            gestureType = null; gestureSide = null; volState.isDragging = false; brightState.isDragging = false;
+        }, {passive: true});
+
+        mediaContainer.addEventListener('touchmove', (e) => {
+            if (!document.fullscreenElement) return;
+            const touch = e.touches[0]; const deltaX = touch.clientX - touchStartX; const deltaY = touch.clientY - touchStartY;
+            
+            if (gestureType === null && (Math.abs(deltaY) > 10 || Math.abs(deltaX) > 10)) {
+                if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                    gestureType = 'vertical';
+                    if (touchStartX < window.innerWidth / 2) { gestureSide = 'left'; brightContainer.style.display = 'flex'; brightContainer.style.opacity = '1'; brightState.isDragging = true; } 
+                    else { gestureSide = 'right'; volContainer.style.display = 'flex'; volContainer.style.opacity = '1'; volState.isDragging = true; }
+                } else { gestureType = 'horizontal'; }
+            }
+            
+            if (gestureType === 'vertical') {
+                if (e.cancelable) e.preventDefault();
+                mediaContainer.classList.add('slider-active'); clearTimeout(sliderInactivityTimeout);
+                const percentChange = (-deltaY / window.innerHeight) * 3.6 * 100;
+
+                if (gestureSide === 'left') {
+                    brightState.value = Math.max(0, Math.min(100, startBrightness + percentChange));
+                    updateEnhancementFilters(); wakePhysics();
+                    activeTitle.textContent = 'Enhancement'; activeTitle.classList.add('show');
+                } else {
+                    volState.value = Math.max(0, Math.min(100, startVolume * 100 + percentChange));
+                    video.volume = volState.value / 100; wakePhysics();
+                    activeTitle.textContent = 'Volume'; activeTitle.classList.add('show');
+                }
+            }
+        }, {passive: false});
+
+        mediaContainer.addEventListener('touchend', () => {
+            if (gestureType === 'vertical') resetSliderInactivityTimer();
+            else { mediaContainer.classList.remove('slider-active'); activeTitle.classList.remove('show'); gestureType = null; gestureSide = null; }
+        });
+
+        /* 7. Quality Menu */
+        const qualityMenu = document.getElementById('customQualityMenu');
+        const qualityOptions = document.querySelectorAll('.quality-option-btn');
+        const toast = document.getElementById('customToastNotification');
+        let toastTimeout;
+
+        function showToast(message) {
+            toast.textContent = message; toast.classList.add('show');
+            clearTimeout(toastTimeout); toastTimeout = setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function enforceNormalModeQuality() {
+            document.getElementById('customQualityBtn').style.display = document.fullscreenElement ? 'flex' : 'none';
+            if (!document.fullscreenElement) {
+                qualityOptions.forEach(o => { o.classList.remove('active'); if (o.getAttribute('data-quality') === '480p') o.classList.add('active'); });
+            }
+        }
+
+        document.getElementById('customQualityBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            qualityMenu.style.display = qualityMenu.style.display === 'flex' ? 'none' : 'flex';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!qualityMenu.contains(e.target) && e.target !== document.getElementById('customQualityBtn')) qualityMenu.style.display = 'none';
+        });
+
+        qualityOptions.forEach(opt => {
+            opt.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!document.fullscreenElement) { showToast("Quality locked to 480p outside fullscreen mode"); return; }
+                qualityOptions.forEach(o => o.classList.remove('active')); opt.classList.add('active');
+                showToast(`Quality: ${opt.getAttribute('data-quality')}`);
+                qualityMenu.style.display = 'none';
+            });
+        });
+
+        /* 8. Motivation Overlay */
+        const taglines = ["Learn as a Learner, not as a Student.", "Mistakes are proof that you are trying.", "Focus on progress, not perfection.", "Stay curious. Keep exploring."];
+        const motivationOverlay = document.getElementById('motivationOverlay');
+        let _motivationShown = false;
+        
+        function triggerMotivation() {
+            if (!document.fullscreenElement) return;
+            document.getElementById('motivationText').textContent = taglines[Math.floor(Math.random() * taglines.length)];
+            motivationOverlay.classList.add('show');
+            setTimeout(() => motivationOverlay.classList.remove('show'), 2000); 
+        }
+
+        video.addEventListener('play', () => { if (document.fullscreenElement && !_motivationShown) { _motivationShown = true; triggerMotivation(); } });
+        document.addEventListener('fullscreenchange', () => { if (document.fullscreenElement) { _motivationShown = false; if (!video.paused) { _motivationShown = true; triggerMotivation(); } } });
+
+        wakePhysics(); enforceNormalModeQuality(); 
+
+    });
+  </script>
+
+</body>
+</html>
+
+

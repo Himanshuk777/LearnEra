@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LearnEra - Board Contents</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css?family=Inter:600,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  <!-- LearnEra exact theme initialization logic -->
+  <script>
+    (function applyLearnEraTheme() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        let themeMode = urlParams.get('theme') || localStorage.getItem('appThemeMode') || 'system';
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        let isDark = themeMode === 'dark' || (themeMode === 'system' && prefersDark);
+        
+        let darkTextStyle = urlParams.get('darkText') || urlParams.get('darkTextStyle') || localStorage.getItem('darkTextStyle') || 'colorful';
+        
+        if (isDark) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            if (darkTextStyle === 'deep-dark' || themeMode === 'deep-dark') {
+                document.documentElement.setAttribute('data-dark-text', 'deep-dark');
+            } else {
+                document.documentElement.setAttribute('data-dark-text', 'colorful');
+            }
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.documentElement.removeAttribute('data-dark-text');
+        }
+    })();
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+      background-color: var(--body-bg);
+      color: var(--text-color);
+      border-radius: 0 !important; 
+    }
+
+    /* Dynamic Base Neumorphism & Top Notch Variables */
+    :root {
+        --top-space: 5vh;
+        --body-bg: #e6edf7; 
+        --neu-shadow-light: #ffffff;
+        --neu-shadow-dark: #c8d3e4;
+        --text-color: #5a6b82; 
+        --text-dark: #3b4a5e;
+        
+        --search-bar-bg: var(--body-bg);
+        --search-icon-theme: var(--board-color, #8A2BE2);
+        --search-input-color: var(--board-color, #8A2BE2);
+        --search-input-placeholder-color: #a3b1c6;
+        --search-bar-inner-shadow: var(--card-shadow-micro);
+
+        --card-shadow: 10px 10px 20px var(--neu-shadow-dark), -10px -10px 20px var(--neu-shadow-light);
+        --card-shadow-sm: 5px 5px 10px var(--neu-shadow-dark), -5px -5px 10px var(--neu-shadow-light);
+        --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+        --card-shadow-inset: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+
+        --board-color: #FF69B4;
+        --board-shadow-color: rgba(255, 105, 180, 0.45);
+        --header-gradient: linear-gradient(45deg, #6a008f, #ff007f);
+        --active-cat-gradient: linear-gradient(90deg, #ff007f 0%, #ff69b4 100%);
+    }
+
+    html[data-theme="dark"], body[data-theme="dark"] {
+        --body-bg: #1e1e24; 
+        --neu-shadow-dark: #101014;
+        --neu-shadow-light: #2c2c36;
+        --text-color: #a0aab8; 
+        --text-dark: #e0e0e0;
+        
+        --search-icon-theme: var(--board-color, #bb86fc);
+        --search-input-color: var(--board-color, #bb86fc);
+
+        --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+        --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+        --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+        --card-shadow-inset: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+    }
+
+    /* Requirement 2: Dynamic shadow color changes to deep black in Dark Colorful Mode */
+    html[data-theme="dark"][data-dark-text="colorful"],
+    body[data-theme="dark"][data-dark-text="colorful"] {
+        --board-shadow-color: #000000 !important;
+    }
+
+    html[data-theme="dark"][data-dark-text="colorful"] .board-neumorphic-card,
+    body[data-theme="dark"][data-dark-text="colorful"] .board-neumorphic-card {
+      box-shadow: inset 3px 3px 6px #000000, var(--card-shadow-micro) !important;
+    }
+
+    html[data-theme="dark"][data-dark-text="colorful"] .board-actions button,
+    html[data-theme="dark"][data-dark-text="colorful"] .board-actions a,
+    body[data-theme="dark"][data-dark-text="colorful"] .board-actions button,
+    body[data-theme="dark"][data-dark-text="colorful"] .board-actions a {
+      box-shadow: 3px 3px 10px #000000, inset 2px 2px 5px #000000, -2px -2px 6px rgba(255,255,255,0.05) !important;
+      color: var(--board-color) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+
+    /* Header */
+    .global-header {
+      width: 100%;
+      background: var(--header-gradient);
+      padding-top: calc(15px + var(--top-space, 5vh));
+      padding-bottom: 15px;
+      padding-left: 25px;
+      padding-right: 25px;
+      text-align: center;
+      color: white;
+      box-shadow: none !important;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .global-header .back-button {
+      position: absolute;
+      left: 20px;
+      background: var(--body-bg);
+      color: var(--board-color);
+      border: 2px solid var(--body-bg);
+      border-radius: 16px;
+      padding: 10px 14px;
+      cursor: pointer;
+      box-shadow: none !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .global-header .back-button svg {
+      width: 20px;
+      height: 20px;
+      background-color: transparent !important;
+    }
+    .global-header .back-button:active {
+      transform: scale(0.95);
+      box-shadow: none !important;
+    }
+
+    .global-header h1 {
+      font-size: 1.3em;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+
+    /* Controls Panel */
+    .fixed-controls {
+      position: fixed;
+      left: 0; width: 100%;
+      background: var(--body-bg);
+      z-index: 90;
+      padding: 14px 20px 8px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+    }
+    .fixed-controls.hidden {
+      transform: translateY(-100%);
+      opacity: 0; pointer-events: none;
+    }
+
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 500px;
+      transition: gap 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    
+    .search-bar-container {
+      flex: 1;
+      min-width: 0;
+      background: var(--search-bar-bg);
+      border-radius: 25px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow: var(--search-bar-inner-shadow);
+      transition: box-shadow 0.3s ease, flex 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .search-bar-container:focus-within {
+      box-shadow: var(--card-shadow-inset);
+    }
+    .search-icon-mask {
+      width: 20px; height: 20px;
+      background-color: var(--search-icon-theme);
+      -webkit-mask: url('https://ik.imagekit.io/lssafvcmr/magnifying-glass%20(1).png') no-repeat center / contain;
+      mask: url('https://ik.imagekit.io/lssafvcmr/magnifying-glass%20(1).png') no-repeat center / contain;
+      opacity: 0.9;
+      margin-right: 10px;
+      flex-shrink: 0;
+      transition: background-color 0.3s ease;
+    }
+    .search-bar-container input {
+      flex-grow: 1;
+      background: transparent;
+      border: none; outline: none;
+      color: var(--search-input-color);
+      font-size: 0.95em; font-weight: 600;
+      transition: color 0.3s ease;
+    }
+    .search-bar-container input::placeholder {
+      color: var(--search-input-placeholder-color);
+    }
+
+    .filter-toggle-btn {
+      width: 42px; height: 42px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      background: var(--active-cat-gradient);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--card-shadow-micro);
+      transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                  opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                  margin 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                  box-shadow 0.3s ease, transform 0.2s ease;
+    }
+
+    /* Requirement 1: Filter button icon color is ALWAYS WHITE across all themes */
+    .filter-toggle-btn svg,
+    .filter-toggle-btn svg *,
+    [data-dark-text="deep-dark"] .filter-toggle-btn svg,
+    [data-dark-text="deep-dark"] .filter-toggle-btn svg *,
+    [data-theme="deep-dark"] .filter-toggle-btn svg,
+    [data-theme="deep-dark"] .filter-toggle-btn svg * {
+      width: 20px; height: 20px;
+      stroke: #ffffff !important;
+      color: #ffffff !important;
+    }
+    .filter-toggle-btn:active { transform: scale(0.92); box-shadow: var(--card-shadow-inset); }
+    .filter-toggle-btn.active { box-shadow: var(--card-shadow-inset); }
+
+    .search-row.search-active .filter-toggle-btn {
+      width: 0 !important;
+      opacity: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      pointer-events: none !important;
+    }
+    .search-row.search-active { gap: 0 !important; }
+
+    .category-buttons-horizontal {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background: var(--body-bg);
+      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12);
+      display: flex;
+      overflow-x: auto;
+      padding: 6px 12px 8px 12px;
+      gap: 10px;
+      max-height: 200px;
+      opacity: 1;
+      z-index: 95;
+      border-bottom-left-radius: 18px;
+      border-bottom-right-radius: 18px;
+      transition: max-height 0.35s ease, opacity 0.3s ease, padding 0.35s ease;
+    }
+    .category-buttons-horizontal.collapsed {
+      max-height: 0;
+      opacity: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      margin: 0;
+      pointer-events: none;
+      overflow: hidden;
+      box-shadow: none;
+    }
+    .search-row.search-active ~ .category-buttons-horizontal { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; margin: 0; pointer-events: none; overflow: hidden; box-shadow: none; }
+    .category-buttons-horizontal::-webkit-scrollbar { display: none; }
+    
+    .category-btn {
+      flex-shrink: 0;
+      background: var(--body-bg);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 16px;
+      padding: 6px 16px;
+      margin: 2px 0;
+      color: var(--text-dark);
+      font-size: 0.85em; font-weight: 600;
+      box-shadow: var(--card-shadow-micro);
+      transition: all 0.3s;
+    }
+    .category-btn:active { box-shadow: var(--card-shadow-inset); transform: scale(0.95); }
+    .category-btn.active {
+      background: var(--active-cat-gradient);
+      color: white; box-shadow: none;
+    }
+
+    /* Content Layout */
+    .content-section {
+      width: calc(100% - 40px);
+      max-width: 550px;
+      margin: 20px auto;
+      padding-bottom: 50px;
+    }
+    
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .board-neumorphic-card {
+      background: var(--body-bg);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow: inset 3px 3px 6px color-mix(in srgb, var(--board-color) 70%, transparent), var(--card-shadow-micro);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      opacity: 0;
+      transform: scale(0.7);
+      transition: opacity 0.25s ease, transform 0.25s ease, box-shadow 0.2s ease;
+      will-change: transform, opacity;
+    }
+    .board-neumorphic-card.in-view {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .board-neumorphic-card:active {
+      transform: scale(0.98);
+      box-shadow: inset 4px 4px 8px color-mix(in srgb, var(--board-color) 70%, transparent), var(--card-shadow-inset);
+    }
+
+    .board-neumorphic-card .class-badge,
+    .board-neumorphic-card .medium-badge,
+    .board-neumorphic-card .info-item {
+      opacity: 0.7;
+    }
+
+    /* Card Header Row */
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .class-badge, .medium-badge {
+      font-size: 0.85rem;
+      color: var(--text-dark);
+      background: var(--body-bg);
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: var(--card-shadow-micro);
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .info-label {
+      color: var(--board-color);
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-right: 4px;
+      letter-spacing: 0.2px;
+    }
+
+    .neu-divider {
+      width: 100%; height: 2px;
+      background: var(--body-bg);
+      box-shadow: inset 1px 1px 2px var(--neu-shadow-dark), inset -1px -1px 2px var(--neu-shadow-light);
+      margin: 2px 0;
+    }
+
+    .card-info-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--text-dark);
+      font-weight: 600;
+      background: transparent;
+      padding: 2px 0;
+      box-shadow: none !important;
+      width: 100%;
+    }
+
+    .board-actions {
+      display: flex;
+      flex-direction: row;
+      gap: 12px;
+      margin-top: 4px;
+      width: 100%;
+    }
+    .board-actions button,
+    .board-actions a {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: var(--body-bg);
+      color: var(--board-color);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      box-shadow: inset 3px 3px 6px color-mix(in srgb, var(--board-color) 70%, transparent), var(--card-shadow-micro);
+      transition: all 0.2s ease-in-out;
+    }
+    
+    .board-actions button:active,
+    .board-actions a:active {
+      transform: scale(0.95);
+      box-shadow: inset 4px 4px 8px color-mix(in srgb, var(--board-color) 70%, transparent), var(--card-shadow-inset);
+    }
+
+    /* Dynamic Theme Shadow in Colorful Dark Mode */
+    html[data-theme="dark"]:not([data-dark-text="deep-dark"]) .board-actions button,
+    html[data-theme="dark"]:not([data-dark-text="deep-dark"]) .board-actions a,
+    body[data-theme="dark"]:not([data-dark-text="deep-dark"]) .board-actions button,
+    body[data-theme="dark"]:not([data-dark-text="deep-dark"]) .board-actions a {
+      box-shadow: 3px 3px 10px var(--board-shadow-color), inset 2px 2px 5px var(--board-color), -2px -2px 6px rgba(255,255,255,0.05) !important;
+      color: var(--board-color) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .full-screen-arrangement {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      width: 100vw; height: 100vh;
+      display: none;
+      z-index: 1000;
+      background: var(--body-bg);
+    }
+    .viewer-body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      position: relative;
+    }
+    .viewer-body iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: transparent;
+      display: block;
+    }
+
+    /* Requirement 3: Floating back button position aligned EXACTLY with header position + auto hide transitions */
+    .floating-viewer-back {
+      position: fixed;
+      top: calc(15px + var(--top-space, 5vh));
+      left: 20px;
+      z-index: 1001;
+      background: var(--body-bg);
+      color: var(--board-color);
+      border: 2px solid var(--body-bg);
+      border-radius: 16px;
+      padding: 10px 14px;
+      cursor: pointer;
+      box-shadow: none !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      transform: scale(1);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .floating-viewer-back svg {
+      width: 20px;
+      height: 20px;
+      background-color: transparent !important;
+    }
+    .floating-viewer-back:active {
+      transform: scale(0.95);
+    }
+
+    /* Skeleton Loading UI */
+    .skeleton-container {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .skel-card {
+      background: var(--body-bg);
+      border-radius: 20px;
+      box-shadow: var(--card-shadow-micro);
+      padding: 18px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .skel-block {
+      background: linear-gradient(90deg, var(--body-bg) 25%, var(--neu-shadow-dark) 50%, var(--body-bg) 75%);
+      background-size: 200% 100%;
+      animation: skel-anim 1.5s infinite;
+      border-radius: 10px;
+    }
+    @keyframes skel-anim {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .skel-top { height: 25px; width: 40%; }
+    .skel-mid { height: 20px; width: 70%; }
+    .skel-btn-container { display: flex; gap: 12px; margin-top: 5px; }
+    .skel-btn { height: 40px; flex: 1; border-radius: 12px; }
+
+    /* Lottie Overlay */
+    .lottie-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--body-bg); z-index: 2000;
+      display: flex; justify-content: center; align-items: center;
+      transition: opacity 0.5s ease;
+    }
+    .lottie-overlay lottie-player { width: 150px; height: 150px; }
+
+    #lazyLoadTrigger {
+      width: 100%; height: 60px;
+      display: flex; justify-content: center; align-items: center;
+      color: var(--board-color); font-weight: 700; font-size: 0.95rem;
+      margin-top: 20px;
+    }
+    .no-results {
+      text-align: center; color: var(--text-color); font-weight: 600;
+      margin-top: 30px; display: none; font-size: 1em;
+    }
+
+    @media (max-width: 768px) {
+      .global-header .back-button { padding: 8px 12px; }
+      .global-header h1 { font-size: 1.1em; }
+      .search-bar-container input { font-size: 0.9em; }
+      .content-section { width: calc(100% - 25px); }
+      .board-neumorphic-card { padding: 16px; }
+      .class-badge, .medium-badge, .info-item, .info-label { font-size: 0.85rem; }
+      .board-actions { flex-direction: row; gap: 10px; }
+    }
+    
+    body.fully-loaded-no-radius, body.fully-loaded-no-radius #mainWrapper {
+        border-radius: 0 !important;
+    }
+
+    /* Deep Dark Mode Rules */
+    html[data-dark-text="deep-dark"],
+    body[data-dark-text="deep-dark"],
+    html[data-theme="deep-dark"],
+    body[data-theme="deep-dark"] {
+      --body-bg: #0c0c0f !important;
+      --neu-shadow-dark: #050506 !important;
+      --neu-shadow-light: #18181c !important;
+      --text-color: #888888 !important;
+      --text-dark: #888888 !important;
+      --board-color: #888888 !important;
+      --search-icon-theme: #888888 !important;
+      --search-input-color: #888888 !important;
+      --search-input-placeholder-color: #555555 !important;
+      --card-shadow-micro: 2px 2px 5px #050506, -2px -2px 5px #18181c !important;
+      --card-shadow-inset: inset 4px 4px 8px #050506, inset -2px -2px 6px rgba(255,255,255,0.02) !important;
+    }
+
+    [data-dark-text="deep-dark"] *,
+    [data-dark-text="deep-dark"] .info-label,
+    [data-dark-text="deep-dark"] .class-badge,
+    [data-dark-text="deep-dark"] .medium-badge,
+    [data-dark-text="deep-dark"] .info-item,
+    [data-dark-text="deep-dark"] .search-bar-container input,
+    [data-dark-text="deep-dark"] .no-results,
+    [data-dark-text="deep-dark"] .board-actions button,
+    [data-dark-text="deep-dark"] .board-actions a {
+      color: #888888 !important;
+      -webkit-text-fill-color: #888888 !important;
+    }
+
+    [data-dark-text="deep-dark"] .global-header h1,
+    [data-dark-text="deep-dark"] #boardTitle,
+    [data-dark-text="deep-dark"] #pdfViewerTitle,
+    [data-theme="deep-dark"] .global-header h1,
+    [data-theme="deep-dark"] #boardTitle,
+    [data-theme="deep-dark"] #pdfViewerTitle {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+
+    [data-dark-text="deep-dark"] .global-header .back-button,
+    [data-dark-text="deep-dark"] .floating-viewer-back,
+    [data-theme="deep-dark"] .global-header .back-button,
+    [data-theme="deep-dark"] .floating-viewer-back {
+      background: #0c0c0f !important;
+      color: #ffffff !important;
+      border: 2px solid #0c0c0f !important;
+      box-shadow: 2px 2px 5px #050506, -2px -2px 5px #18181c !important;
+    }
+
+    [data-dark-text="deep-dark"] .global-header .back-button svg,
+    [data-dark-text="deep-dark"] .floating-viewer-back svg,
+    [data-theme="deep-dark"] .global-header .back-button svg,
+    [data-theme="deep-dark"] .floating-viewer-back svg {
+      fill: none !important;
+      stroke: #ffffff !important;
+      background-color: transparent !important;
+    }
+
+    [data-dark-text="deep-dark"] .category-btn,
+    [data-theme="deep-dark"] .category-btn {
+      background: #0c0c0f !important;
+      border: 1px solid rgba(255, 255, 255, 0.3) !important;
+      color: #888888 !important;
+      box-shadow: 2px 2px 5px #050506, -2px -2px 5px #18181c !important;
+    }
+
+    [data-dark-text="deep-dark"] .category-btn.active,
+    [data-theme="deep-dark"] .category-btn.active {
+      background: #1e1e26 !important;
+      border: 1px solid #888888 !important;
+      color: #ffffff !important;
+      box-shadow: inset 2px 2px 4px #050506 !important;
+    }
+
+    [data-dark-text="deep-dark"] .neu-divider,
+    [data-theme="deep-dark"] .neu-divider {
+      background: #33333d !important;
+      box-shadow: none !important;
+      opacity: 0.6 !important;
+    }
+
+    [data-dark-text="deep-dark"] svg,
+    [data-dark-text="deep-dark"] svg * {
+      fill: #888888 !important;
+      stroke: #888888 !important;
+      color: #888888 !important;
+    }
+
+    [data-dark-text="deep-dark"] .search-icon-mask {
+      background-color: #888888 !important;
+    }
+
+    [data-dark-text="deep-dark"] img,
+    [data-dark-text="deep-dark"] lottie-player {
+      filter: grayscale(100%) opacity(0.35) !important;
+    }
+
+    [data-dark-text="deep-dark"] .board-neumorphic-card,
+    [data-dark-text="deep-dark"] .board-actions button,
+    [data-dark-text="deep-dark"] .board-actions a {
+      box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.6), var(--card-shadow-micro) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+  </style>
+</head>
+<body id="mainWrapper">
+
+  <!-- Lottie Loader Overlay -->
+  <div id="lottieOverlay" class="lottie-overlay">
+      <lottie-player src="https://ik.imagekit.io/lssafvcmr/Others/Loading.json" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
+  </div>
+
+  <header class="global-header" id="globalHeader">
+      <button class="back-button" onclick="goBack()" title="Go Back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+      </button>
+      <h1 id="boardTitle">Board</h1>
+  </header>
+
+  <div id="fixedControls" class="fixed-controls">
+      <div class="search-row" id="searchRow">
+          <div class="search-bar-container">
+              <div class="search-icon-mask"></div>
+              <input type="text" id="searchInput" placeholder="Search content..." autocomplete="off">
+          </div>
+          <button class="filter-toggle-btn" id="filterToggleBtn" aria-label="Toggle filters" title="Toggle filters">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="4" y1="6" x2="20" y2="6"></line>
+                  <line x1="7" y1="12" x2="17" y2="12"></line>
+                  <line x1="10" y1="18" x2="14" y2="18"></line>
+              </svg>
+          </button>
+      </div>
+
+      <div class="category-buttons-horizontal collapsed" id="filterRow">
+          <!-- Dynamically filled -->
+      </div>
+  </div>
+
+
+  <div class="content-section" id="contentArea">
+    
+    <!-- Skeleton Loader Layout -->
+    <div class="skeleton-container" id="skeletonContainer">
+       <div class="skel-card"><div class="skel-block skel-top"></div><div class="neu-divider"></div><div class="skel-block skel-mid"></div><div class="skel-block skel-mid" style="width:50%;"></div><div class="skel-btn-container"><div class="skel-block skel-btn"></div><div class="skel-block skel-btn"></div></div></div>
+       <div class="skel-card"><div class="skel-block skel-top"></div><div class="neu-divider"></div><div class="skel-block skel-mid"></div><div class="skel-block skel-mid" style="width:50%;"></div><div class="skel-btn-container"><div class="skel-block skel-btn"></div><div class="skel-block skel-btn"></div></div></div>
+       <div class="skel-card"><div class="skel-block skel-top"></div><div class="neu-divider"></div><div class="skel-block skel-mid"></div><div class="skel-block skel-mid" style="width:50%;"></div><div class="skel-btn-container"><div class="skel-block skel-btn"></div><div class="skel-block skel-btn"></div></div></div>
+    </div>
+
+    <!-- Actual Cards -->
+    <div class="card-list" id="cardList" style="display:none;"></div>
+    
+    <!-- Infinite Scroll Trigger -->
+    <div id="lazyLoadTrigger" style="display:none;">
+        <i class="fas fa-circle-notch fa-spin" style="margin-right: 8px;"></i> Loading more...
+    </div>
+    
+    <div class="no-results" id="noResults">No records found matching your criteria.</div>
+  </div>
+
+  <!-- Requirement 3: Web Viewer with Back Button aligned exactly like header position and dynamic top space -->
+  <div id="pdfViewerArrangement" class="full-screen-arrangement">
+      <div class="viewer-body">
+          <button class="floating-viewer-back" id="floatingViewerBack" onclick="closePdfViewer()" title="Go Back">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="19" y1="12" x2="5" y2="12"></line>
+                  <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+          </button>
+          <iframe id="pdfViewerIframe" src="about:blank"></iframe>
+      </div>
+  </div>
+
+  <script>
+    function goBack() {
+        try { window.parent.postMessage('closeHSContent', '*'); } 
+        catch(e) { window.history.back(); }
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const BOARD_NAME = urlParams.get('board') || 'CGBSE';
+    const THEME = urlParams.get('theme') || 'default';
+    
+    document.getElementById('boardTitle').textContent = `${BOARD_NAME} Board`;
+
+    // Dynamic Theming
+    const root = document.documentElement;
+    const topSp = urlParams.get('topSpace') || localStorage.getItem('appTopSpace') || '5';
+    root.style.setProperty('--top-space', `${topSp}vh`);
+
+    if(BOARD_NAME === 'CGBSE') {
+        root.style.setProperty('--board-color', '#FF69B4');
+        root.style.setProperty('--board-shadow-color', 'rgba(255, 105, 180, 0.45)');
+        root.style.setProperty('--header-gradient', 'linear-gradient(45deg, #6a008f, #ff007f)');
+        root.style.setProperty('--active-cat-gradient', 'linear-gradient(90deg, #ff007f 0%, #ff69b4 100%)');
+    } else if(BOARD_NAME === 'CBSE') {
+        root.style.setProperty('--board-color', '#1E90FF');
+        root.style.setProperty('--board-shadow-color', 'rgba(30, 144, 255, 0.45)');
+        root.style.setProperty('--header-gradient', 'linear-gradient(45deg, #000080, #00cfff)');
+        root.style.setProperty('--active-cat-gradient', 'linear-gradient(45deg, #007bff, #00cfff)');
+    } else if(BOARD_NAME === 'NCERT') {
+        root.style.setProperty('--board-color', '#8A2BE2');
+        root.style.setProperty('--board-shadow-color', 'rgba(138, 43, 226, 0.45)');
+        root.style.setProperty('--header-gradient', 'linear-gradient(45deg, #30004a, #8a2be2)');
+        root.style.setProperty('--active-cat-gradient', 'linear-gradient(90deg, #8A2BE2 0%, #BB86FC 100%)');
+    }
+
+    // Scroll Padding Logic
+    const globalHeader = document.getElementById('globalHeader');
+    const fixedControls = document.getElementById('fixedControls');
+    let lastScrollY = 0;
+
+    function updateBodyPadding() {
+        const headerHeight = globalHeader.offsetHeight;
+        fixedControls.style.top = `${headerHeight}px`;
+        const searchRowHeight = document.getElementById('searchRow').offsetHeight;
+        document.getElementById('contentArea').style.marginTop = `${headerHeight + searchRowHeight + 26}px`;
+    }
+    window.addEventListener('resize', updateBodyPadding);
+    window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
+        const triggerHeight = globalHeader.offsetHeight + fixedControls.offsetHeight;
+        if (currentScrollY > lastScrollY && currentScrollY > triggerHeight) {
+            fixedControls.classList.add('hidden');
+        } else if (currentScrollY < lastScrollY || currentScrollY <= globalHeader.offsetHeight) {
+            fixedControls.classList.remove('hidden');
+        }
+        lastScrollY = currentScrollY;
+    });
+
+    // Intersection Observer for scroll animation
+    const cardObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+        } else {
+          entry.target.classList.remove('in-view');
+        }
+      });
+    }, {
+      threshold: 0.2
+    });
+
+    function observeCards() {
+      document.querySelectorAll('.board-neumorphic-card').forEach(card => {
+        if (!card.dataset.observed) {
+          card.dataset.observed = 'true';
+          cardObserver.observe(card);
+        }
+      });
+    }
+
+    // Requirement 3: Web Viewer Auto-Hide Back Button on Inactivity Logic
+    let viewerInactivityTimer = null;
+    const floatingViewerBackBtn = document.getElementById('floatingViewerBack');
+
+    function resetViewerInactivityTimer() {
+        if (!floatingViewerBackBtn) return;
+        
+        floatingViewerBackBtn.style.opacity = '1';
+        floatingViewerBackBtn.style.pointerEvents = 'auto';
+        floatingViewerBackBtn.style.transform = 'scale(1)';
+
+        clearTimeout(viewerInactivityTimer);
+        viewerInactivityTimer = setTimeout(() => {
+            const viewerArrangement = document.getElementById('pdfViewerArrangement');
+            if (viewerArrangement && (viewerArrangement.style.display === 'block' || viewerArrangement.style.display === 'flex')) {
+                floatingViewerBackBtn.style.opacity = '0';
+                floatingViewerBackBtn.style.pointerEvents = 'none';
+                floatingViewerBackBtn.style.transform = 'scale(0.85)';
+            }
+        }, 2500);
+    }
+
+    ['touchstart', 'touchmove', 'scroll', 'pointerdown', 'mousemove', 'click'].forEach(evt => {
+        window.addEventListener(evt, () => {
+            const viewerArrangement = document.getElementById('pdfViewerArrangement');
+            if (viewerArrangement && viewerArrangement.style.display !== 'none') {
+                resetViewerInactivityTimer();
+            }
+        }, { passive: true });
+    });
+
+    function openPdfViewer(title, url) {
+        const arrangement = document.getElementById('pdfViewerArrangement');
+        const iframe = document.getElementById('pdfViewerIframe');
+        
+        let finalUrl = url;
+        if (url.toLowerCase().endsWith('.pdf') || url.includes('airtable') || url.includes('drive.google')) {
+            finalUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+        }
+        
+        iframe.src = finalUrl;
+        arrangement.style.display = 'block';
+        resetViewerInactivityTimer();
+    }
+
+    function closePdfViewer() {
+        const arrangement = document.getElementById('pdfViewerArrangement');
+        const iframe = document.getElementById('pdfViewerIframe');
+        arrangement.style.display = 'none';
+        iframe.src = 'about:blank';
+        clearTimeout(viewerInactivityTimer);
+    }
+
+    // Airtable & State variables
+    const AIRTABLE_API_KEY = 'pat4Diu9A7xCD5Jal.2f772d29d849fb3d75f726d95925a9a832232e61c2d3f9ef5ea78523637c0732';
+    const AIRTABLE_BASE_ID = 'app06DCrKCbLfHMMB';
+    const AIRTABLE_TABLE_NAME = BOARD_NAME; 
+
+    let allRecords = [];
+    let filteredRecords = [];
+    let activeFilter = 'all';
+    let activeMedium = null;
+    let searchTerm = '';
+    let fuse; 
+    
+    let displayCount = 0;
+    const CARDS_PER_PAGE = 10;
+    
+    const lottieOverlay = document.getElementById('lottieOverlay');
+    const skeletonContainer = document.getElementById('skeletonContainer');
+    const cardList = document.getElementById('cardList');
+    const lazyLoadTrigger = document.getElementById('lazyLoadTrigger');
+
+    // Setup Filters
+    const filterRow = document.getElementById('filterRow');
+    filterRow.innerHTML = `
+        <button class="category-btn active" data-type="all">All</button>
+        <button class="category-btn" data-type="classes">Classes</button>
+        <button class="category-btn" data-type="subjects">Subjects</button>
+        <button class="category-btn" data-type="streams">Streams</button>
+        <button class="category-btn" data-medium="English">English</button>
+        <button class="category-btn" data-medium="Hindi">Hindi</button>
+    `;
+
+    function initFilterListeners() {
+      filterRow.querySelectorAll('.category-btn').forEach(btn => {
+        btn.onclick = function() {
+          filterRow.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          if (btn.dataset.type) {
+            activeFilter = btn.dataset.type; activeMedium = null;
+          }
+          if (btn.dataset.medium) {
+            activeMedium = btn.dataset.medium; activeFilter = 'all';
+          }
+          searchTerm = '';
+          document.getElementById('searchInput').value = '';
+          applyFilters();
+        }
+      });
+      const searchInput = document.getElementById('searchInput');
+      const searchRow = document.getElementById('searchRow');
+      const filterToggleBtn = document.getElementById('filterToggleBtn');
+
+      searchInput.oninput = debounce(e => {
+        searchTerm = e.target.value.trim();
+        applyFilters();
+      }, 300);
+
+      filterToggleBtn.addEventListener('click', () => {
+        const collapsed = filterRow.classList.toggle('collapsed');
+        filterToggleBtn.classList.toggle('active', !collapsed);
+      });
+
+      searchInput.addEventListener('focus', () => {
+        searchRow.classList.add('search-active');
+        filterRow.classList.add('collapsed');
+        filterToggleBtn.classList.remove('active');
+      });
+      searchInput.addEventListener('blur', () => {
+        setTimeout(() => {
+          searchRow.classList.remove('search-active');
+        }, 150);
+      });
+    }
+
+    function debounce(func, delay) {
+      let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), delay); };
+    }
+
+    let isDataLoaded = false;
+    let isLottieTimeOver = false;
+
+    async function loadDataSequence() {
+        updateBodyPadding();
+        initFilterListeners();
+
+        fetchAirtableRecords().then(records => {
+            allRecords = records;
+            fuse = new Fuse(allRecords, {
+                keys: [{name: 'Class', weight: 0.8}, {name: 'Subject', weight: 0.9}, {name: 'Stream', weight: 0.5}],
+                threshold: 0.25, ignoreLocation: true, findAllMatches: true, caseSensitive: false
+            });
+            isDataLoaded = true;
+            checkAndRenderFinal();
+        }).catch(err => {
+            console.error(err);
+            document.getElementById('noResults').style.display = 'block';
+            document.getElementById('noResults').textContent = 'Error Loading Data. Check Network.';
+        });
+
+        setTimeout(() => {
+            lottieOverlay.style.opacity = '0';
+            setTimeout(() => {
+                lottieOverlay.style.display = 'none';
+                isLottieTimeOver = true;
+                
+                if(!isDataLoaded) {
+                    skeletonContainer.style.display = 'flex';
+                }
+                checkAndRenderFinal();
+            }, 300);
+        }, 2000);
+    }
+
+    function checkAndRenderFinal() {
+        if(isDataLoaded && isLottieTimeOver) {
+            setTimeout(() => {
+                skeletonContainer.style.display = 'none';
+                cardList.style.display = 'flex';
+                applyFilters();
+                document.body.classList.add('fully-loaded-no-radius');
+            }, skeletonContainer.style.display === 'flex' ? 1000 : 0);
+        }
+    }
+
+    async function fetchAirtableRecords() {
+      let records = []; let offset = '';
+      do {
+        let url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}?pageSize=100${offset ? '&offset=' + offset : ''}`;
+        let res = await fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` }});
+        if (!res.ok) throw new Error("Airtable Error");
+        let data = await res.json();
+        records = records.concat(data.records.map(r => r.fields));
+        offset = data.offset || '';
+      } while (offset);
+      return records;
+    }
+
+    function applyFilters() {
+      let result = allRecords;
+      if (activeMedium) result = result.filter(r => r.Medium && r.Medium.toLowerCase() === activeMedium.toLowerCase());
+      if (activeFilter === 'classes') result = result.filter(r => r.Class);
+      else if (activeFilter === 'subjects') result = result.filter(r => r.Subject);
+      else if (activeFilter === 'streams') result = result.filter(r => r.Stream && r.Stream.trim().toLowerCase() !== 'nothing');
+
+      if (searchTerm && fuse) result = fuse.search(searchTerm).map(res => res.item);
+      
+      filteredRecords = result;
+      displayCount = 0;
+      cardList.innerHTML = '';
+      renderNextBatch();
+    }
+
+    function renderNextBatch() {
+        const noResults = document.getElementById('noResults');
+        if(filteredRecords.length === 0) {
+            noResults.style.display = 'block';
+            lazyLoadTrigger.style.display = 'none';
+            return;
+        }
+        noResults.style.display = 'none';
+
+        const slice = filteredRecords.slice(displayCount, displayCount + CARDS_PER_PAGE);
+
+        slice.forEach(r => {
+            let classDisplay = r.Class ? r.Class.toString().trim() : '-';
+            if (classDisplay !== '-' && !classDisplay.toLowerCase().startsWith('class ')) {
+                if (/^\d+$/.test(classDisplay) || /^(I|V|X|L|C|D|M)+$/i.test(classDisplay)) classDisplay = `Class ${classDisplay}`;
+            }
+
+            let hasSubject = Boolean(r.Subject);
+            let hasStream = Boolean(r.Stream && r.Stream.trim().toLowerCase() !== 'nothing');
+
+            let subjectHtml = hasSubject 
+                ? `<div class="info-item"><span class="info-label">Subject:</span> ${r.Subject}</div>` 
+                : `<div class="info-item"><span class="info-label">Subject:</span> General Subject</div>`;
+            
+            let streamHtml = hasStream 
+                ? `<div class="info-item"><span class="info-label">Stream:</span> ${r.Stream}</div>` 
+                : '';
+
+            let dividerHtml = (hasSubject && hasStream) ? `<div class="neu-divider"></div>` : '';
+
+            let mediumHtml = r.Medium 
+                ? `<div class="medium-badge"><span class="info-label">Medium:</span> ${r.Medium}</div>` 
+                : '';
+
+            let subjectName = r.Subject || 'General Subject';
+            let cardTitle = `${classDisplay} - ${subjectName}`;
+            let escapedTitle = cardTitle.replace(/'/g, "\\'");
+
+            let bookBtn = r.BookPDF 
+                ? `<button class="board-book-btn" onclick="openPdfViewer('${escapedTitle} Book', '${r.BookPDF}')">Book</button>` 
+                : '';
+            let solBtn = r.SolutionPDF 
+                ? `<button class="board-sol-btn" onclick="openPdfViewer('${escapedTitle} Solution', '${r.SolutionPDF}')">Solution</button>` 
+                : '';
+
+            const html = `
+              <div class="board-neumorphic-card">
+                <div class="card-header-row">
+                    <div class="class-badge"><span class="info-label">Class:</span> ${classDisplay}</div>
+                    ${mediumHtml}
+                </div>
+                <div class="neu-divider"></div>
+                <div class="card-info-row">
+                    ${subjectHtml}
+                    ${dividerHtml}
+                    ${streamHtml}
+                </div>
+                <div class="neu-divider"></div>
+                <div class="board-actions">
+                    ${bookBtn}
+                    ${solBtn}
+                </div>
+              </div>
+            `;
+            cardList.insertAdjacentHTML('beforeend', html);
+        });
+
+        displayCount += slice.length;
+
+        observeCards();
+
+        if (displayCount < filteredRecords.length) {
+            lazyLoadTrigger.style.display = 'flex';
+            observer.observe(lazyLoadTrigger);
+        } else {
+            lazyLoadTrigger.style.display = 'none';
+            observer.disconnect();
+        }
+        updateBodyPadding();
+    }
+
+    const observer = new IntersectionObserver(entries => {
+        if(entries[0].isIntersecting) {
+            renderNextBatch();
+        }
+    }, { rootMargin: '100px' });
+
+    document.addEventListener('DOMContentLoaded', loadDataSequence);
+
+  </script>
+</body>
+</html>

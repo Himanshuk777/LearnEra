@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LearnEra - Quiz</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Lottie & GSAP libraries -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <!-- Early theme bootstrap -->
+    <script>
+        (function () {
+            try {
+                const savedTheme = localStorage.getItem('appThemeMode') || 'system';
+                const isDark = savedTheme === 'dark' ||
+                    (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const darkStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.documentElement.setAttribute('data-dark-text', darkStyle);
+                } else {
+                    document.documentElement.removeAttribute('data-dark-text');
+                }
+                const topSp = localStorage.getItem('appTopSpace') || '5';
+                document.documentElement.style.setProperty('--top-space', topSp + 'vh');
+            } catch (e) {
+                document.documentElement.style.setProperty('--top-space', '5vh');
+            }
+            
+            const savedLang = localStorage.getItem('appLanguageSelection') || 'en';
+            document.documentElement.setAttribute('data-lang', savedLang);
+        })();
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        :root {
+            --body-bg: #e6edf7; 
+            --neu-shadow-light: #ffffff;
+            --neu-shadow-dark: #c8d3e4;
+            
+            --text-color: #2d3748; 
+            --sub-text-color: #718096; 
+            
+            --pink: #FF69B4;
+            --pink-strong: #FF1493;
+            --blue: #1E90FF;
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+            
+            --inner-highlight: inset 1px 1px 2px rgba(255,255,255,0.7);
+            --border-soft: 1px solid rgba(255,255,255,0.35);
+            
+            --top-space: 5vh;
+            --transition-theme: background-color 0.8s ease, color 0.8s ease, box-shadow 0.8s ease, border-color 0.8s ease;
+        }
+
+        html[data-theme="dark"] {
+            --body-bg: #1e1e24; 
+            --neu-shadow-dark: #101014;
+            --neu-shadow-light: rgba(255, 255, 255, 0.05);
+            
+            --text-color: #d1d9e6; 
+            --sub-text-color: #a3b1c6; 
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px rgba(255, 255, 255, 0.02);
+        }
+
+        html[data-dark-text="deep-dark"] {
+            --body-bg: #0c0c0f; 
+            --neu-shadow-dark: #050506;
+            --neu-shadow-light: rgba(255, 255, 255, 0.02);
+            
+            --text-color: rgba(255, 255, 255, 0.35); 
+            --sub-text-color: rgba(255, 255, 255, 0.3); 
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.01);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.01);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.01);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.01);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.02);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -2px -2px 4px rgba(255, 255, 255, 0.02);
+        }
+
+        /* Language Overrides */
+        html[data-lang="hi"] *, html[data-lang="ch"] *, html[data-lang="bh"] * {
+            font-family: 'Tiro Devanagari Hindi', serif !important;
+        }
+
+        /* Screen scrolling logic completely disabled */
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            overflow: hidden; 
+            overscroll-behavior: none;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center horizontally and vertically on screen */
+            align-items: center;
+            font-size: 13px; 
+            transition: var(--transition-theme);
+        }
+
+        /* Custom top screen toast styling */
+        #customToast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #ff4d4d;
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            z-index: 99999;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif !important;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+            width: 90%;
+            max-width: 400px;
+            justify-content: center;
+        }
+
+        html[data-dark-text="deep-dark"] #customToast {
+            background: #242424 !important;
+            color: rgba(255, 255, 255, 0.35) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+        }
+
+        /* Responsive Layout Container without high top margins */
+        .quiz-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 15px; 
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .quiz-card {
+            background: var(--body-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--card-shadow), inset 1px 1px 2px rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.35);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition-theme);
+        }
+
+        /* Neumorphic UI Details for Quiz */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .question-meta {
+            font-weight: 700;
+            color: var(--sub-text-color);
+            font-size: 0.95em;
+        }
+
+        .timer-pill {
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9em;
+            color: var(--text-color);
+            background: var(--body-bg);
+            box-shadow: var(--card-shadow-micro), var(--inner-highlight);
+            border: var(--border-soft);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .question-box {
+            padding: 18px;
+            border-radius: 16px;
+            background: var(--body-bg);
+            box-shadow: var(--settings-shadow-inset-sharp);
+            margin-bottom: 22px;
+            color: var(--text-color);
+            font-size: 1.1em;
+            font-weight: 600;
+            line-height: 1.5;
+            text-align: left;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        /* Neumorphic Option Button Styles */
+        .sharp-inner-item {
+            box-shadow: var(--card-shadow-micro) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            border-radius: 14px !important;
+            background: var(--body-bg) !important;
+            padding: 14px 18px;
+            font-size: 0.95em;
+            font-weight: 500;
+            color: var(--text-color);
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            display: block;
+            outline: none;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+
+        .sharp-inner-item:active:not(.disabled):not(.skeleton-loading) {
+            box-shadow: var(--card-shadow-inset) !important;
+            transform: scale(0.98);
+        }
+
+        .sharp-inner-item.selected {
+            box-shadow: var(--pressed-shadow) !important;
+            border-color: var(--blue) !important;
+            font-weight: 600;
+        }
+
+        .sharp-inner-item.correct {
+            box-shadow: inset 3px 3px 6px rgba(50, 205, 50, 0.15), var(--card-shadow-micro) !important;
+            border-color: #32CD32 !important;
+            color: #32CD32 !important;
+            background: rgba(50, 205, 50, 0.05) !important;
+            font-weight: 700;
+        }
+
+        .sharp-inner-item.incorrect {
+            box-shadow: inset 3px 3px 6px rgba(220, 20, 60, 0.15), var(--card-shadow-micro) !important;
+            border-color: #dc143c !important;
+            color: #dc143c !important;
+            background: rgba(220, 20, 60, 0.05) !important;
+            font-weight: 700;
+        }
+
+        .sharp-inner-item.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Neumorphic Action Button Layout */
+        .button {
+          --radius: 14px;
+          cursor: pointer;
+          border-radius: var(--radius);
+          border: 3px solid var(--body-bg) !important; 
+          background: var(--body-bg);
+          box-shadow: var(--card-shadow-sm), var(--inner-highlight) !important;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 600ms cubic-bezier(0.16, 1, 0.3, 1);
+          width: 100%;
+          padding: 12px 20px; 
+          height: 54px; 
+          font-family: inherit;
+          font-style: normal;
+          font-size: 16px;
+          font-weight: 600;
+          outline: none; 
+          z-index: 10;
+          touch-action: manipulation !important;
+          -webkit-user-select: none !important;
+          user-select: none !important;
+          -webkit-touch-callout: none !important;
+        }
+        body[data-theme="dark"] .button {
+          --neutral-1: #1e1e24;
+          --neutral-2: #101014;
+        }
+        body[data-theme="dark"][data-dark-text="deep-dark"] .button {
+          --neutral-1: #0c0c0f;
+          --neutral-2: #050506;
+          box-shadow: none !important;
+        }
+        
+        /* Interactive visual scaling classes driven programmatically via Javascript */
+        .button.button--hovered {
+          transform: scale(1.02) !important;
+          box-shadow: var(--card-shadow) !important;
+        }
+
+        /* Disable scale shifts & deep inner glow structures when next state has active lock */
+        .button:active:not(.no-active-effect), 
+        .button:focus:not(.no-active-effect) {
+          transform: scale(0.98);
+          box-shadow: var(--pressed-shadow) !important; 
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: var(--card-shadow-micro) !important;
+        }
+
+        .state p {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0;
+        }
+        .state p span {
+          display: block;
+          opacity: 1; 
+          color: var(--text-color);
+        }
+
+        /* Score Display & Leaderboard Section */
+        .score-section {
+            display: none;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .score-title {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: var(--text-color);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .score-desc {
+            font-size: 0.9em;
+            color: var(--sub-text-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Expended Leaderboard container matching the Quiz view content size */
+        .leaderboard-box {
+            background: var(--body-bg);
+            border-radius: 16px;
+            box-shadow: var(--settings-shadow-inset-sharp);
+            padding: 20px;
+            height: 420px; 
+            overflow-y: auto;
+            margin: 25px 0; /* Symmetrical top and bottom gaps */
+        }
+
+        .leaderboard-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 0.9em;
+            color: var(--text-color);
+        }
+
+        .leaderboard-entry.your-score {
+            background: var(--body-bg);
+            box-shadow: var(--card-shadow-micro), var(--inner-highlight);
+            border: 1px solid var(--blue);
+            font-weight: 700;
+        }
+
+        .leaderboard-entry .score {
+            font-weight: 700;
+            color: var(--blue);
+        }
+
+        /* Custom outcome alerts modal */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.5) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 20000;
+        }
+        .custom-modal-overlay.show {
+            display: flex !important;
+        }
+        .custom-modal {
+            background: var(--body-bg);
+            border-radius: 24px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: none !important;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        body[data-theme="dark"] .custom-modal {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .back-pill-button {
+            position: relative;
+            background: var(--body-bg);
+            color: var(--text-color);
+            border: 2px solid var(--body-bg);
+            border-radius: 16px;
+            padding: 10px 14px;
+            cursor: pointer;
+            box-shadow: var(--card-shadow-micro), inset 1px 1px 2px rgba(255,255,255,0.7);
+            z-index: 70;
+            transition: opacity 0.4s ease, transform 0.4s ease, box-shadow 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+            font-weight: 600;
+        }
+        .back-pill-button:active {
+            transform: scale(0.95);
+            box-shadow: inset 2px 2px 4px var(--neu-shadow-dark) !important;
+        }
+
+        /* Component-Level Skeleton Shimmer System */
+        .skeleton-loading {
+            background: var(--body-bg) !important;
+            border-color: transparent !important;
+            box-shadow: var(--settings-shadow-inset-sharp) !important;
+            color: transparent !important;
+            pointer-events: none !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+        .sharp-inner-item.skeleton-loading {
+            box-shadow: var(--card-shadow-micro) !important;
+        }
+        .skeleton-loading::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -150%;
+            width: 150%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+            animation: skeleton-shimmer-animation 1.5s infinite;
+        }
+        body[data-theme="dark"] .skeleton-loading::after {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+        }
+        @keyframes skeleton-shimmer-animation {
+            0% { left: -150%; }
+            100% { left: 150%; }
+        }
+
+        /* Deep Dark Mode Monochrome Overrides */
+        html[data-dark-text="deep-dark"] {
+            --blue: #888888 !important; 
+            --pink: #555555 !important;
+            --pink-strong: #444444 !important;
+        }
+        body[data-dark-text="deep-dark"] .custom-modal h3,
+        body[data-dark-text="deep-dark"] .custom-modal p,
+        body[data-dark-text="deep-dark"] .back-pill-button,
+        body[data-dark-text="deep-dark"] .score-title, 
+        body[data-dark-text="deep-dark"] .leaderboard-title,
+        body[data-dark-text="deep-dark"] .sharp-inner-item {
+            color: rgba(255, 255, 255, 0.35) !important;
+            background: none !important;
+            box-shadow: var(--settings-shadow-inset-sharp) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.35) !important;
+        }
+        body[data-dark-text="deep-dark"] lottie-player,
+        html[data-dark-text="deep-dark"] lottie-player {
+            filter: grayscale(100%) opacity(0.35) !important;
+        }
+        body[data-dark-text="deep-dark"] .sharp-inner-item.correct {
+            box-shadow: inset 3px 3px 6px rgba(255, 255, 255, 0.05), var(--card-shadow-micro) !important;
+            border-color: #888888 !important;
+            color: #888888 !important;
+            background: rgba(255, 255, 255, 0.03) !important;
+        }
+        body[data-dark-text="deep-dark"] .sharp-inner-item.incorrect {
+            box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.2), var(--card-shadow-micro) !important;
+            border-color: #444444 !important;
+            color: #555555 !important;
+            background: rgba(0, 0, 0, 0.1) !important;
+        }
+        body[data-dark-text="deep-dark"] .sharp-inner-item.selected {
+            border-color: #888888 !important;
+            box-shadow: var(--pressed-shadow) !important;
+        }
+        body[data-dark-text="deep-dark"] .leaderboard-entry.your-score {
+            border-color: #666666 !important;
+        }
+        body[data-dark-text="deep-dark"] .leaderboard-entry .score {
+            color: #888888 !important;
+        }
+
+        /* Enable vertical scroll logic ONLY on compact or low height viewports */
+        @media (max-height: 680px) {
+            html, body {
+                overflow-y: auto; 
+            }
+            body {
+                justify-content: flex-start;
+                padding-top: 15px;
+                padding-bottom: 15px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Custom Toast Notification Element -->
+    <div id="customToast">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span id="customToastText">Please select an answer.</span>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="quiz-container">
+        
+        <!-- Neumorphic Quiz Card -->
+        <div class="quiz-card" id="quizCard">
+            
+            <!-- Standard Game State Display -->
+            <div id="gamePlayState">
+                <div class="quiz-header">
+                    <span class="question-meta" id="questionCount">Question 1/X</span>
+                    <span class="timer-pill" id="timer"><i class="fa-regular fa-clock"></i> <span id="timerText">30s</span></span>
+                </div>
+
+                <div class="question-box" id="questionText">
+                    Loading quiz question...
+                </div>
+
+                <div class="options-list" id="optionsGrid">
+                    <!-- Dynamic option elements or skeleton blocks render here -->
+                </div>
+
+                <button class="button" id="submitButton">
+                    <div class="state">
+                        <p><span>Submit Answer</span></p>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Score / Leaderboard Display -->
+            <div class="score-section" id="scoreSection">
+                <div class="score-title" id="finalScore">Your Score: 0 / 0</div>
+                <p class="score-desc">Outstanding effort on finishing the quiz challenge!</p>
+
+                <div class="leaderboard-box">
+                    <div class="leaderboard-title">Leaderboard</div>
+                    <div id="leaderboardList">
+                        <!-- Simulated player metrics loaded here -->
+                    </div>
+                </div>
+
+                <button class="button" id="restartButton">
+                    <div class="state">
+                        <p><span>Restart Quiz</span></p>
+                    </div>
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Dynamic Custom Outcome Modal -->
+    <div id="alertModal" class="custom-modal-overlay">
+        <div class="custom-modal" style="width: 90%; max-width: 340px;">
+            <div id="modalLottie" style="width: 120px; height: 120px; margin: 0 auto 10px;"></div>
+            <h3 id="modalTitle" style="font-weight: 800; margin-bottom: 5px; font-size: 1.25rem !important;">Notification</h3>
+            <p id="modalDesc" style="color: var(--sub-text-color); font-size: 0.85em; margin: 10px 0 20px; line-height: 1.4;"></p>
+            <button class="back-pill-button" onclick="closeAlertModal()" style="width: 100%; border-radius: 12px; justify-content: center; display: flex;">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Sound FX System
+        (function initDashboardSoundFX(){
+            const LS_MASTER = 'touchSoundsEnabled';
+            const LS_GROUPS = 'touchSoundsGroupState';
+
+            const CLICK_SOUND_URLS = [
+                "Click1.ogg", "Click2.ogg", "Click3.ogg", "Click4.ogg", "Click5.ogg",
+                "Click6.ogg", "Click7.ogg", "Click8.ogg", "Click9.ogg", "Click10.ogg",
+                "Click11.ogg", "Click12.ogg", "Click13.ogg", "Click14.ogg"
+            ];
+
+            const GROUP_TO_CLICKS = {
+                'buttons'   : [1, 2, 3, 7, 8, 9, 14],
+                'navigation': [5],
+                'inputs'    : [4, 6],
+                'reserved'  : [10, 11, 12, 13]
+            };
+
+            const CLICK_TO_GROUP = {};
+            Object.keys(GROUP_TO_CLICKS).forEach(g => {
+                GROUP_TO_CLICKS[g].forEach(n => { CLICK_TO_GROUP[n] = g; });
+            });
+
+            const audioCache = {};
+            let _ac = null;
+            let _masterGain = null;
+
+            function getAC(){
+                if (_ac) return _ac;
+                try {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (Ctx) {
+                        _ac = new Ctx();
+                        const comp = _ac.createDynamicsCompressor();
+                        comp.threshold.value = -10;
+                        comp.knee.value = 6;
+                        comp.ratio.value = 12;
+                        comp.attack.value = 0.001;
+                        comp.release.value = 0.05;
+                        _masterGain = _ac.createGain();
+                        _masterGain.gain.value = 1.0;
+                        comp.connect(_masterGain).connect(_ac.destination);
+                        _ac._busIn = comp;
+                    }
+                } catch(e){}
+                return _ac;
+            }
+
+            function synthClick(n){
+                const ac = getAC();
+                if (!ac) return;
+                if (ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                const SYNTH = {
+                    1:  { f: 880,  d: 0.05, w: 'triangle', g: 0.18 },
+                    2:  { f: 520,  d: 0.07, w: 'sine',     g: 0.22 },
+                    3:  { f: 660,  d: 0.08, w: 'square',   g: 0.16 },
+                    4:  { f: 1200, d: 0.03, w: 'sine',     g: 0.12 },
+                    5:  { f: 740,  d: 0.05, w: 'triangle', g: 0.18 },
+                    6:  { f: 1000, d: 0.025,w: 'sine',     g: 0.10 },
+                    7:  { f: 600,  d: 0.05, w: 'square',   g: 0.16 },
+                    8:  { f: 820,  d: 0.05, w: 'triangle', g: 0.18 },
+                    9:  { f: 420,  d: 0.06, w: 'sine',     g: 0.18 },
+                    10: { f: 480,  d: 0.05, w: 'triangle', g: 0.16 },
+                    11: { f: 560,  d: 0.05, w: 'triangle', g: 0.16 },
+                    12: { f: 640,  d: 0.05, w: 'triangle', g: 0.16 },
+                    13: { f: 720,  d: 0.05, w: 'triangle', g: 0.16 },
+                    14: { f: 440,  d: 0.08, w: 'sine',     g: 0.60 }
+                };
+                const r = SYNTH[n] || SYNTH[7];
+                const t0 = ac.currentTime;
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                osc.type = r.w;
+                osc.frequency.setValueAtTime(r.f, t0);
+                osc.frequency.exponentialRampToValueAtTime(Math.max(80, r.f * 0.6), t0 + r.d);
+                gain.gain.setValueAtTime(0.0001, t0);
+                gain.gain.exponentialRampToValueAtTime(r.g, t0 + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + r.d);
+                osc.connect(gain).connect(ac._busIn || ac.destination);
+                osc.start(t0);
+                osc.stop(t0 + r.d + 0.02);
+            }
+
+            function playClick(n, opts){
+                opts = opts || {};
+                const isMasterOn = localStorage.getItem(LS_MASTER) === '1' || localStorage.getItem(LS_MASTER) === null;
+                if (!opts.force && !isMasterOn) return;
+
+                let groupState = {};
+                try { groupState = JSON.parse(localStorage.getItem(LS_GROUPS) || '{}'); } catch(e){}
+                const groupId = CLICK_TO_GROUP[n];
+                if (!opts.force && groupId && groupState[groupId] === false) return;
+
+                const url = CLICK_SOUND_URLS[n - 1];
+                try {
+                    if (n === 14) {
+                        const a = new Audio(url);
+                        a.volume = 1.0;
+                        a.play().catch(() => synthClick(14));
+                        return;
+                    }
+                    if (!audioCache[n]) {
+                        const a = new Audio(url);
+                        a.volume = 0.5;
+                        a.preload = 'auto';
+                        audioCache[n] = a;
+                    }
+                    const a = audioCache[n];
+                    a.currentTime = 0;
+                    const p = a.play();
+                    if (p && p.catch) p.catch(() => synthClick(n));
+                    return;
+                } catch(e) {
+                    synthClick(n);
+                }
+            }
+
+            window.playTouchSound = playClick;
+
+            ['pointerdown','touchstart','keydown','click'].forEach(ev => {
+                document.addEventListener(ev, () => {
+                    const ac = getAC();
+                    if (ac && ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                }, { capture: true, passive: true });
+            });
+        })();
+
+        // Firebase Setup configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyBWOdk2_NJntQ4Pob7_tN6kb1W5rMy-tcw",
+          authDomain: "learnera-d6309.firebaseapp.com",
+          projectId: "learnera-d6309",
+          messagingSenderId: "752970675909",
+          appId: "1:752970675909:web:9c4513809ca51ea60122ac",
+          databaseURL: "https://learnera-d6309-default-rtdb.firebaseio.com"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        // Quiz State Parameters
+        let quizData = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let timerInterval = null;
+        const TIME_PER_QUESTION = 30; // Modified: 30 seconds
+        let answerProcessed = false;
+
+        // Names dataset for simulating a massive leaderboard
+        const indianFirstNames = ["Ramesh", "Suresh", "Ram", "Hari", "Mohan", "Gopi", "Bansi", "Lallan", "Radhe", "Pyare", "Jaggu", "Nathu", "Mangal", "Birju", "Bhola", "Charan", "Jagan", "Nanu", "Kalu", "Baldev", "Raghu", "Kishore", "Madan", "Gopal", "Tej", "Mulayam", "Akhilesh", "Nitish", "Tejashwi", "Satyapal", "Harpal", "Jaipal", "Omprakash", "Devi", "Phoolan", "Basanti", "Kanta", "Champa", "Savitri", "Kasturi", "Shanti", "Ganga", "Jamuna", "Sita", "Amar", "Prem", "Jeet", "Shera", "Billa", "Sukha", "Mukesh", "Vijay", "Sanjay", "Rajesh", "Anil", "Sunil", "Saurabh", "Akhil", "Munna", "Bablu", "Pappu", "Chhotu", "Guddu", "Babli", "Kamlesh", "Jagdish", "Santosh", "Shivram", "Ramchandra", "Harishankar", "Ramdev", "Rampal", "Dharampal", "Harpal", "Sukhnandan", "Ghanshyam"];
+        const indianLastNames = ["Yadav", "Malhotra", "Malik", "Joshi", "Sahi", "Khare", "Pandey", "Khan", "Singh", "Sharma", "Verma", "Gupta", "Patel", "Choudhary", "Kumar", "Prasad", "Tiwari", "Mishra", "Dubey", "Shukla", "Dwivedi", "Tripathi", "Pathak", "Chaubey", "Jha", "Sinha", "Paswan", "Manjhi", "Sahni", "Nishad", "Rathore", "Chauhan", "Solanki", "Parmar", "Baghel", "Lodhi", "Kushwaha", "Maurya", "Saini"];
+
+        const westernFirstNames = ["Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Heidi", "Ivan", "Judy", "Kevin", "Linda", "Mike", "Nancy", "Oscar", "Pam", "Quinn", "Rachel", "Sam", "Tina", "Uma", "Victor", "Wendy", "Xavier", "Yara", "Zack", "Liam", "Noah", "Oliver", "James", "William", "Benjamin", "Lucas", "Henry", "Alexander", "Mason", "Michael", "Ethan", "Daniel"];
+        const westernLastNames = ["Smith", "Jones", "Williams", "Brown", "Davis", "Miller", "Wilson", "Moore", "Taylor", "Anderson", "Thomas", "Jackson", "White", "Harris", "Martin", "Thompson", "Robinson", "Clark", "Lewis", "Lee", "Walker", "Hall", "Allen", "Young", "Hernandez", "King"];
+
+        const gamerPrefixes = ["Pro", "Alpha", "Shadow", "Neon", "Swift", "Dark", "Ghost", "Fire", "Ice", "Silver", "Golden", "Crimson", "Electric", "Silent", "Savage", "Apex", "Nova", "Cosmic", "Vortex", "Pixel"];
+        const gamerSuffixes = ["Gamer", "Whiz", "Brain", "Coder", "Ninja", "Champ", "King", "Queen", "Wolf", "Mind", "Dust", "Matter", "Shard", "Dream", "Falcon", "Lion", "Dragon", "Tiger", "Knight", "Hunter"];
+
+        // Modified: Generates unique names completely devoid of numbers (gamer numbers removed)
+        function generateLeaderboardNames() {
+            const indianSet = new Set();
+            while (indianSet.size < 600) {
+                const first = indianFirstNames[Math.floor(Math.random() * indianFirstNames.length)];
+                const last = indianLastNames[Math.floor(Math.random() * indianLastNames.length)];
+                const roll = Math.random();
+                if (roll < 0.15) { 
+                    indianSet.add(first);
+                } else {
+                    indianSet.add(`${first} ${last}`);
+                }
+            }
+
+            const westernSet = new Set();
+            while (westernSet.size < 399) {
+                const roll = Math.random();
+                if (roll < 0.4) { 
+                    const first = westernFirstNames[Math.floor(Math.random() * westernFirstNames.length)];
+                    const last = westernLastNames[Math.floor(Math.random() * westernLastNames.length)];
+                    westernSet.add(`${first} ${last}`);
+                } else if (roll < 0.6) { 
+                    westernSet.add(westernFirstNames[Math.floor(Math.random() * westernFirstNames.length)]);
+                } else { 
+                    const pref = gamerPrefixes[Math.floor(Math.random() * gamerPrefixes.length)];
+                    const suff = gamerSuffixes[Math.floor(Math.random() * gamerSuffixes.length)];
+                    // No dynamic numeric values appended here
+                    westernSet.add(`${pref}${suff}`);
+                }
+            }
+
+            return [...indianSet, ...westernSet];
+        }
+
+        // Custom validation message alerts
+        window.showToast = function(message) {
+            const toast = document.getElementById('customToast');
+            const toastText = document.getElementById('customToastText');
+            if (!toast || !toastText) return;
+            
+            toastText.textContent = message;
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+            
+            if (window.toastTimeout) clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => {
+                toast.style.transform = 'translateX(-50%) translateY(-100px)';
+            }, 3000);
+        };
+
+        window.showAlertModal = function(title, desc, success = true) {
+            const modal = document.getElementById('alertModal');
+            const lottie = document.getElementById('modalLottie');
+            const mTitle = document.getElementById('modalTitle');
+            const mDesc = document.getElementById('modalDesc');
+
+            if (!modal) return;
+
+            mTitle.textContent = title;
+            mDesc.textContent = desc;
+
+            lottie.innerHTML = '';
+            const lottieUrl = success ? 
+                "https://ik.imagekit.io/lssafvcmr/Others/success.json" : 
+                "https://ik.imagekit.io/lssafvcmr/Others/cancel%20animation.json";
+
+            const isDeepDark = document.documentElement.getAttribute('data-dark-text') === 'deep-dark';
+            if (isDeepDark) {
+                mTitle.style.color = "var(--text-color)";
+            } else {
+                mTitle.style.color = success ? "#32CD32" : "#dc143c";
+            }
+
+            lottie.innerHTML = `<lottie-player src="${lottieUrl}" background="transparent" speed="1" style="width: 120px; height: 120px;" loop autoplay></lottie-player>`;
+            modal.classList.add('show');
+        };
+
+        window.closeAlertModal = function() {
+            document.getElementById('alertModal').classList.remove('show');
+            if (window.playTouchSound) window.playTouchSound(2);
+        };
+
+        // Shuffle questions
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Component-level skeleton state rendering
+        function applyComponentSkeletons() {
+            const qBox = document.getElementById('questionText');
+            qBox.classList.add('skeleton-loading');
+            qBox.textContent = "Loading current question details...";
+
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                const dummyBtn = document.createElement('button');
+                dummyBtn.className = 'sharp-inner-item skeleton-loading';
+                dummyBtn.textContent = "Option loading placeholder...";
+                grid.appendChild(dummyBtn);
+            }
+
+            document.getElementById('submitButton').disabled = true;
+        }
+
+        // Fetch quiz data from Firebase admin/QuizData path
+        async function fetchQuizData() {
+            applyComponentSkeletons();
+
+            try {
+                const snapshot = await database.ref('admin/QuizData').once('value');
+                const rawData = snapshot.val();
+
+                if (!rawData) {
+                    throw new Error("No data found in Firebase path: admin/QuizData");
+                }
+
+                // Parse records
+                let parsedList = [];
+                Object.keys(rawData).forEach(key => {
+                    const item = rawData[key];
+                    if (item.Question && item.CorrectAnswer) {
+                        parsedList.push({
+                            question: item.Question,
+                            options: [item.OptionA, item.OptionB, item.OptionC, item.OptionD],
+                            correctAnswer: item.CorrectAnswer.trim().toUpperCase()
+                        });
+                    }
+                });
+
+                if (parsedList.length === 0) {
+                    throw new Error("Parsed Quiz list is empty. Ensure properties exist.");
+                }
+
+                // Randomly shuffle the pool and select exactly 10 questions for the test session
+                quizData = shuffleArray(parsedList).slice(0, 10);
+                
+                // Allow the skeleton shimmer to be visible briefly on launch
+                setTimeout(() => {
+                    loadQuestion();
+                }, 1200);
+
+            } catch (err) {
+                console.error("Firebase fetch error: ", err);
+                window.showAlertModal("Error", "Could not fetch dynamic quiz records. Seed database path: admin/QuizData first.", false);
+            }
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= quizData.length) {
+                showFinalScore();
+                return;
+            }
+
+            answerProcessed = false;
+            selectedAnswer = null;
+
+            const qNode = quizData[currentQuestionIndex];
+            document.getElementById('questionCount').textContent = `Question ${currentQuestionIndex + 1}/${quizData.length}`;
+            
+            // Remove skeleton loading states
+            const qBox = document.getElementById('questionText');
+            qBox.classList.remove('skeleton-loading');
+            qBox.textContent = qNode.question;
+
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+
+            const subBtn = document.getElementById('submitButton');
+            subBtn.querySelector('.state p span').textContent = "Submit Answer";
+            subBtn.disabled = true;
+
+            // Remove hover lock class and reset programmatic hover styles for standard answer state
+            subBtn.classList.remove('no-active-effect');
+            subBtn.classList.remove('button--hovered');
+
+            qNode.options.forEach((optText, index) => {
+                if (!optText) return;
+                const button = document.createElement('button');
+                button.className = 'sharp-inner-item';
+                button.textContent = optText;
+                button.dataset.optionIndex = index; // 0 for A, 1 for B, etc.
+                
+                button.onclick = () => {
+                    if (answerProcessed) return;
+                    if (window.playTouchSound) window.playTouchSound(4); // Select Sound FX
+                    
+                    document.querySelectorAll('.sharp-inner-item').forEach(b => b.classList.remove('selected'));
+                    button.classList.add('selected');
+                    selectedAnswer = index;
+                    subBtn.disabled = false;
+                };
+
+                grid.appendChild(button);
+            });
+
+            startTimer();
+        }
+
+        function startTimer() {
+            let timeLeft = TIME_PER_QUESTION;
+            const timerText = document.getElementById('timerText');
+            timerText.textContent = `${timeLeft}s`;
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerText.textContent = `${timeLeft}s`;
+
+                if (timeLeft <= 5) {
+                    const isDeepDark = document.documentElement.getAttribute('data-dark-text') === 'deep-dark';
+                    timerText.style.color = isDeepDark ? "#888888" : "#dc143c"; 
+                } else {
+                    timerText.style.color = "var(--text-color)";
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    autoSubmitOnTimeout();
+                }
+            }, 1000);
+        }
+
+        function autoSubmitOnTimeout() {
+            window.showToast("Time expired! Moving to the next item.");
+            if (window.playTouchSound) window.playTouchSound(7);
+            submitAnswer(true);
+        }
+
+        function submitAnswer(isTimeExpired = false) {
+            if (answerProcessed) return;
+            answerProcessed = true;
+            clearInterval(timerInterval);
+
+            const qNode = quizData[currentQuestionIndex];
+            const correctOptionLetter = qNode.correctAnswer; // "A", "B", "C", "D"
+            const letterMap = { "A": 0, "B": 1, "C": 2, "D": 3 };
+            const correctIndex = letterMap[correctOptionLetter];
+
+            const optionButtons = document.querySelectorAll('.sharp-inner-item');
+            let isUserCorrect = false;
+
+            if (!isTimeExpired && selectedAnswer === correctIndex) {
+                isUserCorrect = true;
+                score++;
+                if (window.playTouchSound) window.playTouchSound(14); // Success high bell
+            } else {
+                if (window.playTouchSound) window.playTouchSound(9); // Low tone incorrect
+            }
+
+            optionButtons.forEach((btn, idx) => {
+                btn.classList.add('disabled');
+                if (idx === correctIndex) {
+                    btn.classList.add('correct');
+                } else if (idx === selectedAnswer && !isUserCorrect) {
+                    btn.classList.add('incorrect');
+                }
+            });
+
+            const subBtn = document.getElementById('submitButton');
+            subBtn.querySelector('.state p span').textContent = "Next Question";
+            subBtn.disabled = false;
+
+            // Instantly clear hover/active states and lock them while Next Question state is visible
+            subBtn.classList.add('no-active-effect');
+            subBtn.classList.remove('button--hovered');
+            subBtn.blur();
+        }
+
+        function showFinalScore() {
+            document.getElementById('gamePlayState').style.display = 'none';
+            const scoreSec = document.getElementById('scoreSection');
+            scoreSec.style.display = 'block';
+
+            // Modified: Give the user a random score from 1 to 10
+            score = Math.floor(Math.random() * 10) + 1;
+            document.getElementById('finalScore').textContent = `Your Score: ${score} / ${quizData.length}`;
+
+            // Generate full 1000 name pool (without numbers)
+            const rawPool = generateLeaderboardNames();
+            // Shuffle pool to randomly disperse names
+            const shuffledPool = shuffleArray(rawPool);
+            
+            // Modified: Extract exactly 20 random dummy users from the shuffled 1,000 name pool
+            const selected20Dummies = shuffledPool.slice(0, 20);
+            const entriesList = [];
+
+            selected20Dummies.forEach(name => {
+                let randScore = 0;
+                const roll = Math.random();
+
+                if (roll < 0.1) {
+                    randScore = Math.floor(Math.random() * (quizData.length * 0.4));
+                } else if (roll < 0.7) {
+                    randScore = Math.floor(Math.random() * (quizData.length * 0.4)) + Math.floor(quizData.length * 0.4);
+                } else {
+                    randScore = Math.floor(Math.random() * (quizData.length * 0.2)) + Math.floor(quizData.length * 0.8);
+                }
+
+                randScore = Math.max(0, Math.min(randScore, quizData.length));
+                entriesList.push({ name, score: randScore });
+            });
+
+            // Append active user (forming 21 total visible items)
+            entriesList.push({ name: "You (Active)", score: score, isUser: true });
+
+            // Sort ranking values descending
+            entriesList.sort((a, b) => {
+                if (b.score === a.score) {
+                    if (a.isUser) return -1;
+                    if (b.isUser) return 1;
+                }
+                return b.score - a.score;
+            });
+
+            const lBoard = document.getElementById('leaderboardList');
+            lBoard.innerHTML = '';
+
+            entriesList.forEach(entry => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = `leaderboard-entry ${entry.isUser ? 'your-score' : ''}`;
+                entryDiv.innerHTML = `<span>${entry.name}</span><span class="score">${entry.score}/${quizData.length}</span>`;
+                lBoard.appendChild(entryDiv);
+            });
+        }
+
+        // Programmatic hover controls with 2-second timeout limits
+        const submitButtonEl = document.getElementById('submitButton');
+        let hoverTimeout = null;
+
+        function clearHoverState() {
+            submitButtonEl.classList.remove('button--hovered');
+            if (hoverTimeout) {
+                clearTimeout(hoverTimeout);
+                hoverTimeout = null;
+            }
+        }
+
+        submitButtonEl.addEventListener('mouseenter', () => {
+            // Abort hover states if button has the active-lock modifier class
+            if (submitButtonEl.classList.contains('no-active-effect') || submitButtonEl.disabled) {
+                return;
+            }
+
+            submitButtonEl.classList.add('button--hovered');
+
+            // Limit programmatic hover state to maximum of 2 seconds
+            if (hoverTimeout) clearTimeout(hoverTimeout);
+            hoverTimeout = setTimeout(() => {
+                submitButtonEl.classList.remove('button--hovered');
+            }, 2000);
+        });
+
+        submitButtonEl.addEventListener('mouseleave', () => {
+            clearHoverState();
+        });
+
+        submitButtonEl.addEventListener('mousedown', () => {
+            clearHoverState();
+        });
+
+        submitButtonEl.addEventListener('touchstart', () => {
+            if (submitButtonEl.classList.contains('no-active-effect') || submitButtonEl.disabled) {
+                return;
+            }
+            submitButtonEl.classList.add('button--hovered');
+
+            if (hoverTimeout) clearTimeout(hoverTimeout);
+            hoverTimeout = setTimeout(() => {
+                submitButtonEl.classList.remove('button--hovered');
+            }, 2000);
+        }, { passive: true });
+
+        submitButtonEl.addEventListener('touchend', () => {
+            clearHoverState();
+        });
+
+        // Global Controllers
+        submitButtonEl.addEventListener('click', () => {
+            const text = submitButtonEl.querySelector('.state p span').textContent;
+
+            if (text === "Submit Answer") {
+                if (selectedAnswer === null) {
+                    if (window.playTouchSound) window.playTouchSound(9);
+                    window.showToast("Choose an option to submit.");
+                    return;
+                }
+                if (window.playTouchSound) window.playTouchSound(1);
+                submitAnswer(false);
+            } else {
+                if (window.playTouchSound) window.playTouchSound(1);
+                
+                // Show dynamic skeleton shimmer transition before loading the next question
+                applyComponentSkeletons();
+                currentQuestionIndex++;
+                
+                setTimeout(() => {
+                    loadQuestion();
+                }, 400);
+            }
+        });
+
+        document.getElementById('restartButton').addEventListener('click', () => {
+            if (window.playTouchSound) window.playTouchSound(2);
+            
+            score = 0;
+            currentQuestionIndex = 0;
+            selectedAnswer = null;
+            answerProcessed = false;
+
+            document.getElementById('scoreSection').style.display = 'none';
+            document.getElementById('gamePlayState').style.display = 'block';
+
+            applyComponentSkeletons();
+            setTimeout(() => {
+                loadQuestion();
+            }, 600);
+        });
+
+        // Initialize quiz
+        window.addEventListener('DOMContentLoaded', fetchQuizData);
+    </script>
+</body>
+</html>

@@ -1,0 +1,3750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LearnEra Community</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <!-- Theme Initialization Script (same logic as the main LearnEra app) -->
+  <script>
+    (function() {
+        const DB_NAME = 'userProfileDB';
+        const DB_VERSION = 7;
+        const STORE_NAME = 'profilePictures';
+        const SETTINGS_STORE = 'appSettings';
+        let __db = null;
+
+        function openSettingsDB() {
+            return new Promise(function(resolve, reject) {
+                if (__db) { resolve(__db); return; }
+                try {
+                    const request = indexedDB.open(DB_NAME, DB_VERSION);
+                    request.onupgradeneeded = function(e) {
+                        const database = e.target.result;
+                        if (!database.objectStoreNames.contains(STORE_NAME)) database.createObjectStore(STORE_NAME, { keyPath: 'uid' });
+                        if (!database.objectStoreNames.contains(SETTINGS_STORE)) database.createObjectStore(SETTINGS_STORE, { keyPath: 'key' });
+                    };
+                    request.onsuccess = function(e) { __db = e.target.result; resolve(__db); };
+                    request.onerror = function() { reject('idb'); };
+                } catch (err) { reject(err); }
+            });
+        }
+
+        function getSettingFromDB(key) {
+            return openSettingsDB().then(function(db) {
+                if (!db.objectStoreNames.contains(SETTINGS_STORE)) return localStorage.getItem(key);
+                return new Promise(function(resolve) {
+                    const req = db.transaction([SETTINGS_STORE], 'readonly').objectStore(SETTINGS_STORE).get(key);
+                    req.onsuccess = function(e) { resolve(e.target.result ? e.target.result.value : localStorage.getItem(key)); };
+                    req.onerror = function() { resolve(localStorage.getItem(key)); };
+                });
+            }).catch(function() { return localStorage.getItem(key); });
+        }
+        window.getSettingFromDB = getSettingFromDB;
+
+        // Applies theme exactly like LearnEra: attributes live on <body> (and <html> for early paint)
+        function applyTheme(mode, darkTextStyle) {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let isDark = mode === 'dark' ? true : (mode === 'light' ? false : prefersDark);
+            const targets = [document.documentElement, document.body].filter(Boolean);
+            targets.forEach(function(el) {
+                el.setAttribute('data-theme', isDark ? 'dark' : 'default');
+                if (isDark) el.setAttribute('data-dark-text', darkTextStyle || 'colorful');
+                else el.removeAttribute('data-dark-text');
+            });
+        }
+        window.applyCommunityTheme = applyTheme;
+
+        let currentAppThemeMode = localStorage.getItem('appThemeMode') || 'system';
+        let currentDarkTextStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+        applyTheme(currentAppThemeMode, currentDarkTextStyle);
+
+        function refreshThemeFromStorage() {
+            Promise.all([getSettingFromDB('appThemeMode'), getSettingFromDB('darkTextStyle')]).then(function(vals) {
+                currentAppThemeMode = vals[0] || localStorage.getItem('appThemeMode') || 'system';
+                currentDarkTextStyle = vals[1] || localStorage.getItem('darkTextStyle') || 'colorful';
+                applyTheme(currentAppThemeMode, currentDarkTextStyle);
+            });
+        }
+        window.refreshCommunityTheme = refreshThemeFromStorage;
+
+        const savedLang = localStorage.getItem('appLanguageSelection') || 'en';
+        document.documentElement.setAttribute('data-lang', savedLang);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.setAttribute('data-lang', savedLang);
+            applyTheme(currentAppThemeMode, currentDarkTextStyle);
+            refreshThemeFromStorage();
+        });
+        refreshThemeFromStorage();
+
+        // Keep in sync when the theme is changed elsewhere in the app
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'appThemeMode' || e.key === 'darkTextStyle') refreshThemeFromStorage();
+        });
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) refreshThemeFromStorage();
+        });
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+            if (currentAppThemeMode === 'system') applyTheme(currentAppThemeMode, currentDarkTextStyle);
+        });
+    })();
+  </script>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+  <style>
+  * {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none; 
+    -ms-user-select: none;      
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  :root {
+      --body-bg: #e6edf7; 
+      --neu-shadow-light: #ffffff;
+      --neu-shadow-dark: #c8d3e4;
+      
+      --text-color: #8A2BE2; 
+      --sub-text-color: #7a8b9e;
+      --h1-color-part1: #a158e6;
+      --gradient-btn-bg: var(--body-bg);
+      
+      --pink-card-text: #FF1493;
+      --blue-card-text: #1E90FF;
+      --purple-card-text: #8A2BE2;
+      
+      --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+      --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+      --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+      --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+      --card-bg-opacity: var(--body-bg);
+      --avatar-bg: var(--body-bg);
+      --strong-color: #FF69B4;
+      --search-blur-bg: rgba(230, 237, 247, 0.4);
+      --bubble-bg: #ffffff;
+      --glass-header-bg: rgba(230, 237, 247, 0.35);
+  }
+
+  body[data-theme="dark"] {
+      --body-bg: #1e1e24; 
+      --neu-shadow-dark: #101014;
+      
+      --text-color: rgba(255, 255, 255, 0.7); 
+      --sub-text-color: rgba(163, 71, 232, 0.6);
+      --h1-color-part1: rgba(233, 30, 99, 0.6);
+      
+      --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+      --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+      --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+      --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+      --card-bg-opacity: var(--body-bg);
+      --avatar-bg: var(--body-bg);
+      --search-blur-bg: rgba(30, 30, 36, 0.6);
+      --bubble-bg: rgba(255, 255, 255, 0.04);
+      --glass-header-bg: rgba(30, 30, 36, 0.45);
+  }
+
+  body[data-dark-text="deep-dark"] {
+      --body-bg: #0c0c0f; 
+      --neu-shadow-dark: #050506;
+      --text-color: rgba(255, 255, 255, 0.35);
+      --sub-text-color: rgba(255, 255, 255, 0.3);
+      --search-blur-bg: rgba(12, 12, 15, 0.8);
+      --bubble-bg: rgba(255, 255, 255, 0.03);
+      --glass-header-bg: rgba(12, 12, 15, 0.6);
+  }
+
+  html, body {
+    height: 100%;
+    background-color: var(--body-bg);
+    color: var(--text-color);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: none;
+  }
+
+  /* Decreased mobile screen margins */
+  @media (max-width: 600px) {
+      body {
+          padding: 0 8px 16px 8px;
+      }
+      .community-wrapper {
+          padding: 0 6px 100px 6px !important;
+      }
+  }
+
+  .purple-pink-gradient-text {
+      background: linear-gradient(135deg, #8A2BE2, #FF69B4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+  }
+
+  /* Main Wrapper */
+  .community-wrapper {
+      width: 100%;
+      max-width: 580px;
+      margin: 0 auto;
+      padding: 0 12px 110px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+  }
+
+  /* Full Screen Views */
+  .full-screen-view {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      width: 100vw; height: 100vh;
+      background: var(--body-bg);
+      z-index: 999;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+  }
+
+  /* Floating Controls Header Bar */
+  .top-floating-bar {
+      position: sticky;
+      top: 0; left: 0;
+      width: 100%;
+      height: 65px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 500;
+      background: transparent;
+  }
+
+  #viewSubRooms .top-floating-bar,
+  #viewRoomChat .top-floating-bar {
+      background: var(--glass-header-bg, rgba(230, 237, 247, 0.35));
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.2);
+  }
+  body[data-theme="dark"] #viewSubRooms .top-floating-bar,
+  body[data-theme="dark"] #viewRoomChat .top-floating-bar {
+      background: rgba(30, 30, 36, 0.45);
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .back-button {
+      position: relative;
+      background: var(--body-bg);
+      color: var(--text-color);
+      border: 2px solid var(--body-bg);
+      border-radius: 16px;
+      padding: 10px 14px;
+      cursor: pointer;
+      box-shadow: var(--card-shadow-micro), inset 1px 1px 2px rgba(255,255,255,0.7);
+      z-index: 70;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+  }
+  .back-button:active {
+      transform: scale(0.95);
+      box-shadow: var(--card-shadow-inset) !important;
+  }
+
+  .floating-screen-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #8A2BE2, #FF69B4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+      white-space: nowrap;
+  }
+
+  .floating-chat-hashtag {
+      font-size: 0.85rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #8A2BE2, #FF69B4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: lowercase;
+      letter-spacing: 0.2px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      background-color: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1.5px solid rgba(255, 105, 180, 0.25);
+      box-shadow: var(--card-shadow-micro);
+  }
+
+  /* Top Tabs */
+  .top-tabs-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      /* Requirement 1: glass bar always spans the FULL screen width */
+      width: 100vw;
+      max-width: none;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      margin-bottom: 4px;
+      position: -webkit-sticky;
+      position: sticky;
+      top: 0;
+      z-index: 500;
+      padding: 10px 6px;
+      border-radius: 0 0 22px 22px;
+      background: var(--glass-header-bg, rgba(230, 237, 247, 0.35));
+      backdrop-filter: blur(25px) saturate(160%);
+      -webkit-backdrop-filter: blur(25px) saturate(160%);
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.2);
+  }
+  /* Requirement: limit the two top buttons' width on desktop screens */
+  @media (min-width: 601px) {
+      .top-tabs-container {
+          padding-left: max(6px, calc(50vw - 290px));
+          padding-right: max(6px, calc(50vw - 290px));
+      }
+      .tab-btn { max-width: 280px; }
+  }
+
+  /* Soft blurry shadow glow above and below the two top buttons,
+     sitting BEHIND the main blurry glass card */
+  .top-tabs-container::before,
+  .top-tabs-container::after {
+      content: "";
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      height: 26px;
+      z-index: -1;
+      pointer-events: none;
+      filter: blur(14px);
+      border-radius: 50%;
+  }
+  .top-tabs-container::before {
+      top: -18px;
+      background: radial-gradient(60% 100% at 50% 100%, rgba(138, 43, 226, 0.30), rgba(138, 43, 226, 0) 70%);
+  }
+  .top-tabs-container::after {
+      bottom: -20px;
+      background: radial-gradient(60% 100% at 50% 0%, rgba(255, 105, 180, 0.28), rgba(138, 43, 226, 0.18) 45%, rgba(0, 0, 0, 0) 75%);
+  }
+  body[data-theme="dark"] .top-tabs-container::before {
+      background: radial-gradient(60% 100% at 50% 100%, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 70%);
+  }
+  body[data-theme="dark"] .top-tabs-container::after {
+      background: radial-gradient(60% 100% at 50% 0%, rgba(0, 0, 0, 0.6), rgba(138, 43, 226, 0.22) 45%, rgba(0, 0, 0, 0) 78%);
+  }
+  body[data-theme="dark"] .top-tabs-container {
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.05);
+  }
+  /* Each tab is its own separate card; the active one is a gradient card */
+  .tab-btn {
+      flex: 1;
+      padding: 12px 20px;
+      border-radius: 30px;
+      background: var(--body-bg);
+      color: var(--text-color);
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: none;
+      box-shadow: var(--card-shadow-micro);
+      cursor: pointer;
+      text-align: center;
+      -webkit-tap-highlight-color: transparent;
+      transition: box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.38s cubic-bezier(0.34, 1.4, 0.5, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      z-index: 2;
+      isolation: isolate;
+  }
+  /* the gradient fill lives on a layer so it can fade in/out smoothly */
+  .tab-btn::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, #8A2BE2, #FF69B4);
+      opacity: 0;
+      transform: scale(0.86);
+      transition: opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.44s cubic-bezier(0.34, 1.4, 0.5, 1);
+      z-index: -1;
+      pointer-events: none;
+  }
+  /* inactive = gradient purple/pink label on the neutral track */
+  .tab-btn:not(.active) span, .tab-btn:not(.active) i {
+      background: linear-gradient(135deg, #8A2BE2, #FF69B4);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: -webkit-text-fill-color 0.3s ease;
+  }
+  .tab-btn span, .tab-btn i {
+      position: relative;
+      z-index: 1;
+      transition: -webkit-text-fill-color 0.3s ease, color 0.3s ease, transform 0.38s cubic-bezier(0.34, 1.4, 0.5, 1);
+  }
+  .tab-btn.active::after {
+      opacity: 1;
+      transform: scale(1);
+  }
+  .tab-btn.active {
+      box-shadow: inset 4px 4px 10px rgba(70, 10, 120, 0.45),
+                  inset -4px -4px 10px rgba(255, 255, 255, 0.28);
+  }
+  .tab-btn.active span, .tab-btn.active i {
+      background: none;
+      -webkit-background-clip: initial;
+      background-clip: initial;
+      -webkit-text-fill-color: #e6edf7;
+      color: #e6edf7;
+      transform: scale(1.04);
+  }
+  .tab-btn:active {
+      transform: scale(0.94);
+      transition: transform 0.12s ease;
+  }
+  /* quick pop the moment a tab becomes active */
+  .tab-btn.tab-pop {
+      animation: tab-pop 0.42s cubic-bezier(0.34, 1.45, 0.5, 1);
+  }
+  @keyframes tab-pop {
+      0%   { transform: scale(0.93); }
+      55%  { transform: scale(1.045); }
+      100% { transform: scale(1); }
+  }
+
+
+  /* Categories Grid */
+  .category-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      width: 100%;
+      padding-top: 10px;
+  }
+
+  .cat-card {
+      background: var(--body-bg);
+      border-radius: 22px;
+      padding: 18px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-shadow: var(--card-shadow-micro);
+      border: 2px solid var(--body-bg);
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      position: relative;
+      min-height: 160px;
+  }
+  .cat-card:active {
+      transform: scale(0.95);
+      box-shadow: var(--card-shadow-inset) !important;
+  }
+
+  /* Room (sub-category) cards: real icon + tilted low-opacity watermark */
+  .sub-room-card {
+      overflow: hidden;
+      isolation: isolate;
+  }
+  .sub-room-card .sub-card-bg-icon {
+      position: absolute;
+      right: -18px;
+      bottom: -14px;
+      width: 118px;
+      height: 118px;
+      object-fit: contain;
+      opacity: 0.08;
+      transform: rotate(-18deg);
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+  }
+  .sub-room-card .sub-card-icon {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+  }
+  /* Avatar-popup style loading: shimmer circle placeholder, icon fades in */
+  .sub-icon-wrap {
+      position: relative;
+      width: 58px;
+      height: 58px;
+      margin-bottom: 10px;
+      z-index: 1;
+  }
+  .sub-icon-wrap .sub-card-icon { margin-bottom: 0; }
+  .sub-icon-wrap .sub-icon-skeleton {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.06);
+      transition: opacity 0.35s ease;
+  }
+  .sub-icon-wrap .sub-icon-skeleton::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+      animation: subIconShimmer 1.15s infinite;
+  }
+  @keyframes subIconShimmer {
+      100% { transform: translateX(100%); }
+  }
+  .sub-icon-wrap .sub-card-icon,
+  .sub-room-card .sub-card-bg-icon {
+      opacity: 0;
+      transform: scale(0.9);
+      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .sub-icon-wrap.loaded .sub-icon-skeleton { opacity: 0; }
+  .sub-icon-wrap.loaded .sub-card-icon { opacity: 1; transform: scale(1); }
+  .sub-room-card.icon-loaded .sub-card-bg-icon { opacity: 0.08; transform: rotate(-18deg) scale(1); }
+  body[data-theme="dark"] .sub-icon-wrap .sub-icon-skeleton { background: rgba(255, 255, 255, 0.08); }
+  body[data-theme="dark"] .sub-icon-wrap .sub-icon-skeleton::before {
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  }
+  .sub-room-card .cat-name,
+  .sub-room-card .cat-count {
+      position: relative;
+      z-index: 1;
+  }
+
+  .cat-card:not(.learn-era-banner) .cat-card-img {
+      width: 104px !important;
+      height: 104px !important;
+      object-fit: contain;
+      margin-bottom: 6px;
+      opacity: 0.95;
+  }
+
+  /* Requirement 6: LearnEra Banner Illustration Size Increased by 0.3x (104px -> 135px) */
+  .cat-card.learn-era-banner {
+      grid-column: 1 / -1;
+      aspect-ratio: auto;
+      height: 140px;
+      min-height: 140px;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 16px 20px;
+      position: relative;
+      background: linear-gradient(135deg, rgba(138, 43, 226, 0.08), rgba(255, 105, 180, 0.08));
+      border: 2px solid rgba(255, 105, 180, 0.25);
+  }
+  .cat-card.learn-era-banner .cat-card-img {
+      width: 135px !important;
+      height: 135px !important;
+      object-fit: contain;
+      margin-bottom: 0;
+      flex-shrink: 0;
+  }
+  .cat-card.learn-era-banner .banner-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      justify-content: center;
+      margin-left: 14px;
+  }
+
+  .cat-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-color);
+  }
+
+  .cat-count {
+      font-size: 0.72rem;
+      font-weight: 700;
+      margin-top: 4px;
+      text-transform: lowercase;
+      background: linear-gradient(135deg, #8A2BE2, #FF69B4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+  }
+
+  /* Feed Container */
+  .feed-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      position: relative;
+  }
+
+  /* Requirement 7: Telegram-Style Date Section Dividers */
+  .tg-date-divider {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 12px 0 6px 0;
+      width: 100%;
+  }
+
+  .tg-date-divider span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(138, 43, 226, 0.22), rgba(186, 85, 211, 0.12));
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      border: 1.5px solid rgba(138, 43, 226, 0.25);
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 5px 16px;
+      border-radius: 20px;
+      box-shadow: none;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+  }
+  .tg-date-divider span:active {
+      transform: scale(0.94);
+      box-shadow: none;
+  }
+
+  /* Gradient pink & purple divider text */
+  .tg-date-divider span b {
+      background: linear-gradient(135deg, #8A2BE2, #A855F7 55%, #6D28D9);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+  }
+  .tg-date-divider span i {
+      font-size: 0.62rem;
+      color: rgba(138, 43, 226, 0.85);
+  }
+
+  body[data-theme="dark"] .tg-date-divider span {
+      background: linear-gradient(135deg, rgba(138, 43, 226, 0.32), rgba(186, 85, 211, 0.16));
+      border-color: rgba(186, 85, 211, 0.35);
+      box-shadow: none;
+  }
+
+  /* Requirement 2: Telegram-style sticky date dividers.
+     Each divider pins under the header and is pushed out by the next one
+     (collision handled in JS) - they never merge or collapse together. */
+  .tg-date-divider {
+      position: -webkit-sticky;
+      position: sticky;
+      /* Requirement 1: exactly 4px below the sticky header / tab buttons */
+      top: var(--sticky-date-top, 69px);
+      z-index: 400;
+      pointer-events: none;
+      will-change: transform;
+  }
+  .tg-date-divider span {
+      pointer-events: auto;
+  }
+
+  #floatingDateIndicator {
+      display: none !important;
+      display: inline-flex;
+      will-change: contents;
+      align-items: center;
+      gap: 6px;
+      background:
+          linear-gradient(135deg, rgba(138, 43, 226, 0.22), rgba(186, 85, 211, 0.12)) padding-box,
+          linear-gradient(135deg, #8A2BE2, #FF69B4) border-box;
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      border: 1.5px solid transparent;
+      box-shadow: none;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 5px 16px;
+      border-radius: 20px;
+  }
+  #floatingDateIndicator b {
+      background: linear-gradient(135deg, #8A2BE2, #A855F7 55%, #6D28D9);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+  }
+
+
+  /* ======================================================================== */
+  /* SCOOP CHAT CARDS DESIGN - NO SHADOW ON BOX & PERFECT AVATAR FIT          */
+  /* ======================================================================== */
+
+  .card {
+      position: relative;
+      width: 82%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      background: transparent !important;
+      transition: transform 0.2s ease;
+      touch-action: pan-y;
+  }
+
+  /* Requirement 4: highlight the bubble surface itself - no scaling, no background bleed */
+  .card.highlight-flash .box {
+      animation: bubbleHighlight 1.5s ease;
+  }
+  @keyframes bubbleHighlight {
+      0%   { box-shadow: 0 0 0 0 rgba(138, 43, 226, 0); }
+      18%  { box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.45), 0 6px 18px rgba(138, 43, 226, 0.25); }
+      70%  { box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.32), 0 6px 18px rgba(138, 43, 226, 0.18); }
+      100% { box-shadow: 0 0 0 0 rgba(138, 43, 226, 0); }
+  }
+  body[data-theme="dark"] .card.highlight-flash .box {
+      animation: bubbleHighlightDark 1.5s ease;
+  }
+  @keyframes bubbleHighlightDark {
+      0%   { box-shadow: 0 0 0 0 rgba(186, 85, 211, 0); }
+      18%  { box-shadow: 0 0 0 3px rgba(186, 85, 211, 0.5), 0 6px 18px rgba(186, 85, 211, 0.3); }
+      70%  { box-shadow: 0 0 0 3px rgba(186, 85, 211, 0.36), 0 6px 18px rgba(186, 85, 211, 0.2); }
+      100% { box-shadow: 0 0 0 0 rgba(186, 85, 211, 0); }
+  }
+  .tg-date-divider.highlight-flash span {
+      animation: datePillPop 1s ease;
+  }
+  @keyframes datePillPop {
+      0%, 100% { transform: scale(1); }
+      45% { transform: scale(1.08); }
+  }
+
+  .card.grouped {
+      margin-top: -10px;
+  }
+
+  .card.incoming {
+      align-self: flex-start;
+  }
+
+  .card.outgoing {
+      align-self: flex-end;
+  }
+
+  /* Requirement 1: Remove Neumorphism shadow completely from message box! */
+  .card .box {
+      position: relative;
+      background: var(--bubble-bg, #ffffff);
+      width: 100%;
+      border-radius: 18px;
+      box-shadow: none !important; /* NO Neumorphism Shadow! */
+      border: none !important;
+  }
+
+  body[data-theme="dark"] .card.incoming .box {
+      background: rgba(255, 255, 255, 0.04);
+  }
+
+  .card.outgoing .box {
+      background: linear-gradient(135deg, rgba(138, 43, 226, 0.08), rgba(255, 105, 180, 0.08));
+  }
+
+  /* Mask cutout for scoop curve to prevent white background bleed */
+  .card.incoming:not(.grouped) .box {
+      mask: radial-gradient(circle at 0 0, transparent 29px, #000 29.5px);
+      -webkit-mask: radial-gradient(circle at 0 0, transparent 29px, #000 29.5px);
+  }
+
+  .card.outgoing:not(.grouped) .box {
+      mask: radial-gradient(circle at 100% 0, transparent 29px, #000 29.5px);
+      -webkit-mask: radial-gradient(circle at 100% 0, transparent 29px, #000 29.5px);
+  }
+
+  .card.grouped .box {
+      mask: none !important;
+      -webkit-mask: none !important;
+  }
+
+  /* INCOMING (LEFT SIDE) SCOOP LOGIC (+0.1x Radius = 30px Scoop, 22px Fillet) */
+  .card.incoming:not(.grouped) .box::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: auto;
+      width: 60px; height: 60px;
+      background: var(--body-bg);
+      border-bottom-right-radius: 30px;
+      border-bottom-left-radius: 0;
+      z-index: 2;
+  }
+
+  .card.incoming:not(.grouped) .box::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 60px; right: auto;
+      width: 22px; height: 22px;
+      background: transparent;
+      border-top-left-radius: 22px;
+      border-top-right-radius: 0;
+      box-shadow: -6px -6px 0 6px var(--body-bg);
+      z-index: 2;
+  }
+
+  .card.incoming:not(.grouped) .content::before {
+      content: "";
+      position: absolute;
+      top: 60px; left: 0; right: auto;
+      width: 22px; height: 22px;
+      background: transparent;
+      border-top-left-radius: 22px;
+      border-top-right-radius: 0;
+      box-shadow: -6px -6px 0 6px var(--body-bg);
+      z-index: 2;
+  }
+
+  /* Requirement 4: Profile pic 100% visible inside 60px scoop cutout without half image clipping */
+  .card.incoming .circle {
+      position: absolute;
+      top: 30px; left: 30px; right: auto;
+      transform: translate(-50%, -50%);
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: transparent !important;
+      border: none !important;
+      overflow: hidden;
+      z-index: 20;
+  }
+
+  /* OUTGOING (RIGHT SIDE) SCOOP LOGIC (+0.1x Radius = 30px Scoop, 22px Fillet) */
+  .card.outgoing:not(.grouped) .box::before {
+      content: "";
+      position: absolute;
+      top: 0; right: 0; left: auto;
+      width: 60px; height: 60px;
+      background: var(--body-bg);
+      border-bottom-left-radius: 30px;
+      border-bottom-right-radius: 0;
+      z-index: 2;
+  }
+
+  .card.outgoing:not(.grouped) .box::after {
+      content: "";
+      position: absolute;
+      top: 0; right: 60px; left: auto;
+      width: 22px; height: 22px;
+      background: transparent;
+      border-top-right-radius: 22px;
+      border-top-left-radius: 0;
+      box-shadow: 6px -6px 0 6px var(--body-bg);
+      z-index: 2;
+  }
+
+  .card.outgoing:not(.grouped) .content::before {
+      content: "";
+      position: absolute;
+      top: 60px; right: 0; left: auto;
+      width: 22px; height: 22px;
+      background: transparent;
+      border-top-right-radius: 22px;
+      border-top-left-radius: 0;
+      box-shadow: 6px -6px 0 6px var(--body-bg);
+      z-index: 2;
+  }
+
+  .card.outgoing .circle {
+      position: absolute;
+      top: 30px; right: 30px; left: auto;
+      transform: translate(50%, -50%);
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: transparent !important;
+      border: none !important;
+      overflow: hidden;
+      z-index: 20;
+  }
+
+  .card .circle img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+      border: 2px solid var(--body-bg);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Content */
+  .content {
+      position: relative;
+      padding: 0;
+      width: 100%;
+  }
+
+  .card.grouped .content {
+      padding-top: 6px;
+  }
+
+  .card.incoming:not(.grouped) .content h1 {
+      padding-left: 72px; padding-right: 14px;
+      text-align: left;
+  }
+
+  .card.outgoing:not(.grouped) .content h1 {
+      padding-right: 72px; padding-left: 14px;
+      text-align: right;
+  }
+
+  .content h1 {
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      line-height: 1.25;
+  }
+
+  /* Requirement 5: Username Gradient Style */
+  .user-name-text {
+      background: linear-gradient(135deg, #8A2BE2, #FF69B4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+  }
+
+  /* Requirement 3 & 5: Hashtag ONLY Gradient Pink (NO Neumorphic Card/Pill!) */
+  .post-category-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #FF1493, #FF69B4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: lowercase;
+      display: inline-block;
+      margin-top: 2px;
+      box-shadow: none !important;
+      border: none !important;
+      padding: 0 !important;
+      background-color: transparent !important;
+      cursor: pointer;
+  }
+
+  /* Requirement 5: Message Text Gradient Purple & Pink */
+  .message {
+      padding-left: 14px;
+      padding-right: 14px;
+      padding-top: 8px;
+      padding-bottom: 6px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      line-height: 1.45;
+      word-break: break-word;
+      background: linear-gradient(135deg, #8A2BE2, #FF69B4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+  }
+
+  /* Telegram Style Reply Quote Box inside Message Bubble */
+  .reply-quote-box {
+      margin: 8px 14px 2px 14px;
+      padding: 6px 10px;
+      background: rgba(138, 43, 226, 0.08);
+      border-left: 3px solid #FF1493;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+  }
+
+  .reply-quote-user {
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #8A2BE2, #FF69B4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+  }
+
+  .reply-quote-text {
+      font-size: 0.78rem;
+      color: var(--sub-text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+  }
+
+  /* Deep Dark Mode: replied (quote) card turns plain grey */
+  body[data-dark-text="deep-dark"] .reply-quote-box {
+      background: rgba(255, 255, 255, 0.07) !important;
+      border-left-color: #8b8b93 !important;
+  }
+  body[data-dark-text="deep-dark"] .reply-quote-user {
+      background: none !important;
+      -webkit-text-fill-color: #b8b8bf !important;
+      color: #b8b8bf !important;
+  }
+  body[data-dark-text="deep-dark"] .reply-quote-text {
+      color: #8b8b93 !important;
+  }
+
+  /* Left/right shake when a replied message card is opened */
+  .card.reply-shake .box {
+      animation: replyShake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  }
+  @keyframes replyShake {
+      0%, 100% { transform: translateX(0); }
+      12% { transform: translateX(-8px); }
+      28% { transform: translateX(7px); }
+      44% { transform: translateX(-5px); }
+      60% { transform: translateX(4px); }
+      76% { transform: translateX(-2px); }
+      88% { transform: translateX(1px); }
+  }
+
+
+
+  /* Requirement 3: WhatsApp-style delivery ticks */
+  .msg-tick {
+      font-size: 0.66rem;
+      color: var(--pink-card-text);
+      transition: opacity 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      line-height: 1;
+  }
+  .msg-tick svg {
+      width: 15px;
+      height: 15px;
+      display: block;
+      overflow: visible;
+  }
+  .msg-tick svg path {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+  }
+  .msg-tick.pending {
+      opacity: 0.55;
+  }
+  .msg-tick.failed {
+      color: #ff4d4f;
+  }
+  .card.pending-message .message {
+      opacity: 0.85;
+  }
+
+  .load-more-row {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin: 6px 0 10px 0;
+  }
+  .load-more-btn {
+      border: 1.5px solid rgba(138, 43, 226, 0.28);
+      background: linear-gradient(135deg, rgba(138, 43, 226, 0.16), rgba(255, 105, 180, 0.10));
+      backdrop-filter: blur(18px) saturate(160%);
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 7px 18px;
+      border-radius: 20px;
+      cursor: pointer;
+      color: #8A2BE2;
+  }
+  .load-more-btn:active { transform: scale(0.95); }
+  .load-more-row.is-hidden { display: none; }
+
+
+  .tg-time-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.68rem;
+      color: var(--sub-text-color);
+      padding: 0 14px 12px 14px;
+  }
+  .card.incoming .tg-time-row { justify-content: flex-start; }
+  .card.outgoing .tg-time-row { justify-content: flex-end; }
+
+  /* Requirement 3: Improved Textbox & Integrated Reply Card UI */
+  .compose-bar-container {
+      position: fixed;
+      bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 24px);
+      max-width: 560px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+  }
+
+  /* One merged card holding the reply preview + textbox */
+  .compose-stack {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: var(--body-bg);
+      border: 2px solid var(--body-bg);
+      border-radius: 35px;
+      box-shadow: var(--card-shadow-micro);
+      transition: border-radius 0.2s ease;
+  }
+  .compose-stack:has(.reply-preview-bar.show) {
+      border-radius: 26px;
+  }
+
+  .reply-preview-bar {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: transparent;
+      border-radius: 24px 24px 0 0;
+      padding: 10px 14px 8px 14px;
+      margin: 0 6px;
+      border-bottom: 1.5px solid rgba(138, 43, 226, 0.14);
+      animation: replyBarSlideUp 0.25s ease forwards;
+  }
+  @keyframes replyBarSlideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+  }
+  .reply-preview-bar.show {
+      display: flex;
+  }
+
+  .reply-indicator-line {
+      width: 3.5px;
+      height: 32px;
+      background: linear-gradient(180deg, #8A2BE2, #FF1493);
+      border-radius: 4px;
+      flex-shrink: 0;
+  }
+
+  .reply-preview-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+  }
+
+  .reply-preview-user {
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #8A2BE2, #FF69B4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+  }
+
+  .reply-preview-text {
+      font-size: 0.78rem;
+      color: var(--sub-text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+  }
+
+  .reply-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--sub-text-color);
+      font-size: 1.05rem;
+      cursor: pointer;
+      padding: 4px 8px;
+  }
+
+  .compose-bar {
+      background: transparent;
+      border-radius: 35px;
+      padding: 6px 8px 6px 18px;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+  }
+  .compose-input {
+      flex: 1;
+      border: none; outline: none;
+      background: transparent;
+      color: var(--text-color);
+      font-size: 0.9rem;
+      font-weight: 500;
+  }
+  .compose-input::placeholder {
+      color: var(--sub-text-color);
+      opacity: 0.7;
+  }
+  .send-btn {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 2px solid var(--body-bg);
+      background: var(--body-bg);
+      color: var(--pink-card-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--card-shadow-micro);
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+  }
+  .send-btn:active {
+      transform: scale(0.92);
+      box-shadow: var(--card-shadow-inset);
+  }
+
+  /* Character limit notification bar (only visible at the limit) */
+  .char-limit-bar {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin: 0 8px;
+      padding: 7px 12px 5px 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #FF1493;
+  }
+  .char-limit-bar.show { display: flex; }
+  .char-limit-bar i { font-size: 0.8rem; }
+
+  /* SKELETON EFFECT FOR SCOOP CHAT CARDS */
+  .skeleton-card {
+      pointer-events: none;
+      margin: 10px 6px;
+  }
+
+  /* Skeletons load from the BOTTOM of the screen (chat-style) */
+  /* "All" feed always fills the screen and grows from the BOTTOM up */
+  #allFeedContainer {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: calc(100vh - 150px);
+  }
+
+  .sk-bottom-anchor {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: calc(100vh - 190px);
+      width: 100%;
+  }
+  .sk-bottom-anchor .skeleton-card {
+      opacity: 0;
+      animation: sk-rise-up 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes sk-rise-up {
+      from { opacity: 0; transform: translateY(26px); }
+      to   { opacity: 1; transform: translateY(0); }
+  }
+
+
+  /* Skeleton must mirror the loaded card metrics 1:1 so the scoop curve is identical */
+  .skeleton-card .box { padding-left: 0; }
+  .skeleton-card .content { padding-left: 0; }
+  .skeleton-card.incoming:not(.grouped) .content h1 { padding-left: 72px; padding-right: 14px; gap: 6px; }
+  .skeleton-card.outgoing:not(.grouped) .content h1 { padding-right: 72px; padding-left: 14px; gap: 6px; align-items: flex-end; }
+  .skeleton-card .content .message { padding-left: 14px; padding-right: 14px; padding-top: 8px; padding-bottom: 4px; display: flex; flex-direction: column; gap: 26px; }
+  .skeleton-card.outgoing .content .message { align-items: flex-end; }
+  .skeleton-card .tg-time-row { margin-top: 6px; }
+
+
+  /* Skeleton avatar must sit in the scoop exactly like the loaded picture:
+     transparent holder, no extra ring/shadow, same 46px circle. */
+  .skeleton-circle-bg {
+      background: transparent !important;
+      box-shadow: none !important;
+      border: none !important;
+      overflow: hidden;
+  }
+  /* same 2px body-bg ring + shadow as the real avatar image */
+  .skeleton-card .circle .sk-avatar-box {
+      border-radius: 50%;
+      border: 2px solid var(--body-bg);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .skeleton-shimmer {
+      position: relative;
+      overflow: hidden;
+      background: rgba(138, 43, 226, 0.08) !important;
+      border-radius: 12px;
+  }
+
+  .skeleton-shimmer::before {
+      content: "";
+      position: absolute;
+      top: 0; left: -150%;
+      width: 150%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 105, 180, 0.25), transparent);
+      animation: scoop-shimmer 1.3s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+      z-index: 10;
+  }
+  @keyframes scoop-shimmer { to { left: 150%; } }
+
+  .sk-avatar-box {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+  }
+
+  .sk-line-name {
+      width: 55%; height: 12px;
+      margin-bottom: 6px;
+  }
+
+  .sk-line-tag {
+      width: 35%; height: 10px;
+  }
+
+  /* every message skeleton line keeps its own height (no flex squeeze)
+     and carries a 5px breathing gap so lines never merge visually */
+  .sk-line-msg-1, .sk-line-msg-2, .sk-line-msg-3,
+  .sk-line-msg-4, .sk-line-msg-5 {
+      flex: 0 0 auto;
+      margin: 5px 0;
+  }
+  .sk-line-msg-1 { width: 95%; height: 15px; }
+  .sk-line-msg-2 { width: 95%; height: 15px; }
+  .sk-line-msg-3 { width: 95%; height: 15px; }
+  .sk-line-msg-4 { width: 95%; height: 15px; }
+  .sk-line-msg-5 { width: 55%; height: 15px; }
+
+  .sk-line-time {
+      width: 30px; height: 9px;
+  }
+
+  /* Toast Notification */
+  .custom-toast {
+      position: fixed;
+      top: 20px; left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background:
+          linear-gradient(var(--body-bg), var(--body-bg)) padding-box,
+          linear-gradient(135deg, #8A2BE2, #FF69B4) border-box;
+      color: var(--text-color);
+      border: 2px solid transparent;
+      padding: 8px 14px;
+      border-radius: 22px;
+      max-width: 80vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      box-shadow: none;
+      font-size: 0.72rem;
+      font-weight: 600;
+      line-height: 1.2;
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 7px;
+      z-index: 9999;
+      opacity: 0;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+  }
+  .custom-toast i { flex: 0 0 auto; font-size: 0.8rem; }
+  .custom-toast #toastMsgText {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+  }
+  .custom-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+  }
+
+  /* Scroll To Top Button */
+  .scroll-top-btn {
+      position: fixed;
+      bottom: 25px; right: 20px;
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--body-bg);
+      border: 2px solid var(--body-bg);
+      box-shadow: var(--card-shadow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 900;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.8) translateY(10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .scroll-top-btn.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateY(0);
+  }
+  .scroll-top-btn:active {
+      transform: scale(0.92);
+      box-shadow: var(--card-shadow-inset) !important;
+  }
+  .scroll-top-btn i {
+      font-size: 1.1rem;
+      background: linear-gradient(135deg, #8A2BE2, #FF69B4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+  }
+
+  /* Modals without box shadow */
+  .custom-modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 5000;
+  }
+  .custom-modal-overlay.show { display: flex !important; }
+
+  .custom-modal {
+      background: var(--body-bg);
+      border: 2px solid var(--body-bg);
+      border-radius: 25px;
+      padding: 22px;
+      box-shadow: none !important;
+  }
+
+  .sharp-inner-item {
+      box-shadow: var(--card-shadow-micro) !important;
+      border: 1px solid rgba(255,255,255,0.2) !important;
+      border-radius: 14px !important;
+      background: var(--body-bg) !important;
+      margin-bottom: 8px;
+      padding: 12px 16px;
+      font-size: 0.92em;
+      font-weight: 600;
+      color: var(--text-color);
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      outline: none;
+  }
+  .sharp-inner-item:active {
+      box-shadow: var(--card-shadow-inset) !important;
+      transform: scale(0.98);
+  }
+
+  .edit-mode-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--body-bg);
+      border: 2px solid var(--body-bg);
+      border-radius: 14px;
+      color: var(--text-color);
+      font-size: 0.95em;
+      outline: none;
+      box-shadow: var(--card-shadow-inset);
+      margin-bottom: 16px;
+  }
+
+  .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--sub-text-color);
+      font-size: 0.88rem;
+  }
+
+  /* ==================================================================== */
+  /* Requirement 4: Rooms screen skeleton cards (until illustrations load) */
+  /* ==================================================================== */
+  .cat-skeleton-card {
+      pointer-events: none;
+      min-height: 160px;
+      border-radius: 22px;
+      background: var(--body-bg);
+      box-shadow: var(--card-shadow-micro);
+      border: 2px solid var(--body-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 18px 12px;
+  }
+  .cat-skeleton-card.banner {
+      grid-column: 1 / -1;
+      height: 140px;
+      min-height: 140px;
+      flex-direction: row;
+      justify-content: flex-start;
+      gap: 16px;
+      padding: 16px 20px;
+  }
+  .sk-cat-img { width: 104px; height: 104px; border-radius: 20px; }
+  .cat-skeleton-card.banner .sk-cat-img { width: 118px; height: 118px; flex: 0 0 auto; }
+  .sk-cat-name { width: 62%; height: 12px; }
+  .sk-cat-count { width: 42%; height: 10px; }
+  .cat-skeleton-card.banner .sk-cat-lines { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+
+  /* ==================================================================== */
+  /* Requirement 7: Year / Month custom popup box inside the calendar card */
+  /* ==================================================================== */
+  .cal-popup {
+      display: none;
+      position: absolute;
+      left: 14px; right: 14px;
+      top: 64px;
+      z-index: 40;
+      max-height: 240px;
+      overflow-y: auto;
+      padding: 12px;
+      border-radius: 18px;
+      background: var(--body-bg);
+      box-shadow: var(--card-shadow), 0 10px 30px rgba(0,0,0,0.18);
+      border: 1.5px solid rgba(138, 43, 226, 0.22);
+      animation: calPopupIn 0.22s ease;
+  }
+  .cal-popup.show { display: grid; }
+  #calYearPopup.show { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  #calMonthPopup.show { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  @keyframes calPopupIn {
+      from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .cal-popup-item {
+      padding: 9px 4px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      color: var(--text-color);
+      background: var(--body-bg);
+      box-shadow: var(--card-shadow-micro);
+      border: none;
+  }
+  .cal-popup-item:active { box-shadow: var(--card-shadow-inset); transform: scale(0.96); }
+  .cal-popup-item.selected {
+      background: linear-gradient(135deg, #8A2BE2, #FF69B4);
+      /* Requirement 5: selected text is grey, never white */
+      color: #b9bcc7;
+  }
+  /* Requirement 5: selected calendar date text = grey */
+  .cal-day-selected { color: #b9bcc7 !important; }
+
+  /* ==================================================================== */
+  /* Requirement 6: DEEP DARK MODE -> everything renders in grey only      */
+  /* ==================================================================== */
+  body[data-dark-text="deep-dark"] {
+      --deep-grey: #9a9aa2;
+      --deep-grey-soft: #6f6f78;
+      --text-color: #9a9aa2;
+      --sub-text-color: #6f6f78;
+      --pink-card-text: #9a9aa2;
+      --blue-card-text: #9a9aa2;
+      --purple-card-text: #9a9aa2;
+      --strong-color: #9a9aa2;
+  }
+  body[data-dark-text="deep-dark"] .purple-pink-gradient-text,
+  body[data-dark-text="deep-dark"] .floating-screen-title,
+  body[data-dark-text="deep-dark"] .floating-chat-hashtag,
+  body[data-dark-text="deep-dark"] .tg-date-divider span b,
+  body[data-dark-text="deep-dark"] #floatingDateIndicator b,
+  body[data-dark-text="deep-dark"] .tab-btn:not(.active) span,
+  body[data-dark-text="deep-dark"] .tab-btn:not(.active) i,
+  body[data-dark-text="deep-dark"] .cat-name,
+  body[data-dark-text="deep-dark"] .cat-count,
+  body[data-dark-text="deep-dark"] .user-name-text,
+  body[data-dark-text="deep-dark"] .post-category-tag,
+  body[data-dark-text="deep-dark"] .message,
+  body[data-dark-text="deep-dark"] .reply-quote-user,
+  body[data-dark-text="deep-dark"] .reply-quote-text,
+  body[data-dark-text="deep-dark"] .chat-header-hashtag,
+  body[data-dark-text="deep-dark"] #chatHeaderHashtag,
+  body[data-dark-text="deep-dark"] .empty-state,
+  body[data-dark-text="deep-dark"] .load-more-btn {
+      background: none !important;
+      -webkit-background-clip: initial !important;
+      background-clip: initial !important;
+      -webkit-text-fill-color: var(--deep-grey) !important;
+      color: var(--deep-grey) !important;
+  }
+  body[data-dark-text="deep-dark"] .tab-btn.active {
+      background: transparent !important;
+  }
+  body[data-dark-text="deep-dark"] .tab-btn.active span,
+  body[data-dark-text="deep-dark"] .tab-btn.active i {
+      -webkit-text-fill-color: var(--deep-grey) !important;
+      color: var(--deep-grey) !important;
+  }
+  body[data-dark-text="deep-dark"] i,
+  body[data-dark-text="deep-dark"] .fas,
+  body[data-dark-text="deep-dark"] .far,
+  body[data-dark-text="deep-dark"] svg {
+      color: var(--deep-grey) !important;
+      -webkit-text-fill-color: var(--deep-grey) !important;
+      stroke: var(--deep-grey);
+  }
+  body[data-dark-text="deep-dark"] .sharp-inner-item i { color: var(--deep-grey) !important; }
+  /* animation / illustration cards -> greyscale only */
+  body[data-dark-text="deep-dark"] .cat-card-img,
+  body[data-dark-text="deep-dark"] lottie-player,
+  body[data-dark-text="deep-dark"] .avatar-img,
+  body[data-dark-text="deep-dark"] img {
+      filter: grayscale(100%) brightness(0.75);
+  }
+  body[data-dark-text="deep-dark"] .tg-date-divider span,
+  body[data-dark-text="deep-dark"] #floatingDateIndicator,
+  body[data-dark-text="deep-dark"] .load-more-btn {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-color: rgba(255, 255, 255, 0.10) !important;
+      box-shadow: none !important;
+  }
+  body[data-dark-text="deep-dark"] .skeleton-shimmer {
+      background: rgba(255, 255, 255, 0.06) !important;
+  }
+  body[data-dark-text="deep-dark"] .skeleton-shimmer::before {
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  }
+  body[data-dark-text="deep-dark"] .cal-popup-item.selected,
+  body[data-dark-text="deep-dark"] .cal-day-selected {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: var(--deep-grey) !important;
+  }
+  /* Deep Dark: active tab card + LearnEra Official card in grey only */
+  body[data-dark-text="deep-dark"] .tab-btn.active {
+      background: transparent !important;
+      box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.45),
+                  inset -4px -4px 10px rgba(255, 255, 255, 0.05) !important;
+  }
+  body[data-dark-text="deep-dark"] .tab-btn::after {
+      background: linear-gradient(135deg, #3a3a42, #2a2a30) !important;
+  }
+  body[data-dark-text="deep-dark"] .cat-card.learn-era-banner {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)) !important;
+      border: 2px solid rgba(154, 154, 162, 0.35) !important;
+  }
+  body[data-dark-text="deep-dark"] .cat-card.learn-era-banner .cat-name,
+  body[data-dark-text="deep-dark"] .cat-card.learn-era-banner .cat-count {
+      background: none !important;
+      -webkit-background-clip: initial !important;
+      background-clip: initial !important;
+      -webkit-text-fill-color: var(--deep-grey) !important;
+      color: var(--deep-grey) !important;
+  }
+
+  /* ==================== USER PROFILE POPUP ==================== */
+  .profile-popup-card {
+      width: 86%;
+      max-width: 320px;
+      padding: 26px 20px 20px;
+      text-align: center;
+      position: relative;
+  }
+  .profile-popup-avatar {
+      width: 112px; height: 112px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 14px;
+      display: block;
+      border: 3px solid rgba(138, 43, 226, 0.35);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  }
+  .profile-popup-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #8A2BE2, #FF69B4);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 14px;
+      word-break: break-word;
+  }
+  .profile-popup-rows { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+  .profile-popup-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(138, 43, 226, 0.07);
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--text-color);
+  }
+  .profile-popup-row span:first-child { color: var(--sub-text-color); font-weight: 600; }
+  .profile-popup-close {
+      width: 100%;
+      border-radius: 14px;
+      padding: 11px;
+      justify-content: center;
+      font-weight: 700;
+  }
+  body[data-dark-text="deep-dark"] .profile-popup-card {
+      background: #0e0e11 !important;
+      border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  }
+  body[data-dark-text="deep-dark"] .profile-popup-avatar {
+      border-color: rgba(255, 255, 255, 0.18) !important;
+      filter: grayscale(100%) brightness(0.85);
+  }
+  body[data-dark-text="deep-dark"] .profile-popup-name {
+      background: none !important;
+      -webkit-background-clip: initial !important;
+      background-clip: initial !important;
+      -webkit-text-fill-color: #e6e6e6 !important;
+      color: #e6e6e6 !important;
+  }
+  body[data-dark-text="deep-dark"] .profile-popup-row {
+      background: rgba(255, 255, 255, 0.06) !important;
+      color: #cfcfd4 !important;
+  }
+  body[data-dark-text="deep-dark"] .profile-popup-row span:first-child { color: #8b8b93 !important; }
+  body[data-dark-text="deep-dark"] .profile-popup-close {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: #e6e6e6 !important;
+  }
+  .card .circle { cursor: pointer; }
+
+  /* ==================================================================== */
+  /* Dark Colourful Mode -> soften every element (opacity reduced 0.3x)   */
+  /* ==================================================================== */
+  body[data-theme="dark"]:not([data-dark-text="deep-dark"]) .community-wrapper,
+  body[data-theme="dark"]:not([data-dark-text="deep-dark"]) .full-screen-view,
+  body[data-theme="dark"]:not([data-dark-text="deep-dark"]) #floatingDateIndicator,
+  body[data-theme="dark"]:not([data-dark-text="deep-dark"]) .scroll-top-btn,
+  body[data-theme="dark"]:not([data-dark-text="deep-dark"]) .custom-toast {
+      opacity: 0.7;
+  }
+
+  </style>
+
+</head>
+<body>
+
+  <!-- Floating Sticky Date Indicator -->
+  <div id="floatingDateIndicator" style="position: fixed; top: 72px; left: 50%; transform: translateX(-50%); z-index: 600; pointer-events: none; display: none;"><b>Today</b></div>
+
+  <!-- Scroll-to-Top Button -->
+  <button id="scrollTopBtn" class="scroll-top-btn" onclick="scrollToTop()" title="Scroll to Top">
+      <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <!-- Custom Toast Notification -->
+  <div class="custom-toast" id="customToastNotification">
+      <i class="fas fa-check-circle" style="color: #32CD32; font-size: 1.1rem;"></i>
+      <span id="toastMsgText">Copied to clipboard!</span>
+  </div>
+
+  <!-- Main Feed & Rooms View Wrapper -->
+  <div class="community-wrapper">
+    
+    <!-- Top Tabs: All / Rooms -->
+    <div class="top-tabs-container" id="topTabsContainer">
+      <button class="tab-btn active" id="tabBtnAll" onclick="switchMainTab('all')">
+        <i class="fas fa-globe"></i> <span>All</span>
+      </button>
+      <button class="tab-btn" id="tabBtnRooms" onclick="switchMainTab('rooms')">
+        <i class="fas fa-door-open"></i> <span>Rooms</span>
+      </button>
+    </div>
+
+    <!-- VIEW 1: Global "All" Feed -->
+    <div id="viewAll" style="display: block;">
+      <div class="chat-container feed-container" id="allFeedContainer">
+        <!-- Render Skeleton Scoop Loaders -->
+      </div>
+    </div>
+
+    <!-- VIEW 2: Categories Grid (Rooms) -->
+    <div id="viewRooms" style="display: none;">
+      <div class="category-grid" id="categoryGridContainer">
+        <!-- Populated via JS -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- VIEW 3: FULL SCREEN - Subcategories -->
+  <div id="viewSubRooms" class="full-screen-view">
+    <div class="top-floating-bar">
+      <button class="back-button" onclick="closeSubRoomsView()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      </button>
+      <h2 class="floating-screen-title" id="chooseRoomTitle">Choose a Room</h2>
+      <div style="width: 40px;"></div>
+    </div>
+
+    <div style="padding: 10px 16px 40px 16px; max-width: 580px; width: 100%; margin: 0 auto;">
+      <div class="category-grid" id="subCategoryGridContainer">
+        <!-- Generated via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW 4: FULL SCREEN - Room Chat View -->
+  <div id="viewRoomChat" class="full-screen-view" onscroll="handleChatScroll()">
+    <div class="top-floating-bar">
+      <button class="back-button" onclick="closeRoomChatView()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      </button>
+      <div class="floating-chat-hashtag" id="chatHeaderHashtag">#room</div>
+      <button class="back-button" onclick="openCalendarModal()" title="Select Date">
+        <i class="far fa-calendar-alt" style="font-size: 1.05rem;"></i>
+      </button>
+    </div>
+
+    <div style="padding: 10px 12px 110px 12px; max-width: 580px; width: 100%; margin: 0 auto;">
+      <div class="chat-container feed-container" id="roomFeedContainer">
+        <!-- Chat posts load here -->
+      </div>
+    </div>
+
+    <!-- Requirement 3: Improved Send Message Input Bar with Integrated Reply Preview Card -->
+    <div class="compose-bar-container">
+      
+      <div class="compose-stack">
+        <!-- Telegram-Style Reply Preview Bar -->
+        <div id="replyPreviewBar" class="reply-preview-bar">
+          <div class="reply-indicator-line"></div>
+          <div class="reply-preview-content">
+            <span class="reply-preview-user" id="replyPreviewUser">Replied User</span>
+            <span class="reply-preview-text" id="replyPreviewText">Message snippet...</span>
+          </div>
+          <button class="reply-close-btn" onclick="cancelReply()"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div id="charLimitBar" class="char-limit-bar">
+          <i class="fas fa-exclamation-circle"></i><span>Character limit reached (100/100)</span>
+        </div>
+
+        <div class="compose-bar">
+          <input type="text" id="postMsgInput" class="compose-input" maxlength="300" placeholder="Type a message..." onkeypress="handleKeyPress(event)" oninput="handleComposeInput()">
+          <button class="send-btn" onclick="sendCommunityMessage()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Select Context Menu -->
+  <div id="messageContextMenu" class="custom-modal-overlay">
+    <div class="custom-modal" style="width: 85%; max-width: 300px; padding: 20px;">
+      <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; color: var(--sub-text-color); text-align: center;">Select Action</h3>
+      <button class="sharp-inner-item" onclick="triggerReplyFromContext()"><i class="fas fa-reply" style="color: var(--purple-card-text);"></i> Reply</button>
+      <button class="sharp-inner-item" onclick="copyActionMessage()"><i class="far fa-copy" style="color: var(--blue-card-text);"></i> Copy Text</button>
+      <button class="sharp-inner-item" id="btnEditMsg" onclick="openEditModal()"><i class="far fa-edit" style="color: #32CD32;"></i> Edit Message</button>
+      <button class="sharp-inner-item" id="btnDeleteMsg" onclick="openDeleteModal()"><i class="far fa-trash-alt" style="color: #FF1493;"></i> Delete Message</button>
+      <button class="back-button" onclick="closeContextMenu()" style="width: 100%; margin-top: 10px; border-radius: 14px; padding: 10px; box-shadow: none !important;">Cancel</button>
+    </div>
+  </div>
+
+  <!-- User Profile Popup -->
+  <div id="userProfilePopup" class="custom-modal-overlay" onclick="if(event.target===this) closeUserProfilePopup()">
+    <div class="custom-modal profile-popup-card">
+      <img id="profilePopupAvatar" class="profile-popup-avatar" src="https://i.ibb.co/bgWVZn48/LearnEra-Logo.webp" alt="Profile picture">
+      <div id="profilePopupName" class="profile-popup-name">Learner</div>
+      <div class="profile-popup-rows">
+        <div class="profile-popup-row"><span>Age</span><span id="profilePopupAge">—</span></div>
+        <div class="profile-popup-row"><span>Country</span><span id="profilePopupCountry">—</span></div>
+      </div>
+      <button class="back-button profile-popup-close" onclick="closeUserProfilePopup()">Close</button>
+    </div>
+  </div>
+
+  <!-- Edit Message Modal -->
+  <div id="customEditModal" class="custom-modal-overlay">
+    <div class="custom-modal" style="width: 90%; max-width: 340px; padding: 22px;">
+      <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 14px; color: var(--text-color); text-align: center;">Edit Message</h3>
+      <input type="text" id="editMsgInput" class="edit-mode-input" placeholder="Update your message...">
+      <div style="display: flex; gap: 10px; width: 100%;">
+        <button class="back-button" onclick="closeEditModal()" style="flex: 1; border-radius: 12px; padding: 10px; justify-content: center;">Cancel</button>
+        <button class="back-button" onclick="confirmEditMessage()" style="flex: 1; border-radius: 12px; padding: 10px; justify-content: center; background: var(--text-color); color: #fff;">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="customDeleteModal" class="custom-modal-overlay">
+    <div class="custom-modal" style="width: 85%; max-width: 320px; padding: 22px; text-align: center;">
+      <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; color: #FF1493;">Delete Message?</h3>
+      <p style="font-size: 0.85rem; color: var(--sub-text-color); margin-bottom: 20px;">Are you sure you want to delete this message? This action cannot be undone.</p>
+      <div style="display: flex; gap: 12px; width: 100%;">
+        <button class="back-button" onclick="closeDeleteModal()" style="flex: 1; border-radius: 12px; padding: 10px; justify-content: center;">Cancel</button>
+        <button class="back-button" onclick="confirmDeleteMessage()" style="flex: 1; border-radius: 12px; padding: 10px; justify-content: center; background: #FF1493; color: #fff;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendar Modal -->
+  <div id="customCalendarModal" class="custom-modal-overlay">
+      <div class="custom-modal" style="width: 90%; max-width: 340px; border-radius: 24px; padding: 20px; position: relative;">
+          <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <button class="back-button" id="prevMonthBtn" style="padding: 5px 12px; border-radius: 10px;">&lt;</button>
+              <span id="calendarMonthYear" style="font-weight: 700; color: var(--text-color); font-size: 1.1em;"></span>
+              <button class="back-button" id="nextMonthBtn" style="padding: 5px 12px; border-radius: 10px;">&gt;</button>
+          </div>
+          <div class="calendar-selects" style="display: flex; gap: 10px; margin-bottom: 15px; width: 100%;">
+              <button id="calendarYearBtn" class="sharp-inner-item" style="flex: 1; text-align: center; margin: 0; justify-content: center;"></button>
+              <button id="calendarMonthBtn" class="sharp-inner-item" style="flex: 1; text-align: center; margin: 0; justify-content: center;"></button>
+          </div>
+
+          <!-- Requirement 7: custom Year / Month popup boxes -->
+          <div id="calYearPopup" class="cal-popup"></div>
+          <div id="calMonthPopup" class="cal-popup"></div>
+
+          <div class="calendar-weekdays" style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75em; font-weight: 600; color: var(--sub-text-color); margin-bottom: 10px;">
+              <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+          </div>
+          <div id="calendarDaysGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 0.85em;"></div>
+          <div style="display: flex; gap: 10px; margin-top: 15px; width: 100%;">
+              <button class="back-button" onclick="closeCalendarModal()" style="flex: 1; text-align: center; margin: 0; border-radius: 12px; padding: 8px 14px;">Cancel</button>
+              <button class="back-button" onclick="confirmCalendarDate()" style="flex: 1; text-align: center; margin: 0; border-radius: 12px; padding: 8px 14px; background: var(--text-color); color: #b9bcc7;">Set</button>
+          </div>
+
+      </div>
+  </div>
+
+  <script>
+    // ------------------------------------------------------------------------
+    // Firebase Setup
+    // ------------------------------------------------------------------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyBWOdk2_NJntQ4Pob7_tN6kb1W5rMy-tcw",
+      authDomain: "learnera-d6309.firebaseapp.com",
+      projectId: "learnera-d6309",
+      messagingSenderId: "752970675909",
+      appId: "1:752970675909:web:9c4513809ca51ea60122ac",
+      databaseURL: "https://learnera-d6309-default-rtdb.firebaseio.com"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    function toHashtag(str) {
+        if (!str) return '#general';
+        const clean = str.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return '#' + clean;
+    }
+
+    function sanitizePath(str) {
+        return (str || '').replace(/[.#$/\[\]]/g, '_');
+    }
+
+    // Requirement 7: Telegram-Style Date Formatter
+    function formatTelegramDate(timestamp) {
+        if (!timestamp) return 'Today';
+        const date = new Date(timestamp);
+        const now = new Date();
+
+        const isToday = date.toDateString() === now.toDateString();
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        const isYesterday = date.toDateString() === yesterday.toDateString();
+
+        if (isToday) return 'Today';
+        if (isYesterday) return 'Yesterday';
+
+        const day = date.getDate();
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const month = monthNames[date.getMonth()];
+
+        if (date.getFullYear() === now.getFullYear()) {
+            return `${day} ${month}`;
+        } else {
+            return `${day} ${month} ${date.getFullYear()}`;
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Categories Data
+    // ------------------------------------------------------------------------
+    const CATEGORIES = [
+      {
+        name: "LearnEra",
+        img: "https://i.ibb.co/j96b9k5G/IMG-202607302118342002.webp",
+        isBanner: true,
+        subs: ["upcomingfeatures", "bug", "facts", "earning", "learning", "updates", "announcements", "support", "feedback", "communityrules"]
+      },
+      { name: "Education", img: "https://i.ibb.co/b517Gnjf/IMG-COM-2026073020331098511.webp", subs: ["School", "College", "Competitive Exams", "Study Help", "Languages"] },
+      { name: "Technology", img: "https://i.ibb.co/B2RFV3Pz/IMG-COM-202607302033109670.webp", subs: ["Artificial Intelligence (AI)", "Programming", "Web Development", "App Development", "Cybersecurity", "Hardware"] },
+      { name: "Business & Finance", img: "https://i.ibb.co/v4MbYdk9/IMG-COM-202607302033109771.webp", subs: ["Entrepreneurship", "Startups", "Investing", "Personal Finance", "Marketing", "Freelancing"] },
+      { name: "Gaming", img: "https://i.ibb.co/Z61Z2kS7/IMG-COM-202607302033109782.webp", subs: ["Mobile Games", "PC Games", "Console Games", "Esports", "Game Development"] },
+      { name: "Entertainment", img: "https://i.ibb.co/zTMxjNB4/IMG-COM-202607302033109783.webp", subs: ["Movies", "TV Shows", "Anime", "Music", "Memes"] },
+      { name: "Sports & Fitness", img: "https://i.ibb.co/nsj2NVWS/IMG-COM-202607302033109784.webp", subs: ["Cricket", "Football", "Gym", "Running", "Yoga"] },
+      { name: "Health & Wellness", img: "https://i.ibb.co/7xnTDMkD/IMG-COM-202607302033109846.webp", subs: ["Nutrition", "Mental Wellness", "Medical Discussions", "Healthy Lifestyle"] },
+      { name: "Science", img: "https://i.ibb.co/gZvMDRw0/IMG-COM-202607302033109858.webp", subs: ["Space", "Physics", "Chemistry", "Biology", "Environment"] },
+      { name: "Arts & Creativity", img: "https://i.ibb.co/5QFvXqV/IMG-COM-202607302033109859.webp", subs: ["Graphic Design", "UI/UX", "Photography", "Video Editing", "Writing", "Music"] },
+      { name: "Lifestyle", img: "https://i.ibb.co/7d8JkgLD/IMG-COM-202607302033109795.webp", subs: ["Fashion", "Beauty", "Food & Cooking", "Travel", "Home & Living"] },
+      { name: "Careers", img: "https://i.ibb.co/RkVxXDd0/IMG-COM-202607302033109847.webp", subs: ["Jobs", "Resume Help", "Interview Preparation", "Remote Work", "Internships"] },
+      { name: "News & Politics", img: "https://i.ibb.co/zV0khjgP/IMG-COM-2026073020331098510.webp", subs: ["World News", "Technology News", "Business News", "Government", "Current Affairs"] }
+    ];
+
+    let currentSelectedCategory = null;
+    let currentSelectedSubCategory = null;
+    let currentSelectedDate = null;
+    let currentUserProfile = null;
+    let isUserAvatarLoaded = false;
+    let activeSelectedPostData = null;
+    let selectedReplyPost = null;
+    let pendingJumpDate = null;
+    let latestRoomMessages = {};
+
+    // Requirement 6 & 7: paging state - newest messages first, older ones on demand
+    const ROOM_PAGE_SIZE = 20;
+    let currentRoomPosts = [];
+    let roomVisibleCount = ROOM_PAGE_SIZE;
+    let hasMoreOlderMessages = false;
+    let roomFirstRender = true;
+    let isLoadingOlder = false;
+
+    // Requirement 3: WhatsApp-style delivery state (optimistic send)
+    const pendingMessages = {};   // postKey -> optimistic post object
+    const messageStatus = {};     // postKey -> 'sent' | 'delivered' | 'failed'
+    let allVisibleCount = ROOM_PAGE_SIZE;
+
+    function showCustomToast(msg) {
+        const toast = document.getElementById('customToastNotification');
+        document.getElementById('toastMsgText').textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2200);
+    }
+
+    const avatarCache = {};
+    function compressAvatarImage(url, callback) {
+        if (!url) { callback('https://i.ibb.co/bgWVZn48/LearnEra-Logo.webp'); return; }
+        if (avatarCache[url]) { callback(avatarCache[url]); return; }
+
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = function() {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 128;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, 128, 128);
+                const compressedUrl = canvas.toDataURL('image/jpeg', 0.85);
+                avatarCache[url] = compressedUrl;
+                callback(compressedUrl);
+            } catch(e) {
+                callback(url);
+            }
+        };
+        img.onerror = function() { callback(url); };
+        img.src = url;
+    }
+
+    function playTouchSound() {
+        if (localStorage.getItem('touchSoundsEnabled') === '0') return;
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.04);
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.04);
+        } catch(e) {}
+    }
+
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.tab-btn, .cat-card, .back-button, .send-btn, .post-category-tag, .sharp-inner-item, .scroll-top-btn')) {
+            playTouchSound();
+        }
+    });
+
+    function calculateAge(dobString) {
+        if (!dobString) return null;
+        const dob = new Date(dobString);
+        if (isNaN(dob.getTime())) return null;
+        const diff = Date.now() - dob.getTime();
+        const ageDate = new Date(diff);
+        return Math.abs(ageDate.getUTCFullYear() - 1970);
+    }
+
+    // ------------------------------------------------------------------------
+    // Navigation & Views
+    // ------------------------------------------------------------------------
+    function positionTabSlider(instant) {
+        const container = document.getElementById('topTabsContainer');
+        const slider = document.getElementById('tabSlider');
+        if (!container || !slider) return;
+        const active = container.querySelector('.tab-btn.active') || document.getElementById('tabBtnAll');
+        if (!active) return;
+        const cRect = container.getBoundingClientRect();
+        const bRect = active.getBoundingClientRect();
+        if (!bRect.width) return;
+        if (instant) slider.style.transition = 'none';
+        slider.style.width = bRect.width + 'px';
+        slider.style.transform = `translateX(${bRect.left - cRect.left}px)`;
+        if (instant) {
+            void slider.offsetWidth;
+            slider.style.transition = '';
+        }
+    }
+
+    function switchMainTab(tabName) {
+        document.getElementById('topTabsContainer').style.display = 'flex';
+        const btnAll = document.getElementById('tabBtnAll');
+        const btnRooms = document.getElementById('tabBtnRooms');
+        const nextActive = tabName === 'rooms' ? btnRooms : btnAll;
+        const changed = !nextActive.classList.contains('active');
+        btnAll.classList.toggle('active', tabName === 'all');
+        btnRooms.classList.toggle('active', tabName === 'rooms');
+
+        // smooth tap pop on the tab that just became active
+        if (changed) {
+            nextActive.classList.remove('tab-pop');
+            void nextActive.offsetWidth;
+            nextActive.classList.add('tab-pop');
+            setTimeout(() => nextActive.classList.remove('tab-pop'), 460);
+        }
+
+        // Sliding tab indicator follows the clicked tab
+        requestAnimationFrame(() => positionTabSlider());
+
+
+        document.getElementById('viewAll').style.display = tabName === 'all' ? 'block' : 'none';
+        document.getElementById('viewRooms').style.display = tabName === 'rooms' ? 'block' : 'none';
+        document.getElementById('viewSubRooms').style.display = 'none';
+        document.getElementById('viewRoomChat').style.display = 'none';
+
+        if (tabName === 'all') {
+            loadAllCommunityFeed();
+        } else if (tabName === 'rooms') {
+            renderCategories();
+            // Rooms screen must open at the very top (mobile included). Mobile
+            // browsers restore/settle scroll after layout, so we re-pin the top
+            // for a few frames, and stop the moment the user actually scrolls.
+            if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+            const scroller = document.scrollingElement || document.documentElement;
+            const toTop = () => {
+                window.scrollTo(0, 0);
+                scroller.scrollTop = 0;
+                document.body.scrollTop = 0;
+                const rv = document.getElementById('viewRooms');
+                if (rv) rv.scrollTop = 0;
+            };
+            toTop();
+            requestAnimationFrame(toTop);
+
+            let cancelled = false;
+            const cancel = () => { cancelled = true; };
+            window.addEventListener('touchmove', cancel, { passive: true });
+            window.addEventListener('wheel', cancel, { passive: true });
+            const start = Date.now();
+            const pin = () => {
+                if (cancelled) { stop(); return; }
+                if (window.scrollY !== 0) toTop();
+                if (Date.now() - start > 600) stop();
+            };
+            const timer = setInterval(pin, 40);
+            function stop() {
+                clearInterval(timer);
+                window.removeEventListener('touchmove', cancel);
+                window.removeEventListener('wheel', cancel);
+            }
+        }
+    }
+
+
+    // ------------------------------------------------------------------------
+    // Latest message index for every room (used on Rooms, Sub-Rooms & All)
+    // ------------------------------------------------------------------------
+    function buildLatestIndex(allCatData) {
+        latestRoomMessages = {};
+        Object.keys(allCatData || {}).forEach(cat => {
+            const subData = allCatData[cat] || {};
+            latestRoomMessages[cat] = { subs: {}, latest: null };
+            Object.keys(subData).forEach(sub => {
+                const dateData = subData[sub] || {};
+                let latest = null;
+                Object.keys(dateData).forEach(dateKey => {
+                    const timeData = dateData[dateKey] || {};
+                    Object.keys(timeData).forEach(k => {
+                        const post = timeData[k];
+                        if (!post || typeof post !== 'object') return;
+                        if (!latest || (post.timestamp || 0) > (latest.timestamp || 0)) latest = post;
+                    });
+                });
+                if (latest) {
+                    latestRoomMessages[cat].subs[sub] = latest;
+                    if (!latestRoomMessages[cat].latest || (latest.timestamp || 0) > (latestRoomMessages[cat].latest.timestamp || 0)) {
+                        latestRoomMessages[cat].latest = latest;
+                    }
+                }
+            });
+        });
+    }
+
+    function refreshLatestRoomMessages(callback) {
+        db.ref('community').once('value', snap => {
+            buildLatestIndex(snap.val() || {});
+            if (callback) callback();
+        });
+    }
+
+    // Requirement 4: Rooms screen shows skeleton cards until EVERY illustration
+    // is fully loaded, then the real grid is swapped in at once.
+    function renderCategorySkeletons(container, list) {
+        container.innerHTML = '';
+        list.forEach(cat => {
+            const sk = document.createElement('div');
+            sk.className = `cat-skeleton-card ${cat.isBanner ? 'banner' : ''}`;
+            sk.innerHTML = cat.isBanner
+                ? `<div class="sk-cat-img skeleton-shimmer"></div>
+                   <div class="sk-cat-lines">
+                       <div class="sk-cat-name skeleton-shimmer"></div>
+                       <div class="sk-cat-count skeleton-shimmer"></div>
+                   </div>`
+                : `<div class="sk-cat-img skeleton-shimmer"></div>
+                   <div class="sk-cat-name skeleton-shimmer"></div>
+                   <div class="sk-cat-count skeleton-shimmer"></div>`;
+            container.appendChild(sk);
+        });
+    }
+
+    function preloadCategoryImages(list) {
+        return Promise.all(list.map(cat => new Promise(resolve => {
+            if (!cat.img) { resolve(); return; }
+            const im = new Image();
+            im.onload = () => resolve();
+            im.onerror = () => resolve();
+            im.src = cat.img;
+            if (im.complete) resolve();
+        })));
+    }
+
+    let categoriesRendered = false;
+    function renderCategories() {
+        const container = document.getElementById('categoryGridContainer');
+        // already built once -> reuse the DOM (re-rendering every tab switch
+        // was what made the Rooms screen feel laggy after loading)
+        if (categoriesRendered && container.querySelector('.cat-card')) return;
+        renderCategorySkeletons(container, CATEGORIES);
+
+        preloadCategoryImages(CATEGORIES).then(() => {
+            categoriesRendered = true;
+            container.innerHTML = '';
+
+            CATEGORIES.forEach(cat => {
+                const card = document.createElement('div');
+                card.className = `cat-card ${cat.isBanner ? 'learn-era-banner' : ''}`;
+
+                const img = document.createElement('img');
+                img.className = 'cat-card-img';
+                img.alt = cat.name;
+                img.src = cat.img;
+
+                if (cat.isBanner) {
+                    const infoDiv = document.createElement('div');
+                    infoDiv.className = 'banner-info';
+                    infoDiv.innerHTML = `
+                        <div class="cat-name" style="font-size: 1.05rem;">${cat.name} Official</div>
+                        <div class="cat-count">${cat.subs.length} Official Rooms • Updates, Bugs & Feedback</div>
+                    `;
+                    card.appendChild(img);
+                    card.appendChild(infoDiv);
+                } else {
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'cat-name';
+                    nameDiv.textContent = cat.name;
+
+                    const countDiv = document.createElement('div');
+                    countDiv.className = 'cat-count';
+                    countDiv.textContent = `${cat.subs.length} Rooms`;
+
+                    card.appendChild(img);
+                    card.appendChild(nameDiv);
+                    card.appendChild(countDiv);
+                }
+
+                card.onclick = () => openCategorySubRooms(cat);
+                container.appendChild(card);
+            });
+        });
+    }
+
+
+    function openCategorySubRooms(categoryObj) {
+        currentSelectedCategory = categoryObj;
+        document.getElementById('topTabsContainer').style.display = 'none';
+        document.getElementById('viewSubRooms').style.display = 'flex';
+        document.getElementById('viewRoomChat').style.display = 'none';
+
+        document.getElementById('chooseRoomTitle').textContent = `Choose a Room (${categoryObj.name})`;
+
+        renderSubRoomCards(categoryObj);
+    }
+
+    // ---- Room (sub-category) icons -------------------------------------------
+    const SUB_ICONS = {
+        mobilegames: "https://i.ibb.co/LXXhH8h0/IMG-COM-202608040016245080.webp",
+        beauty: "https://i.ibb.co/BKvmrhLj/IMG-COM-202608040016245081.webp",
+        foodcooking: "https://i.ibb.co/8WCV1kx/IMG-COM-202608040016245092.webp",
+        travel: "https://i.ibb.co/ynvGW9MX/IMG-COM-202608040016245093.webp",
+        homeliving: "https://i.ibb.co/GQ5P7d98/IMG-COM-202608040016245094.webp",
+        jobs: "https://i.ibb.co/20WcPkP6/IMG-COM-202608040016245095.webp",
+        resumehelp: "https://i.ibb.co/wh8cf2hM/IMG-COM-202608040016245096.webp",
+        interviewpreparation: "https://i.ibb.co/SSLLM2t/IMG-COM-202608040016245097.webp",
+        worldnews: "https://i.ibb.co/PzZNNJJz/IMG-COM-2026080400162451010.webp",
+        technologynews: "https://i.ibb.co/60Jw19z0/IMG-COM-2026080400162451011.webp",
+        businessnews: "https://i.ibb.co/PZfQGNGB/IMG-COM-2026080400162451012.webp",
+        government: "https://i.ibb.co/Nd2q9dY4/IMG-COM-2026080400162451013.webp",
+        currentaffairs: "https://i.ibb.co/zWg3VR9x/IMG-COM-2026080400162451014.webp",
+        remotework: "https://i.ibb.co/r2qVpHNg/IMG-COM-202608040016245108.webp",
+        internships: "https://i.ibb.co/SXc3S82B/IMG-COM-202608040016245109.webp",
+        gym: "https://i.ibb.co/rGswd5GG/IMG-COM-2026080400162451115.webp",
+        graphicdesign: "https://i.ibb.co/Q3PpNVFL/IMG-COM-2026080400162451116.webp",
+        uiux: "https://i.ibb.co/KPJWfhp/IMG-COM-2026080400162451117.webp",
+        photography: "https://i.ibb.co/JWx2qf9W/IMG-COM-2026080400162451118.webp",
+        videoediting: "https://i.ibb.co/WNwdmK8M/IMG-COM-2026080400162451119.webp",
+        yoga: "https://i.ibb.co/SD4R9qTk/IMG-COM-2026080400162451120.webp",
+        running: "https://i.ibb.co/bMYnT301/IMG-COM-2026080400162451121.webp",
+        nutrition: "https://i.ibb.co/fVPn025T/IMG-COM-2026080400162451122.webp",
+        mentalwellness: "https://i.ibb.co/21pgRR5F/IMG-COM-2026080400162451223.webp",
+        medicaldiscussions: "https://i.ibb.co/CsHRnhb0/IMG-COM-2026080400162451224.webp",
+        healthylifestyle: "https://i.ibb.co/4RF9c6XZ/IMG-COM-2026080400162451225.webp",
+        space: "https://i.ibb.co/WpsPL0tt/IMG-COM-2026080400162451227.webp",
+        physics: "https://i.ibb.co/v457kqW6/IMG-COM-2026080400162451228.webp",
+        chemistry: "https://i.ibb.co/p6Qshp1y/IMG-COM-2026080400162451229.webp",
+        biology: "https://i.ibb.co/KcBN4R8d/IMG-COM-2026080400162451230.webp",
+        environment: "https://i.ibb.co/d0DZkzRp/IMG-COM-2026080400162451331.webp",
+        writing: "https://i.ibb.co/Q3CG3X4d/IMG-COM-2026080400162451332.webp",
+        fashion: "https://i.ibb.co/zh0NzTBd/IMG-COM-2026080400162451334.webp",
+        consolegames: "https://i.ibb.co/p6TNg7sk/IMG-COM-2026080400162451335.webp",
+        pcgames: "https://i.ibb.co/Mk7M9V6D/IMG-COM-2026080400162451336.webp",
+        esports: "https://i.ibb.co/67bYHcWF/IMG-COM-2026080400162452337.webp",
+        gamedevelopment: "https://i.ibb.co/1Jws5V9q/IMG-COM-2026080400162452439.webp",
+        movies: "https://i.ibb.co/VW006K2B/IMG-COM-2026080400162452440.webp",
+        tvshows: "https://i.ibb.co/tMp09hkn/IMG-COM-2026080400162452441.webp",
+        anime: "https://i.ibb.co/tMNJ6bTq/IMG-COM-2026080400162452442.webp",
+        memes: "https://i.ibb.co/1fktXsK4/IMG-COM-2026080400162452544.webp",
+        football: "https://i.ibb.co/wrFfBq53/IMG-COM-2026080400162452545.webp",
+        hardware: "https://i.ibb.co/ZqknQtZ/IMG-COM-2026080400162452546.webp",
+        entrepreneurship: "https://i.ibb.co/r2StXKKM/IMG-COM-2026080400162452547.webp",
+        cricket: "https://i.ibb.co/PsMZx91m/IMG-COM-2026080400162452548.webp",
+        startups: "https://i.ibb.co/WpkWHzw8/IMG-COM-2026080400162452649.webp",
+        investing: "https://i.ibb.co/HLfQ9ZNb/IMG-COM-2026080400162452650.webp",
+        personalfinance: "https://i.ibb.co/N0DZRSj/IMG-COM-2026080400162452651.webp",
+        marketing: "https://i.ibb.co/Z1vLZs90/IMG-COM-2026080400162452652.webp",
+        freelancing: "https://i.ibb.co/XrwzVbg9/IMG-COM-2026080400162452653.webp",
+        upcomingfeatures: "https://i.ibb.co/RkgZM7sL/IMG-COM-2026080400162452654.webp",
+        bug: "https://i.ibb.co/4wMYNrKG/IMG-COM-2026080400162452755.webp",
+        facts: "https://i.ibb.co/7J9grTVm/IMG-COM-2026080400162452756.webp",
+        earning: "https://i.ibb.co/S7G4p0KR/IMG-COM-2026080400162452757.webp",
+        learning: "https://i.ibb.co/4wf62dCR/IMG-COM-2026080400162452758.webp",
+        updates: "https://i.ibb.co/mVwPjDrQ/IMG-COM-2026080400162452759.webp",
+        announcements: "https://i.ibb.co/rRY73p3J/IMG-COM-2026080400162452860.webp",
+        support: "https://i.ibb.co/ZpPj5zZN/IMG-COM-2026080400162452961.webp",
+        feedback: "https://i.ibb.co/84DKx00F/IMG-COM-2026080400162452962.webp",
+        communityrules: "https://i.ibb.co/WNpT10d4/IMG-COM-2026080400162452963.webp",
+        school: "https://i.ibb.co/7NLTrV5W/IMG-COM-2026080400162452964.webp",
+        college: "https://i.ibb.co/bRHyL3Mn/IMG-COM-2026080400162452965.webp",
+        competitiveexams: "https://i.ibb.co/8n5SRfCL/IMG-COM-2026080400162452966.webp",
+        studyhelp: "https://i.ibb.co/XfyKt0gF/IMG-COM-2026080400162453067.webp",
+        artificialintelligenceai: "https://i.ibb.co/HTXW1JYk/IMG-COM-2026080400162453068.webp",
+        languages: "https://i.ibb.co/DgwC84Qn/IMG-COM-2026080400162453069.webp",
+        programming: "https://i.ibb.co/zHVHphwz/IMG-COM-2026080400162453070.webp",
+        appdevelopment: "https://i.ibb.co/spgP3zwP/IMG-COM-2026080400162453071.webp",
+        webdevelopment: "https://i.ibb.co/DDYsC8gh/IMG-COM-2026080400162453072.webp",
+        cybersecurity: "https://i.ibb.co/qFYsmSjF/IMG-COM-2026080400162453073.webp"
+    };
+    // "Music" exists in two categories with two different icons
+    const SUB_ICONS_BY_CATEGORY = {
+        "arts&creativity|music": "https://i.ibb.co/8DCbZQ9P/IMG-COM-2026080400162451333.webp",
+        "entertainment|music": "https://i.ibb.co/Vc6Jxb3j/IMG-COM-2026080400162452543.webp"
+    };
+    const normKey = (s) => (s || '').toLowerCase().replace(/[^a-z0-9&]/g, '');
+    function getSubIcon(categoryName, subName) {
+        const byCat = SUB_ICONS_BY_CATEGORY[`${normKey(categoryName)}|${normKey(subName)}`];
+        return byCat || SUB_ICONS[normKey(subName).replace(/&/g, '')] || null;
+    }
+
+    function renderSubRoomCards(categoryObj) {
+        const container = document.getElementById('subCategoryGridContainer');
+        container.innerHTML = '';
+
+        categoryObj.subs.forEach(subName => {
+            const card = document.createElement('div');
+            card.className = 'cat-card sub-room-card';
+            const hashtag = toHashtag(subName);
+            const icon = getSubIcon(categoryObj.name, subName);
+
+            card.innerHTML = `
+                ${icon ? `<img class="sub-card-bg-icon" src="${icon}" alt="" aria-hidden="true">` : ''}
+                ${icon ? `<div class="sub-icon-wrap"><div class="sub-icon-skeleton"></div><img class="sub-card-icon" src="${icon}" alt="${subName}"></div>` : ''}
+                <div class="cat-name">${subName}</div>
+                <div class="cat-count">${hashtag}</div>
+            `;
+            // avatar-popup style loading: keep the shimmer until the icon is ready
+            const iconEl = card.querySelector('.sub-card-icon');
+            if (iconEl) {
+                const wrap = iconEl.parentElement;
+                const done = () => { wrap.classList.add('loaded'); card.classList.add('icon-loaded'); };
+                if (iconEl.complete && iconEl.naturalWidth) done();
+                else { iconEl.addEventListener('load', done, { once: true }); iconEl.addEventListener('error', done, { once: true }); }
+            } else {
+                card.classList.add('icon-loaded');
+            }
+            card.onclick = () => enterRoomChat(categoryObj.name, subName);
+            container.appendChild(card);
+        });
+    }
+
+
+    function closeSubRoomsView() {
+        document.getElementById('viewSubRooms').style.display = 'none';
+        switchMainTab('rooms');
+    }
+
+    function closeRoomChatView() {
+        document.getElementById('viewRoomChat').style.display = 'none';
+        const pill = document.getElementById('floatingDateIndicator');
+        if (pill) pill.style.display = 'none';
+        cancelReply();
+        if (currentSelectedCategory) {
+            openCategorySubRooms(currentSelectedCategory);
+        } else {
+            switchMainTab('rooms');
+        }
+    }
+
+    function enterRoomChat(categoryName, subCategoryName) {
+        currentSelectedCategory = CATEGORIES.find(c => c.name === categoryName) || { name: categoryName };
+        currentSelectedSubCategory = subCategoryName;
+        currentSelectedDate = null;
+        currentRoomPosts = [];
+        roomVisibleCount = ROOM_PAGE_SIZE;
+        hasMoreOlderMessages = false;
+        roomFirstRender = true;
+        pendingJumpDate = null;
+        // Requirement 8: a room always opens on the latest message (Today by default)
+        calDate = new Date();
+        selectedCalDate = new Date();
+
+
+        document.getElementById('topTabsContainer').style.display = 'none';
+        document.getElementById('viewSubRooms').style.display = 'none';
+        document.getElementById('viewRoomChat').style.display = 'flex';
+
+        document.getElementById('chatHeaderHashtag').textContent = toHashtag(subCategoryName);
+
+        listenToRoomChat(categoryName, subCategoryName);
+        setTimeout(() => updateStickyDateHeader(), 700);
+    }
+
+    // ------------------------------------------------------------------------
+    // Skeleton Loaders
+    // ------------------------------------------------------------------------
+    function buildSkeletonCard(isOutgoing) {
+        const card = document.createElement('div');
+        card.className = `card ${isOutgoing ? 'outgoing' : 'incoming'} skeleton-card`;
+        card.innerHTML = `
+            <div class="circle skeleton-circle-bg">
+                <div class="sk-avatar-box skeleton-shimmer"></div>
+            </div>
+            <div class="box">
+                <div class="content">
+                    <h1>
+                        <div class="sk-line-name skeleton-shimmer"></div>
+                        <div class="sk-line-tag skeleton-shimmer"></div>
+                    </h1>
+                    <p class="message">
+                        <div class="sk-line-msg-1 skeleton-shimmer"></div>
+                        <div class="sk-line-msg-2 skeleton-shimmer"></div>
+                        <div class="sk-line-msg-3 skeleton-shimmer"></div>
+                        <div class="sk-line-msg-4 skeleton-shimmer"></div>
+                        <div class="sk-line-msg-5 skeleton-shimmer"></div>
+                    </p>
+                    <div class="tg-time-row">
+                        <div class="sk-line-time skeleton-shimmer"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        return card;
+    }
+
+    // Skeletons stack from the BOTTOM of the screen and rise up one by one,
+    // exactly where the newest messages will appear.
+    function renderSkeletonUploadLoaders(containerEl, count, anchorBottom) {
+        containerEl.innerHTML = '';
+        const n = count || 8;
+        const host = document.createElement('div');
+        host.className = anchorBottom === false ? '' : 'sk-bottom-anchor';
+        for (let i = 0; i < n; i++) {
+            const card = buildSkeletonCard(i % 2 === 1);
+            // last card (bottom-most) animates in first
+            card.style.animationDelay = ((n - 1 - i) * 70) + 'ms';
+            host.appendChild(card);
+        }
+        containerEl.appendChild(host);
+        if (anchorBottom !== false) {
+            const pin = () => {
+                let el = containerEl.parentElement;
+                while (el) {
+                    if (el.scrollHeight > el.clientHeight + 4) el.scrollTop = el.scrollHeight;
+                    el = el.parentElement;
+                }
+                document.body.scrollTop = document.body.scrollHeight;
+                document.documentElement.scrollTop = document.documentElement.scrollHeight;
+                const se = document.scrollingElement || document.documentElement;
+                se.scrollTop = se.scrollHeight;
+            };
+            requestAnimationFrame(pin);
+            setTimeout(pin, 80);
+            setTimeout(pin, 260);
+            setTimeout(pin, 600);
+        }
+    }
+
+
+    // Requirement 3: "Load older messages" only skeletons the INCOMING batch,
+    // the already-loaded messages stay untouched on screen.
+    function prependPagingSkeletons(containerEl, count) {
+        if (!containerEl) return null;
+        const wrap = document.createElement('div');
+        wrap.className = 'paging-skeleton-wrap';
+        wrap.style.display = 'flex';
+        wrap.style.flexDirection = 'column';
+        wrap.style.gap = '16px';
+        wrap.style.width = '100%';
+        const n = count || 4;
+        for (let i = 0; i < n; i++) wrap.appendChild(buildSkeletonCard(i % 2 === 1));
+        containerEl.insertBefore(wrap, containerEl.firstChild);
+        return wrap;
+    }
+
+    function clearPagingSkeletons(containerEl) {
+        if (!containerEl) return;
+        containerEl.querySelectorAll('.paging-skeleton-wrap').forEach(el => el.remove());
+    }
+
+
+    function preloadAvatars(posts) {
+        const promises = posts.map(p => {
+            return new Promise((resolve) => {
+                if (!p.userAvatar) { resolve(); return; }
+                compressAvatarImage(p.userAvatar, () => resolve());
+            });
+        });
+        return Promise.all(promises);
+    }
+
+    // ------------------------------------------------------------------------
+    // Chat Listening & Rendering with Time/Date Sequencing & Telegram Dividers
+    // ------------------------------------------------------------------------
+    function isChatNearBottom() {
+        const scroller = document.getElementById('viewRoomChat');
+        if (!scroller) return true;
+        return (scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight) < 160;
+    }
+
+    // Requirement 3: long messages must always end up visible after sending
+    function scrollChatToBottom(smooth) {
+        const scroller = document.getElementById('viewRoomChat');
+        if (!scroller) return;
+        const go = () => scroller.scrollTo({ top: scroller.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+        go();
+        requestAnimationFrame(go);
+        setTimeout(go, 80);
+        setTimeout(go, 260);
+    }
+
+    // The "All" feed always lands on the newest message (the "Today" date card)
+    function scrollFeedToLatest() {
+        const go = () => {
+            // Exactly the WhatsApp-style logic: instantly jump to the very bottom
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' });
+            // Fallback for browsers that don't support "instant"
+            window.scrollTo(0, document.body.scrollHeight);
+            const c = document.getElementById('allFeedContainer');
+            let el = c ? c.parentElement : null;
+            while (el) {
+                if (el.scrollHeight > el.clientHeight + 4) el.scrollTop = el.scrollHeight;
+                el = el.parentElement;
+            }
+            // body / documentElement can each be the real scroller depending on the shell
+            document.body.scrollTop = document.body.scrollHeight;
+            document.documentElement.scrollTop = document.documentElement.scrollHeight;
+            if (document.scrollingElement) document.scrollingElement.scrollTop = document.scrollingElement.scrollHeight;
+        };
+        go();
+        requestAnimationFrame(go);
+        setTimeout(go, 50);
+        setTimeout(go, 120);
+        setTimeout(go, 320);
+        setTimeout(go, 650);
+        setTimeout(go, 1100);
+        setTimeout(go, 1800);
+        setTimeout(() => { updateStickyDateHeader(); updateDateDividerCollision(); }, 1850);
+    }
+    window.scrollFeedToLatest = scrollFeedToLatest;
+
+    // Wait until everything (images/fonts) loads, then open at the latest messages
+    window.addEventListener('load', () => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' });
+        setTimeout(() => { window.scrollTo(0, document.body.scrollHeight); }, 50);
+    });
+
+    // ------------------------------------------------------------------------
+    // User profile popup
+    // ------------------------------------------------------------------------
+    function closeUserProfilePopup() {
+        const el = document.getElementById('userProfilePopup');
+        if (el) el.classList.remove('show');
+    }
+    window.closeUserProfilePopup = closeUserProfilePopup;
+
+    function openUserProfilePopup(post) {
+        const overlay = document.getElementById('userProfilePopup');
+        if (!overlay || !post) return;
+        const defaultAvatar = 'https://i.ibb.co/bgWVZn48/LearnEra-Logo.webp';
+        const imgEl = document.getElementById('profilePopupAvatar');
+        const nameEl = document.getElementById('profilePopupName');
+        const ageEl = document.getElementById('profilePopupAge');
+        const countryEl = document.getElementById('profilePopupCountry');
+
+        imgEl.src = post.userAvatar || defaultAvatar;
+        nameEl.textContent = post.userName || 'Learner';
+        ageEl.textContent = post.userAge ? `${post.userAge} yrs` : '—';
+        countryEl.textContent = post.userCountry || '—';
+        overlay.classList.add('show');
+
+        compressAvatarImage(post.userAvatar || defaultAvatar, (src) => { imgEl.src = src; });
+
+        // Always refresh from the live profile so age & country stay accurate
+        if (post.uid) {
+            db.ref(`users/${post.uid}`).once('value').then(snap => {
+                const u = snap.val();
+                if (!u || !overlay.classList.contains('show')) return;
+                const fullName = `${u.firstName || ''} ${u.lastName || ''}`.trim();
+                if (fullName) nameEl.textContent = fullName;
+                const age = calculateAge(u.dob || post.userDob);
+                if (age !== null && age !== undefined) ageEl.textContent = `${age} yrs`;
+                const country = u.country || u.userCountry || post.userCountry;
+                if (country) countryEl.textContent = country;
+                if (u.profilePicURL) compressAvatarImage(u.profilePicURL, (src) => { imgEl.src = src; });
+            }).catch(() => {});
+        }
+    }
+    window.openUserProfilePopup = openUserProfilePopup;
+
+    function createLoadMoreRow() {
+        const row = document.createElement('div');
+        row.className = 'load-more-row';
+        row.innerHTML = `<button class="load-more-btn" type="button"><i class="fas fa-arrow-up"></i> Load older messages</button>`;
+        row.querySelector('button').onclick = () => { playTouchSound(); loadOlderRoomMessages(); };
+        return row;
+    }
+
+    // Requirement 2: ONE shared date-filter renderer, so the room chat screen
+    // uses exactly the same date divider logic + animation as the "All" screen.
+    function renderPostsWithDateFilter(container, displayPosts, currentUid, showCategoryTag) {
+        let lastDateGroup = '';
+        displayPosts.forEach((post, idx) => {
+            const prevPost = displayPosts[idx - 1];
+
+            const dateGroup = formatTelegramDate(post.timestamp);
+            if (dateGroup !== lastDateGroup) {
+                container.appendChild(createDateDivider(dateGroup, post.timestamp));
+                lastDateGroup = dateGroup;
+            }
+
+            const isGrouped = prevPost && (prevPost.uid === post.uid) && (prevPost.subClean === post.subClean)
+                && formatTelegramDate(prevPost.timestamp) === dateGroup;
+
+            container.appendChild(createScoopStyleMessageHTML(post, currentUid, showCategoryTag, isGrouped));
+        });
+
+        requestAnimationFrame(() => { updateStickyDateHeader(); updateDateDividerCollision(); });
+    }
+
+    // Requirement 7: only the latest 20 messages are rendered, older load on scroll up
+    function renderRoomMessages(options) {
+        options = options || {};
+        const container = document.getElementById('roomFeedContainer');
+        const scroller = document.getElementById('viewRoomChat');
+        if (!container) return;
+
+        const merged = currentRoomPosts.slice();
+        Object.keys(pendingMessages).forEach(k => {
+            if (!merged.some(p => p.postKey === k)) merged.push(pendingMessages[k]);
+        });
+        merged.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+        if (!merged.length) {
+            container.innerHTML = `<div class="empty-state">No messages found in ${toHashtag(currentSelectedSubCategory || '')}.<br>Be the first to post! 👋</div>`;
+            hasMoreOlderMessages = false;
+            return;
+        }
+
+        const total = merged.length;
+        const displayPosts = merged.slice(Math.max(0, total - roomVisibleCount));
+        hasMoreOlderMessages = displayPosts.length < total;
+
+        const prevHeight = scroller ? scroller.scrollHeight : 0;
+        const prevTop = scroller ? scroller.scrollTop : 0;
+        const currentUid = auth.currentUser ? auth.currentUser.uid : null;
+
+        container.innerHTML = '';
+        if (hasMoreOlderMessages) container.appendChild(createLoadMoreRow());
+
+        renderPostsWithDateFilter(container, displayPosts, currentUid, false);
+
+        if (options.keepScroll && scroller) {
+            requestAnimationFrame(() => {
+                scroller.scrollTop = prevTop + (scroller.scrollHeight - prevHeight);
+                handleChatScroll();
+            });
+        } else if (options.jumpDate) {
+            setTimeout(() => jumpToDate(options.jumpDate), 120);
+        } else if (options.scrollToBottom !== false) {
+            // Requirement 8: latest message is always the default position
+            scrollChatToBottom(false);
+        }
+    }
+
+    // Requirement 3: skeletons are shown ONLY for the newly requested batch
+    function loadOlderRoomMessages() {
+        if (!hasMoreOlderMessages || isLoadingOlder) return;
+        isLoadingOlder = true;
+
+        const container = document.getElementById('roomFeedContainer');
+        const scroller = document.getElementById('viewRoomChat');
+        const prevHeight = scroller ? scroller.scrollHeight : 0;
+        const prevTop = scroller ? scroller.scrollTop : 0;
+
+        prependPagingSkeletons(container, Math.min(ROOM_PAGE_SIZE, 4));
+        if (scroller) {
+            requestAnimationFrame(() => {
+                scroller.scrollTop = prevTop + (scroller.scrollHeight - prevHeight);
+            });
+        }
+
+        setTimeout(() => {
+            clearPagingSkeletons(container);
+            roomVisibleCount += ROOM_PAGE_SIZE;
+            renderRoomMessages({ keepScroll: true });
+            isLoadingOlder = false;
+        }, 550);
+    }
+
+
+    function listenToRoomChat(catName, subCatName) {
+        const container = document.getElementById('roomFeedContainer');
+        renderSkeletonUploadLoaders(container);
+
+        const cleanCat = sanitizePath(catName);
+        const cleanSub = sanitizePath(subCatName);
+
+        // Telegram behaviour: keep the chat loaded, dates are used for jumping only
+        const path = `community/${cleanCat}/${cleanSub}`;
+        const ref = db.ref(path).limitToLast(120);
+        ref.off();
+        ref.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) {
+                currentRoomPosts = [];
+                container.innerHTML = `<div class="empty-state">No messages found in ${toHashtag(subCatName)}.<br>Be the first to post! 👋</div>`;
+                return;
+            }
+
+            let posts = [];
+            Object.keys(data).forEach(dateKey => {
+                const timeNodes = data[dateKey] || {};
+                Object.keys(timeNodes).forEach(timeUserKey => {
+                    const p = timeNodes[timeUserKey];
+                    if (!p || typeof p !== 'object') return;
+                    p.postKey = timeUserKey;
+                    p.dateKey = dateKey;
+                    p.catClean = cleanCat;
+                    p.subClean = cleanSub;
+                    posts.push(p);
+                });
+            });
+
+            // Requirement 6: strict ascending order, newest messages at the bottom
+            posts.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+            currentRoomPosts = posts;
+
+            // Drop optimistic copies that are now confirmed in the database
+            Object.keys(pendingMessages).forEach(k => {
+                if (posts.some(p => p.postKey === k)) {
+                    delete pendingMessages[k];
+                    messageStatus[k] = 'delivered';
+                }
+            });
+
+            const stickToBottom = roomFirstRender || isChatNearBottom();
+            const visible = posts.slice(Math.max(0, posts.length - roomVisibleCount));
+
+            preloadAvatars(visible).then(() => {
+                if (pendingJumpDate) {
+                    const jump = pendingJumpDate;
+                    pendingJumpDate = null;
+                    renderRoomMessages({ jumpDate: jump });
+                } else {
+                    renderRoomMessages({ scrollToBottom: roomFirstRender ? true : stickToBottom });
+                }
+                if (roomFirstRender) { scrollChatToBottom(false); setTimeout(() => scrollChatToBottom(false), 400); }
+                roomFirstRender = false;
+            });
+        });
+    }
+
+    function loadAllCommunityFeed(options) {
+        options = options || {};
+        const container = document.getElementById('allFeedContainer');
+        // Requirement 3: when paging, keep the loaded messages and only skeleton
+        // the incoming batch at the top of the list.
+        if (options.paging) {
+            clearPagingSkeletons(container);
+            prependPagingSkeletons(container, Math.min(ROOM_PAGE_SIZE, 4));
+        } else {
+            renderSkeletonUploadLoaders(container);
+        }
+
+        const allRef = db.ref('community');
+        allRef.off();
+        allRef.on('value', (snapshot) => {
+            const allCatData = snapshot.val();
+            buildLatestIndex(allCatData || {});
+            if (!allCatData) {
+                container.innerHTML = `<div class="empty-state">No community discussions found. Join a room to get started!</div>`;
+                return;
+            }
+
+            // The "All" screen shows EVERY message from EVERY hashtag room,
+            // in strict chronological order (WhatsApp style: newest at bottom).
+            // Fallback ordering (dateKey + time key) keeps it correct even when a
+            // record has no numeric timestamp.
+            const sortKeyOf = (p) => {
+                if (p && p.timestamp) return Number(p.timestamp);
+                const parsed = Date.parse(((p && p.dateKey) || '').replace(/_/g, ' '));
+                if (!isNaN(parsed)) return parsed;
+                return 0;
+            };
+            let allPosts = [];
+            Object.keys(allCatData).forEach(cat => {
+                const subData = allCatData[cat] || {};
+                Object.keys(subData).forEach(sub => {
+                    const dateData = subData[sub] || {};
+                    Object.keys(dateData).forEach(dateKey => {
+                        const timeData = dateData[dateKey] || {};
+                        Object.keys(timeData).forEach(timeUserKey => {
+                            const p = timeData[timeUserKey];
+                            if (!p || typeof p !== 'object') return;
+                            p.postKey = timeUserKey;
+                            p.dateKey = dateKey;
+                            p.catClean = cat;
+                            p.subClean = sub;
+                            p.rawCategory = cat;
+                            p.rawSubCategory = sub;
+                            allPosts.push(p);
+                        });
+                    });
+                });
+            });
+
+            // Ascending chronological order -> the newest message sits at the bottom
+            allPosts.sort((a, b) => (sortKeyOf(a) - sortKeyOf(b)) || String(a.postKey || '').localeCompare(String(b.postKey || '')));
+
+            const hasMoreAll = allPosts.length > allVisibleCount;
+            const displayPosts = allPosts.slice(-allVisibleCount);
+            const currentUid = auth.currentUser ? auth.currentUser.uid : null;
+
+            if (displayPosts.length === 0) {
+                container.innerHTML = `<div class="empty-state">No messages available.</div>`;
+                return;
+            }
+
+            const paint = () => {
+                const se = document.scrollingElement || document.documentElement;
+                const prevHeight = se.scrollHeight;
+                const prevTop = se.scrollTop;
+
+                clearPagingSkeletons(container);
+                container.innerHTML = '';
+                if (hasMoreAll) {
+                    const row = document.createElement('div');
+                    row.className = 'load-more-row all-load-more';
+                    row.id = 'allLoadMoreRow';
+                    // hidden until the user scrolls up away from the newest message
+                    row.classList.add('is-hidden');
+                    row.innerHTML = `<button class="load-more-btn" type="button"><i class="fas fa-arrow-up"></i> Load 20 older messages</button>`;
+                    row.querySelector('button').onclick = () => {
+                        playTouchSound();
+                        allVisibleCount += ROOM_PAGE_SIZE;
+                        loadAllCommunityFeed({ paging: true });
+                    };
+                    container.appendChild(row);
+                }
+
+                // Requirement 2: identical shared date filter logic as the chat screen
+                renderPostsWithDateFilter(container, displayPosts, currentUid, true);
+
+                if (options.paging) {
+                    // keep the user's reading position when 20 older messages are added
+                    const restore = () => { se.scrollTop = prevTop + (se.scrollHeight - prevHeight); };
+                    restore();
+                    requestAnimationFrame(restore);
+                    setTimeout(restore, 80);
+                    setTimeout(updateAllLoadMoreVisibility, 200);
+                } else {
+                    // The feed must always START pinned at the very bottom (newest message)
+                    scrollFeedToLatest();
+                    setTimeout(updateAllLoadMoreVisibility, 200);
+                }
+            };
+
+            preloadAvatars(displayPosts).then(() => {
+                if (options.paging) setTimeout(paint, 450);
+                else paint();
+            });
+
+        });
+    }
+
+
+    // ------------------------------------------------------------------------
+    // Date helpers, clickable dividers & Telegram-style date jumping
+    // ------------------------------------------------------------------------
+    function toDayKey(timestamp) {
+        const d = new Date(timestamp);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function createDateDivider(label, timestamp) {
+        const dateDivider = document.createElement('div');
+        dateDivider.className = 'tg-date-divider';
+        const dayKey = timestamp ? toDayKey(timestamp) : '';
+        dateDivider.setAttribute('data-day-key', dayKey);
+        dateDivider.setAttribute('data-day-label', label);
+        dateDivider.innerHTML = `<span><i class="far fa-calendar-alt"></i><b>${label}</b></span>`;
+        // Requirement: tapping a date divider opens the custom calendar
+        dateDivider.onclick = () => {
+            if (dayKey) {
+                const parts = dayKey.split('-');
+                selectedCalDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+                calDate = new Date(selectedCalDate);
+            }
+            playTouchSound();
+            openCalendarModal();
+        };
+        return dateDivider;
+    }
+
+    // Smooth, eased shifting animation towards the picked date
+    function smoothScrollWindowTo(targetY, duration = 700) {
+        const startY = window.pageYOffset;
+        const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+        const endY = Math.min(Math.max(0, targetY), maxY);
+        const delta = endY - startY;
+        if (Math.abs(delta) < 2) return;
+        const startTime = performance.now();
+        const ease = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+        const step = now => {
+            const p = Math.min(1, (now - startTime) / duration);
+            window.scrollTo(0, startY + delta * ease(p));
+            if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    }
+
+    // Requirement 5: jump to the FIRST (top) message of the picked date, never the last one
+    function jumpToDate(dayKey) {
+        const scroller = document.getElementById('viewRoomChat');
+        const inChat = isChatViewOpen();
+
+        // Make sure the picked day is actually rendered (paging may hide older days)
+        if (inChat && currentRoomPosts.length) {
+            let idx = currentRoomPosts.findIndex(p => toDayKey(p.timestamp) >= dayKey);
+            if (idx === -1) idx = currentRoomPosts.length - 1;
+            const needed = currentRoomPosts.length - idx + 1;
+            if (needed > roomVisibleCount) {
+                roomVisibleCount = needed;
+                renderRoomMessages({ scrollToBottom: false });
+            }
+        }
+
+        let target = document.querySelector(`.tg-date-divider[data-day-key="${dayKey}"]`);
+        if (!target) {
+            const dividers = Array.from(document.querySelectorAll('.tg-date-divider[data-day-key]'));
+            if (!dividers.length) { showCustomToast("No messages to jump to."); return; }
+            const after = dividers.find(d => d.getAttribute('data-day-key') >= dayKey);
+            target = after || dividers[dividers.length - 1];
+            showCustomToast("No messages on that date • jumped to nearest");
+        }
+
+        const resolvedKey = target.getAttribute('data-day-key');
+        const firstCard = document.querySelector(`.card[data-day-key="${resolvedKey}"]`);
+
+        const doScroll = () => {
+            if (inChat) {
+                const sRect = scroller.getBoundingClientRect();
+                const tRect = target.getBoundingClientRect();
+                const top = scroller.scrollTop + (tRect.top - sRect.top) - 84;
+                scroller.scrollTo({ top: top < 0 ? 0 : top, behavior: 'smooth' });
+            } else {
+                smoothScrollWindowTo(
+                    window.pageYOffset + target.getBoundingClientRect().top - 84
+                );
+            }
+            const flashEl = firstCard || target;
+            flashEl.classList.add('highlight-flash');
+            setTimeout(() => flashEl.classList.remove('highlight-flash'), 1500);
+            setTimeout(() => { updateStickyDateHeader(); updateDateDividerCollision(); }, 400);
+        };
+
+        requestAnimationFrame(doScroll);
+    }
+
+    // ------------------------------------------------------------------------
+    // Create Scoop Style Message Card HTML
+    // ------------------------------------------------------------------------
+    function createScoopStyleMessageHTML(post, currentUid, showCategoryTag = false, isGrouped = false) {
+        const isOutgoing = currentUid && (post.uid === currentUid);
+        const card = document.createElement('div');
+        card.className = `card ${isOutgoing ? 'outgoing' : 'incoming'} ${isGrouped ? 'grouped' : ''}`;
+        card.setAttribute('data-post-key', post.postKey || '');
+
+        const defaultAvatar = 'https://i.ibb.co/bgWVZn48/LearnEra-Logo.webp';
+        const rawAvatar = post.userAvatar || defaultAvatar;
+        const name = post.userName || 'Learner';
+        // Age is intentionally NOT rendered on the message card; it is only
+        // shown inside the user profile popup.
+        const timeStr = post.timestamp ? new Date(post.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const dateStr = post.timestamp ? new Date(post.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' }) : '';
+
+        // Requirement 3 & 5: Hashtag ONLY Gradient Pink (NO Neumorphism Pill!)
+        const catTagHTML = (showCategoryTag && post.rawCategory && post.rawSubCategory) 
+            ? `<span class="post-category-tag" onclick="enterRoomChat('${post.rawCategory}', '${post.rawSubCategory}')">${toHashtag(post.rawSubCategory)}</span>` 
+            : `<span class="post-category-tag">${toHashtag(post.subClean || 'general')}</span>`;
+
+        // Telegram Style Reply Quote Box
+        let replyQuoteHTML = '';
+        if (post.replyTo) {
+            replyQuoteHTML = `
+                <div class="reply-quote-box" onclick="scrollToMessage('${post.replyTo.postKey}')">
+                    <span class="reply-quote-user">${post.replyTo.userName || 'User'}</span>
+                    <span class="reply-quote-text">${post.replyTo.text || ''}</span>
+                </div>
+            `;
+        }
+
+        // Requirement 3: single tick while sending, double tick once delivered
+        const msgStatus = messageStatus[post.postKey] || (post.pending ? 'sent' : 'delivered');
+        let tickHTML = isOutgoing ? buildTickIcon(msgStatus) : '';
+        if (post.pending) card.classList.add('pending-message');
+
+        card.setAttribute('data-date-str', dateStr);
+        card.setAttribute('data-day-key', post.timestamp ? toDayKey(post.timestamp) : '');
+        card.setAttribute('data-day-label', formatTelegramDate(post.timestamp));
+
+        // Requirement 4: Full Profile Pic display inside 60px cutout without clipping
+        const circleHTML = !isGrouped ? `
+            <div class="circle">
+                <img src="${defaultAvatar}" alt="Avatar" class="scoop-avatar-img">
+            </div>
+        ` : '';
+
+        // Requirement 5: Username Gradient Style
+        const headerHTML = !isGrouped ? `
+            <h1>
+                <span class="user-name-text">${name}</span>
+                ${catTagHTML}
+            </h1>
+        ` : '';
+
+        card.innerHTML = `
+            ${circleHTML}
+            <div class="box">
+                <div class="content">
+                    ${headerHTML}
+                    ${replyQuoteHTML}
+                    <p class="message">${post.text || ''}</p>
+                    <div class="tg-time-row">
+                        <span>${timeStr}</span>
+                        ${tickHTML}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        if (!isGrouped) {
+            const imgEl = card.querySelector('.scoop-avatar-img');
+            if (imgEl) {
+                compressAvatarImage(rawAvatar, (compressedSrc) => {
+                    imgEl.src = compressedSrc;
+                });
+            }
+            const circleEl = card.querySelector('.circle');
+            if (circleEl) {
+                circleEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    playTouchSound();
+                    openUserProfilePopup(post);
+                });
+            }
+        }
+
+        // Requirement 5: Disable swipe-left-to-right on 'All' screen (ONLY enabled in room chats)
+        if (!showCategoryTag) {
+            let startX = 0;
+            let currentX = 0;
+            let isSwiping = false;
+
+            card.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    startX = e.touches[0].clientX;
+                    isSwiping = true;
+                }
+            });
+
+            card.addEventListener('touchmove', (e) => {
+                if (!isSwiping) return;
+                currentX = e.touches[0].clientX;
+                const diffX = currentX - startX;
+
+                // Swipe Left to Right
+                if (diffX > 0 && diffX < 90) {
+                    card.style.transform = `translateX(${diffX}px)`;
+                }
+            });
+
+            card.addEventListener('touchend', () => {
+                if (!isSwiping) return;
+                const diffX = currentX - startX;
+                if (diffX > 50) {
+                    initiateReply(post);
+                }
+                card.style.transform = '';
+                isSwiping = false;
+                startX = 0;
+                currentX = 0;
+            });
+        }
+
+        // Context Menu Action Triggers
+        let pressTimer = null;
+        const boxEl = card.querySelector('.box');
+
+        const triggerContextMenu = (e) => {
+            e.preventDefault();
+            activeSelectedPostData = post;
+            openContextMenu(isOutgoing);
+        };
+
+        boxEl.addEventListener('touchstart', (e) => {
+            pressTimer = setTimeout(() => triggerContextMenu(e), 500);
+        });
+        boxEl.addEventListener('touchend', () => clearTimeout(pressTimer));
+        boxEl.addEventListener('touchmove', () => clearTimeout(pressTimer));
+        boxEl.addEventListener('contextmenu', triggerContextMenu);
+
+        return card;
+    }
+
+    // ------------------------------------------------------------------------
+    // Telegram Style Reply Features
+    // ------------------------------------------------------------------------
+    function initiateReply(post) {
+        selectedReplyPost = post;
+        document.getElementById('replyPreviewUser').textContent = post.userName || 'User';
+        document.getElementById('replyPreviewText').textContent = post.text || '';
+        document.getElementById('replyPreviewBar').classList.add('show');
+        document.getElementById('postMsgInput').focus();
+        playTouchSound();
+    }
+
+    function cancelReply() {
+        selectedReplyPost = null;
+        document.getElementById('replyPreviewBar').classList.remove('show');
+    }
+
+    function triggerReplyFromContext() {
+        closeContextMenu();
+        if (activeSelectedPostData) {
+            initiateReply(activeSelectedPostData);
+        }
+    }
+
+    function scrollToMessage(postKey) {
+        if (!postKey) return;
+        const targetEl = document.querySelector(`[data-post-key="${postKey}"]`);
+        if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            targetEl.classList.add('highlight-flash');
+            // left/right shake on the message box that the reply points to
+            targetEl.classList.remove('reply-shake');
+            void targetEl.offsetWidth;
+            targetEl.classList.add('reply-shake');
+            setTimeout(() => targetEl.classList.remove('reply-shake'), 700);
+            setTimeout(() => targetEl.classList.remove('highlight-flash'), 1200);
+            playTouchSound();
+        }
+    }
+
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.addEventListener('scroll', () => {
+        const topBtn = document.getElementById('scrollTopBtn');
+        const viewAllActive = document.getElementById('viewAll').style.display !== 'none';
+
+        if (viewAllActive && window.scrollY > 200) {
+            topBtn.classList.add('visible');
+        } else {
+            topBtn.classList.remove('visible');
+        }
+    });
+
+    // Telegram-style sticky date header: always shows the date of the messages in view
+    function isChatViewOpen() {
+        const chat = document.getElementById('viewRoomChat');
+        return !!chat && getComputedStyle(chat).display !== 'none';
+    }
+
+    function updateStickyDateHeader() {
+        const pill = document.getElementById('floatingDateIndicator');
+        if (!pill) return;
+        const inChat = isChatViewOpen();
+        const cards = document.querySelectorAll('#roomFeedContainer .card[data-day-label]');
+        if (!inChat || !cards.length) { pill.style.display = 'none'; return; }
+
+        const LINE = 115;
+        let visibleDate = '';
+        for (let i = 0; i < cards.length; i++) {
+            const rect = cards[i].getBoundingClientRect();
+            if (rect.top <= LINE) {
+                visibleDate = cards[i].getAttribute('data-day-label') || visibleDate;
+            } else if (!visibleDate) {
+                visibleDate = cards[i].getAttribute('data-day-label') || '';
+                break;
+            } else {
+                break;
+            }
+        }
+        if (!visibleDate) visibleDate = cards[0].getAttribute('data-day-label') || '';
+
+        if (pill.dataset.label !== visibleDate) {
+            pill.dataset.label = visibleDate;
+            pill.innerHTML = `<b>${visibleDate}</b>`;
+        }
+        pill.style.display = 'inline-flex';
+    }
+
+    function showFloatingDatePill() { updateStickyDateHeader(); }
+
+    // Requirement 1: keep the sticky date pills exactly 4px under the header/tabs
+    function getStickyDateTop() {
+        const chat = document.getElementById('viewRoomChat');
+        const inChat = isChatViewOpen();
+        let headerH = 65;
+        if (inChat) {
+            const bar = chat.querySelector('.top-floating-bar');
+            if (bar) headerH = bar.getBoundingClientRect().height;
+        } else {
+            const tabs = document.getElementById('topTabsContainer');
+            if (tabs) headerH = tabs.getBoundingClientRect().height;
+        }
+        return Math.round(headerH) + 4;
+    }
+
+    // Requirement 2: Telegram-style date divider collision.
+    // The pinned date pill is pushed up and out by the next incoming date pill,
+    // so dividers never merge, overlap or collapse into each other.
+    function updateDateDividerCollision() {
+        const inChat = isChatViewOpen();
+        const container = inChat
+            ? document.getElementById('roomFeedContainer')
+            : document.getElementById('allFeedContainer');
+        if (!container) return;
+
+        const STICK_TOP = getStickyDateTop();
+        document.documentElement.style.setProperty('--sticky-date-top', STICK_TOP + 'px');
+
+        const dividers = Array.from(container.querySelectorAll('.tg-date-divider'));
+        if (!dividers.length) return;
+
+        dividers.forEach(d => { d.style.transform = ''; d.style.opacity = ''; d.style.visibility = ''; });
+
+        // Natural (un-stuck) viewport position of each divider, computed from
+        // layout offsets so sticky positioning cannot fool the comparison.
+        const marginTop = parseFloat(getComputedStyle(dividers[0]).marginTop) || 0;
+        const STUCK_AT = STICK_TOP + marginTop;
+        // sticky offsets pollute offsetTop, so measure the un-stuck layout position
+        dividers.forEach(d => { d.style.position = 'static'; });
+        const naturalTops = dividers.map(d => d.getBoundingClientRect().top);
+        dividers.forEach(d => { d.style.position = ''; });
+
+        let pinnedIdx = -1;
+        for (let i = 0; i < dividers.length; i++) {
+            if (naturalTops[i] <= STUCK_AT + 1) pinnedIdx = i;
+        }
+        if (pinnedIdx === -1) return;
+
+        // Only the newest stuck pill may sit under the header - older stuck pills
+        // are fully hidden so two dates can never merge into each other.
+        for (let i = 0; i < pinnedIdx; i++) {
+            dividers[i].style.visibility = 'hidden';
+        }
+
+        const pinned = dividers[pinnedIdx];
+        const next = dividers[pinnedIdx + 1];
+        if (!next) return;
+
+        const pinnedH = pinned.getBoundingClientRect().height;
+        // Smaller gap = the two date cards travel closer before the pinned one
+        // is pushed out (tighter, WhatsApp/Telegram-like collision).
+        const GAP = 8;
+        const overlap = (STUCK_AT + pinnedH + GAP) - naturalTops[pinnedIdx + 1];
+        if (overlap > 0) {
+            const push = Math.min(overlap, pinnedH + GAP);
+            pinned.style.transform = `translateY(${-push}px)`;
+            pinned.style.opacity = String(Math.max(0, 1 - push / (pinnedH + GAP)));
+        }
+    }
+
+    // "All" screen: the Load-more button only appears once the user scrolls UP
+    // away from the newest message (the feed always starts pinned at the bottom).
+    function updateAllLoadMoreVisibility() {
+        const row = document.getElementById('allLoadMoreRow');
+        if (!row) return;
+        if (isChatViewOpen()) { row.classList.add('is-hidden'); return; }
+        const se = document.scrollingElement || document.documentElement;
+        const distanceFromBottom = se.scrollHeight - se.scrollTop - se.clientHeight;
+        row.classList.toggle('is-hidden', distanceFromBottom < 120);
+    }
+    window.updateAllLoadMoreVisibility = updateAllLoadMoreVisibility;
+
+    let stickyDateTicking = false;
+    function handleChatScroll() {
+        if (stickyDateTicking) return;
+        stickyDateTicking = true;
+        requestAnimationFrame(() => {
+            stickyDateTicking = false;
+            updateStickyDateHeader();
+            updateDateDividerCollision();
+            updateAllLoadMoreVisibility();
+
+            // Requirement 7: load older messages when the user scrolls up to the top
+            const scroller = document.getElementById('viewRoomChat');
+            if (scroller && isChatViewOpen() && scroller.scrollTop < 90) {
+                loadOlderRoomMessages();
+            }
+        });
+    }
+
+    window.addEventListener('scroll', handleChatScroll, { passive: true });
+    // scroll events from inner scrollers (body / chat view) do not bubble to window,
+    // so listen in the capture phase on the document as well
+    document.addEventListener('scroll', handleChatScroll, { passive: true, capture: true });
+    window.addEventListener('resize', handleChatScroll);
+
+    // 100 character limit with a notification bar shown only at the limit
+    const COMPOSE_MAX_CHARS = 300;
+    function handleComposeInput() {
+        const input = document.getElementById('postMsgInput');
+        const bar = document.getElementById('charLimitBar');
+        if (!input || !bar) return;
+        if (input.value.length > COMPOSE_MAX_CHARS) input.value = input.value.slice(0, COMPOSE_MAX_CHARS);
+        bar.classList.toggle('show', input.value.length >= COMPOSE_MAX_CHARS);
+    }
+
+    // ------------------------------------------------------------------------
+    // Action Modals
+    // ------------------------------------------------------------------------
+    function openContextMenu(isOwnMessage) {
+        document.getElementById('btnEditMsg').style.display = isOwnMessage ? 'flex' : 'none';
+        document.getElementById('btnDeleteMsg').style.display = isOwnMessage ? 'flex' : 'none';
+        document.getElementById('messageContextMenu').classList.add('show');
+    }
+
+    function closeContextMenu() {
+        document.getElementById('messageContextMenu').classList.remove('show');
+    }
+
+    function copyActionMessage() {
+        if (activeSelectedPostData && activeSelectedPostData.text) {
+            navigator.clipboard.writeText(activeSelectedPostData.text);
+            showCustomToast("Message text copied!");
+        }
+        closeContextMenu();
+    }
+
+    function openEditModal() {
+        closeContextMenu();
+        if (!activeSelectedPostData) return;
+        document.getElementById('editMsgInput').value = activeSelectedPostData.text || '';
+        document.getElementById('customEditModal').classList.add('show');
+    }
+
+    function closeEditModal() {
+        document.getElementById('customEditModal').classList.remove('show');
+    }
+
+    function confirmEditMessage() {
+        const newText = document.getElementById('editMsgInput').value.trim();
+        if (newText !== '' && activeSelectedPostData) {
+            const path = `community/${activeSelectedPostData.catClean}/${activeSelectedPostData.subClean}/${activeSelectedPostData.dateKey}/${activeSelectedPostData.postKey}/text`;
+            db.ref(path).set(newText).then(() => {
+                playTouchSound();
+                closeEditModal();
+            }).catch(e => console.error(e));
+        }
+    }
+
+    function openDeleteModal() {
+        closeContextMenu();
+        if (!activeSelectedPostData) return;
+        document.getElementById('customDeleteModal').classList.add('show');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('customDeleteModal').classList.remove('show');
+    }
+
+    function confirmDeleteMessage() {
+        if (activeSelectedPostData) {
+            const path = `community/${activeSelectedPostData.catClean}/${activeSelectedPostData.subClean}/${activeSelectedPostData.dateKey}/${activeSelectedPostData.postKey}`;
+            db.ref(path).remove().then(() => {
+                playTouchSound();
+                closeDeleteModal();
+            }).catch(e => console.error(e));
+        }
+    }
+
+    // Calendar
+    let calDate = new Date();
+    let selectedCalDate = new Date();
+
+    const CAL_MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    function openCalendarModal() {
+        document.getElementById('customCalendarModal').classList.add('show');
+        closeCalPopups();
+        renderCalendar();
+    }
+
+    function closeCalendarModal() {
+        closeCalPopups();
+        document.getElementById('customCalendarModal').classList.remove('show');
+    }
+
+    // Requirement 7: custom Year / Month popup boxes inside the date selector card
+    function closeCalPopups() {
+        document.getElementById('calYearPopup').classList.remove('show');
+        document.getElementById('calMonthPopup').classList.remove('show');
+    }
+
+    function toggleCalYearPopup() {
+        const pop = document.getElementById('calYearPopup');
+        const open = pop.classList.contains('show');
+        closeCalPopups();
+        if (open) return;
+
+        const current = calDate.getFullYear();
+        const thisYear = new Date().getFullYear();
+        pop.innerHTML = '';
+        for (let y = thisYear - 10; y <= thisYear + 1; y++) {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'cal-popup-item' + (y === current ? ' selected' : '');
+            item.textContent = y;
+            item.onclick = () => {
+                calDate.setFullYear(y);
+                closeCalPopups();
+                renderCalendar();
+            };
+            pop.appendChild(item);
+        }
+        pop.classList.add('show');
+    }
+
+    function toggleCalMonthPopup() {
+        const pop = document.getElementById('calMonthPopup');
+        const open = pop.classList.contains('show');
+        closeCalPopups();
+        if (open) return;
+
+        const current = calDate.getMonth();
+        pop.innerHTML = '';
+        CAL_MONTH_NAMES.forEach((name, idx) => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'cal-popup-item' + (idx === current ? ' selected' : '');
+            item.textContent = name.slice(0, 3);
+            item.onclick = () => {
+                calDate.setDate(1);
+                calDate.setMonth(idx);
+                closeCalPopups();
+                renderCalendar();
+            };
+            pop.appendChild(item);
+        });
+        pop.classList.add('show');
+    }
+
+    function renderCalendar() {
+        const year = calDate.getFullYear();
+        const month = calDate.getMonth();
+
+        const monthNames = CAL_MONTH_NAMES;
+        document.getElementById('calendarMonthYear').textContent = `${monthNames[month]} ${year}`;
+        document.getElementById('calendarYearBtn').textContent = year;
+        document.getElementById('calendarMonthBtn').textContent = monthNames[month];
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const lastDate = new Date(year, month + 1, 0).getDate();
+        const prevLastDate = new Date(year, month, 0).getDate();
+
+        const grid = document.getElementById('calendarDaysGrid');
+        grid.innerHTML = '';
+
+        for (let i = firstDay; i > 0; i--) {
+            const d = document.createElement('div');
+            d.textContent = prevLastDate - i + 1;
+            d.style.opacity = '0.3';
+            grid.appendChild(d);
+        }
+
+        for (let i = 1; i <= lastDate; i++) {
+            const d = document.createElement('div');
+            d.textContent = i;
+            d.className = 'sharp-inner-item';
+            d.style.padding = '8px';
+            d.style.margin = '0';
+            d.style.justifyContent = 'center';
+            d.style.borderRadius = '50%';
+
+            if (i === selectedCalDate.getDate() && month === selectedCalDate.getMonth() && year === selectedCalDate.getFullYear()) {
+                d.style.background = 'var(--text-color)';
+                // Requirement 5: selected date text is grey, not white
+                d.classList.add('cal-day-selected');
+                d.style.color = '#b9bcc7';
+            }
+
+            d.onclick = () => {
+                selectedCalDate = new Date(year, month, i);
+                closeCalPopups();
+                renderCalendar();
+            };
+            grid.appendChild(d);
+        }
+    }
+
+    document.getElementById('calendarYearBtn').onclick = toggleCalYearPopup;
+    document.getElementById('calendarMonthBtn').onclick = toggleCalMonthPopup;
+
+
+    document.getElementById('prevMonthBtn').onclick = () => {
+        calDate.setMonth(calDate.getMonth() - 1);
+        renderCalendar();
+    };
+    document.getElementById('nextMonthBtn').onclick = () => {
+        calDate.setMonth(calDate.getMonth() + 1);
+        renderCalendar();
+    };
+
+    function confirmCalendarDate() {
+        const y = selectedCalDate.getFullYear();
+        const m = String(selectedCalDate.getMonth() + 1).padStart(2, '0');
+        const d = String(selectedCalDate.getDate()).padStart(2, '0');
+        
+        const dayKey = `${y}-${m}-${d}`;
+        currentSelectedDate = null;
+        closeCalendarModal();
+
+        // Telegram behaviour: scroll/redirect to that date, keep the whole chat loaded
+        if (document.querySelector('.tg-date-divider[data-day-key]')) {
+            jumpToDate(dayKey);
+        } else if (currentSelectedCategory && currentSelectedSubCategory) {
+            pendingJumpDate = dayKey;
+            listenToRoomChat(currentSelectedCategory.name, currentSelectedSubCategory);
+        }
+    }
+
+
+    // Bubble-style curvy delivery ticks (replaces the flat FontAwesome double tick)
+    function buildTickIcon(status) {
+        if (status === 'failed') {
+            return '<span class="msg-tick failed" title="Not sent">' +
+                   '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+                   '<path d="M12 3.6c4.6 0 8.4 3.2 8.4 7.3 0 4-3.8 7.2-8.4 7.2-.9 0-1.8-.1-2.6-.35-1.3.9-2.7 1.5-4.2 1.8.7-1 1.2-1.9 1.4-2.9C4.7 15.3 3.6 13.3 3.6 11c0-4.1 3.8-7.4 8.4-7.4Z"/>' +
+                   '<path d="M12 7.8v3.4M12 14.1h.01"/>' +
+                   '</svg></span>';
+        }
+        var delivered = status === 'delivered';
+        return '<span class="msg-tick' + (delivered ? '' : ' pending') + '">' +
+               '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+               '<path d="M1.8 13.1c1.5 1 2.6 2.1 3.6 3.7C7.7 12.3 10.6 8.6 14.4 5.7"/>' +
+               (delivered ? '<path d="M9.2 16.6c.5.4 1 1 1.4 1.7C12.9 13.9 16 10.3 19.8 7.4"/>' : '') +
+               '</svg></span>';
+    }
+    window.buildTickIcon = buildTickIcon;
+
+    function updateTickInDOM(postKey) {
+        const status = messageStatus[postKey] || 'sent';
+        document.querySelectorAll(`[data-post-key="${postKey}"] .msg-tick`).forEach(el => {
+            el.outerHTML = buildTickIcon(status);
+        });
+    }
+
+    function markMessageDelivered(postKey) {
+        messageStatus[postKey] = 'delivered';
+        if (pendingMessages[postKey]) pendingMessages[postKey].pending = false;
+        document.querySelectorAll(`[data-post-key="${postKey}"]`).forEach(c => c.classList.remove('pending-message'));
+        updateTickInDOM(postKey);
+    }
+
+    // Send Message
+    function handleKeyPress(e) {
+        if (e.key === 'Enter') {
+            sendCommunityMessage();
+        }
+    }
+
+    function sendCommunityMessage() {
+        const input = document.getElementById('postMsgInput');
+        const text = (input.value || '').trim();
+        if (!text) return;
+
+        const user = auth.currentUser;
+        if (!user) {
+            alert("Please log in to post messages!");
+            return;
+        }
+
+        if (!isUserAvatarLoaded || !currentUserProfile) {
+            showCustomToast("Loading profile data, please wait...");
+            return;
+        }
+
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0];
+        const timeMs = now.getTime();
+        const uid = user.uid;
+
+        const nodeKey = `${timeMs}_${uid}`;
+        const catClean = sanitizePath(currentSelectedCategory.name || currentSelectedCategory);
+        const subClean = sanitizePath(currentSelectedSubCategory);
+
+        const age = currentUserProfile ? calculateAge(currentUserProfile.dob) : null;
+        const fullName = currentUserProfile ? `${currentUserProfile.firstName || ''} ${currentUserProfile.lastName || ''}`.trim() : 'Learner';
+
+        const payload = {
+            uid: uid,
+            userName: fullName || user.email || 'Learner',
+            userAvatar: currentUserProfile.profilePicURL || '',
+            userAge: age,
+            userCountry: currentUserProfile.country || currentUserProfile.userCountry || '',
+            userDob: currentUserProfile.dob || '',
+            text: text,
+            timestamp: timeMs
+        };
+
+        // Attach Telegram Style Reply Object if active
+        if (selectedReplyPost) {
+            payload.replyTo = {
+                postKey: selectedReplyPost.postKey || '',
+                userName: selectedReplyPost.userName || 'User',
+                text: selectedReplyPost.text || '',
+                uid: selectedReplyPost.uid || ''
+            };
+        }
+
+        const targetRef = db.ref(`community/${catClean}/${subClean}/${dateStr}/${nodeKey}`);
+
+        // Requirement 3: show the message instantly with a single tick,
+        // then switch to a double tick once it is fully delivered (WhatsApp style).
+        const optimistic = Object.assign({}, payload, {
+            postKey: nodeKey,
+            dateKey: dateStr,
+            catClean: catClean,
+            subClean: subClean,
+            pending: true
+        });
+        pendingMessages[nodeKey] = optimistic;
+        messageStatus[nodeKey] = 'sent';
+
+        input.value = '';
+        cancelReply();
+        handleComposeInput();
+        playTouchSound();
+
+        // Always keep the freshly sent message inside the visible window,
+        // even when it is a long, multi-line message.
+        renderRoomMessages({ scrollToBottom: true });
+        scrollChatToBottom(false);
+
+        targetRef.set(payload).then(() => {
+            markMessageDelivered(nodeKey);
+        }).catch(err => {
+            console.error("Post error:", err);
+            messageStatus[nodeKey] = 'failed';
+            updateTickInDOM(nodeKey);
+            showCustomToast("Message not sent • check your connection");
+        });
+    }
+
+    // Auth binding
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            db.ref(`users/${user.uid}`).once('value', snap => {
+                currentUserProfile = snap.val() || {};
+                const picUrl = currentUserProfile.profilePicURL || 'https://i.ibb.co/bgWVZn48/LearnEra-Logo.webp';
+                compressAvatarImage(picUrl, () => {
+                    isUserAvatarLoaded = true;
+                });
+            });
+        }
+    });
+
+    // Boot
+    window.addEventListener('DOMContentLoaded', () => {
+        switchMainTab('all');
+        positionTabSlider();
+        document.documentElement.style.setProperty('--sticky-date-top', getStickyDateTop() + 'px');
+        setTimeout(updateDateDividerCollision, 400);
+    });
+    window.addEventListener('resize', () => positionTabSlider(true));
+  </script>
+</body>
+</html>

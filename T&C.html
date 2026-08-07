@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Introduction - LearnEra</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons & GSAP scripts -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    
+    <!-- Early theme bootstrap -->
+    <script>
+        (function () {
+            try {
+                const savedTheme = localStorage.getItem('appThemeMode') || 'system';
+                const isDark = savedTheme === 'dark' ||
+                    (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const darkStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.documentElement.setAttribute('data-dark-text', darkStyle);
+                } else {
+                    document.documentElement.removeAttribute('data-dark-text');
+                }
+                const topSp = localStorage.getItem('appTopSpace') || '5';
+                document.documentElement.style.setProperty('--top-space', topSp + 'vh');
+            } catch (e) {
+                document.documentElement.style.setProperty('--top-space', '5vh');
+            }
+            
+            const savedLang = localStorage.getItem('appLanguageSelection') || 'en';
+            document.documentElement.setAttribute('data-lang', savedLang);
+        })();
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        :root {
+            --body-bg: #e6edf7; 
+            --neu-shadow-light: #ffffff;
+            --neu-shadow-dark: #c8d3e4;
+            
+            --text-color: rgba(138, 43, 226, 0.4); 
+            --sub-text-color: #7a8b9e;
+            
+            --pink: #FF69B4;
+            --pink-strong: #FF1493;
+            --blue: #1E90FF;
+            --purple: #8A2BE2;
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+            
+            --inner-highlight: inset 1px 1px 2px rgba(255,255,255,0.7);
+            --border-soft: 1px solid rgba(255,255,255,0.35);
+            
+            --top-space: 5vh;
+            --transition-theme: background-color 0.8s ease, color 0.8s ease, box-shadow 0.8s ease, border-color 0.8s ease;
+        }
+
+        html[data-theme="dark"] {
+            --body-bg: #1e1e24; 
+            --neu-shadow-dark: #101014; 
+            --neu-shadow-light: rgba(255, 255, 255, 0.05);
+            
+            --text-color: #ffffff; 
+            --sub-text-color: #88888c; 
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+        }
+
+        html[data-dark-text="deep-dark"] {
+            --body-bg: #0c0c0f; 
+            --neu-shadow-dark: #050506;
+            --neu-shadow-light: rgba(255, 255, 255, 0.02);
+            
+            --text-color: rgba(255, 255, 255, 0.35);
+            --sub-text-color: rgba(255, 255, 255, 0.25);
+
+            --pink: rgba(255, 255, 255, 0.35);
+            --pink-strong: rgba(255, 255, 255, 0.35);
+            --blue: rgba(255, 255, 255, 0.35);
+            --purple: rgba(255, 255, 255, 0.35);
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.01);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.01);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.01);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.01);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.02);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -2px -2px 4px rgba(255, 255, 255, 0.02);
+        }
+
+        /* Language Overrides */
+        html[data-lang="hi"] *, html[data-lang="ch"] *, html[data-lang="bh"] * {
+            font-family: 'Tiro Devanagari Hindi', serif !important;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            overflow-x: hidden;
+            overscroll-behavior: none;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 35px;
+            font-size: 13px; 
+            transition: var(--transition-theme);
+        }
+
+        /* Responsive Layout Container */
+        .about-container {
+            width: 100%;
+            max-width: 560px;
+            margin: 0 auto;
+            padding: calc(var(--top-space) + 15px) 15px 35px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .about-card {
+            background: var(--body-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--card-shadow-micro), var(--inner-highlight);
+            border: var(--border-soft);
+            color: var(--text-color);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-theme);
+        }
+
+        /* Dynamic Title Styling */
+        .about-card-title {
+            font-size: 1.15em;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-align: left;
+            transition: color 0.4s ease;
+        }
+
+        html:not([data-dark-text="deep-dark"]) .about-card-title {
+            background: linear-gradient(135deg, #8A2BE2, #a158e6, #DA70D6) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            display: inline-block;
+            transition: var(--transition-theme);
+        }
+
+        .about-card p {
+            font-size: 0.85em;
+            line-height: 1.6;
+            color: var(--sub-text-color);
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 2;
+        }
+        .about-card p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Backdrop low transparency icons */
+        .large-backdrop-icon {
+            position: absolute;
+            bottom: -24px;
+            right: -24px;
+            font-size: 9em;
+            opacity: 0.08;
+            pointer-events: none;
+            transform: rotate(-12deg);
+            z-index: 1;
+        }
+
+        /* Listed Items styling */
+        .about-list-item strong {
+            color: var(--text-color); 
+            font-weight: 700;
+        }
+        .about-list-item span {
+            color: var(--sub-text-color); 
+        }
+
+        .about-list-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 14px;
+            background: var(--body-bg);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow-micro);
+            border: var(--border-soft);
+            margin-bottom: 10px;
+            font-size: 0.8em;
+            text-align: left;
+            z-index: 2;
+            position: relative;
+        }
+        .about-list-item:last-child {
+            margin-bottom: 0;
+        }
+        .about-list-item i {
+            color: var(--blue);
+            margin-top: 3px;
+            font-size: 0.9em;
+            flex-shrink: 0;
+        }
+
+        /* Blur reveals styling */
+        .blur-text-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--text-color);
+            text-align: center;
+            padding: 0;
+        }
+        .blur-text-segment {
+            display: inline-block;
+            will-change: transform, filter, opacity;
+            margin-right: 6px;
+        }
+
+        /* Dark Colorful mode title adjustment */
+        html[data-theme="dark"]:not([data-dark-text="deep-dark"]) .about-card-title {
+            opacity: 0.75;
+        }
+
+        /* Deep Dark Mode Monochrome Overrides */
+        html[data-dark-text="deep-dark"] .about-card-title,
+        html[data-dark-text="deep-dark"] .about-list-item i,
+        html[data-dark-text="deep-dark"] .about-list-item strong,
+        html[data-dark-text="deep-dark"] .large-backdrop-icon,
+        html[data-dark-text="deep-dark"] .blur-text-container * {
+            color: rgba(255, 255, 255, 0.35) !important;
+            fill: rgba(255, 255, 255, 0.35) !important;
+            background: none !important;
+            background-image: none !important;
+            -webkit-background-clip: initial !important;
+            background-clip: initial !important;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.35) !important;
+        }
+
+        /* Skeleton Loading System */
+        .skeleton-card {
+            position: relative !important;
+            overflow: hidden !important;
+            border-color: transparent !important;
+            box-shadow: var(--card-shadow-micro) !important; 
+        }
+        .skeleton-card * {
+            visibility: hidden !important;
+        }
+        .skeleton-card::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -150%;
+            width: 150%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            animation: skeleton-shimmer-animation 1.5s infinite;
+            z-index: 5;
+        }
+        body[data-theme="dark"] .skeleton-card::after {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+        }
+        @keyframes skeleton-shimmer-animation {
+            0% { left: -150%; }
+            100% { left: 150%; }
+        }
+
+        /* Staggered text animations */
+        .animate-text {
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .animate-text.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="about-container">
+        
+        <!-- Header / Intro Block (Renamed to Introduction) -->
+        <div class="about-card ...-card skeleton-card">
+            <i class="ph-bold ph-scroll large-backdrop-icon" style="color: var(--purple);"></i>
+            <h2 class="about-card-title animate-text" style="font-size: 1.5em; margin-bottom: 12px;">Introduction</h2>
+            <p class="animate-text">
+                Look, if you're reading this, you either actually care about legal fine print (highly unlikely) or you accidentally scrolled down here. Either way, welcome to LearnEra. This is where we lay down the ground rules for accessing our crown jewels: the Platform.
+            </p>
+            <p class="animate-text">
+                By staying here and occupying my bandwidth, you're agreeing to all of this. If you don't like it, there's the exit. No hard feelings, but we only keep elite minds in this orbit. Let's make this quick and painless. You're welcome.
+            </p>
+        </div>
+
+        <!-- Section 1: The Lexicon -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-book-open large-backdrop-icon" style="color: var(--blue);"></i>
+            <div class="about-card-title">1. The Lexicon (Definitions)</div>
+            <p class="animate-text">
+                Let's establish our vocabulary so we don't have any communication breakdowns down the line:
+            </p>
+            <div class="about-list-item animate-text">
+                <i class="ph-bold ph-caret-right"></i>
+                <span><strong>The Platform:</strong> This beautiful, Neumorphic, hyper-performance ecosystem you're currently staring at. Sourced, integrated, and polished beyond perfection.</span>
+            </div>
+            <div class="about-list-item animate-text">
+                <i class="ph-bold ph-caret-right"></i>
+                <span><strong>Starlight Algorithms:</strong> The proprietary cognitive engines humming under the hood. They sort, curate, and compile raw educational data into clean knowledge structures.</span>
+            </div>
+            <div class="about-list-item animate-text">
+                <i class="ph-bold ph-caret-right"></i>
+                <span><strong>User (You):</strong> The incredibly fortunate individual currently occupying space on our servers. Try not to break anything, okay?</span>
+            </div>
+            <div class="about-list-item animate-text">
+                <i class="ph-bold ph-caret-right"></i>
+                <span><strong>Himanshu's Core:</strong> The visionary primary database architecture and cognitive layers running the main operational grid.</span>
+            </div>
+        </div>
+
+        <!-- Section 2: Curation vs. Creation -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-brain large-backdrop-icon" style="color: var(--pink-strong);"></i>
+            <div class="about-card-title">2. Curation vs. Creation</div>
+            <p class="animate-text">
+                Let's clear the air. We don't own the entire internet—yet. Most of the raw educational materials you discover through our platform are aggregated from public domain repositories, open-source giants, and permissive Creative Commons hubs.
+            </p>
+            <p class="animate-text">
+                We don't claim to have personally written every line of every third-party lecture. What we *do* is much cooler: we weaponize starlight to find, curate, and deliver exactly what your brain needs, when it needs it. Our AI synthesizes these educational paths dynamically. We build the telescope; we don't paint the stars.
+            </p>
+        </div>
+
+        <!-- Scroll-Trigger fade-blur text segment (sigma-blur-target) -->
+        <div id="sigma-blur-target" class="blur-text-container" style="padding: 0; margin-top: -10px; margin-bottom: -10px;"></div>
+
+        <!-- Section 3: Stark-Grade Security -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-user-gear large-backdrop-icon" style="color: var(--blue);"></i>
+            <div class="about-card-title">3. Stark-Grade Security (Accounts)</div>
+            <p class="animate-text">
+                If you want to use the high-end stuff, you've got to play by my safety protocols:
+            </p>
+            <div class="about-list-item animate-text">
+                <i class="ph-bold ph-caret-right"></i>
+                <span><strong>Your Password is Your Shield:</strong> Don't make it '123456' or your dog's name. If someone hijacks your profile because you were basic, that's entirely on you. Protect your credentials.</span>
+            </div>
+            <div class="about-list-item animate-text">
+                <i class="ph-bold ph-caret-right"></i>
+                <span><strong>Zero-Tolerance Data:</strong> Provide real coordinates during signup. If we discover you registered as 'Peter Parker' with a fake email, we will vaporize your access immediately.</span>
+            </div>
+            <div class="about-list-item animate-text">
+                <i class="ph-bold ph-caret-right"></i>
+                <span><strong>Limits:</strong> Standard registration allows you access, but system integrity rules apply. We monitor for bot behavior. Play nice.</span>
+            </div>
+        </div>
+
+        <!-- Section 4: The Stark Fund -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-credit-card large-backdrop-icon" style="color: var(--purple);"></i>
+            <div class="about-card-title">4. The Stark Fund (Sub-Pricing)</div>
+            <p class="animate-text">
+                High-performance AI infrastructure doesn't run on good vibes and hopes. Maintaining starlight servers, neural compilation matrices, and decentralized ledger databases costs real money.
+            </p>
+            <p class="animate-text">
+                When you purchase premium features, you're not 'buying' the intellectual property of public third-party lectures. You are paying for the sheer luxury of our curation algorithms, automated synthesis engines, and custom-tailored search speeds. You're paying for the best developer seat in the house.
+            </p>
+        </div>
+
+        <!-- Section 5: The "Don't Be a Pain" Clauses -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-shield-warning large-backdrop-icon" style="color: var(--pink-strong);"></i>
+            <div class="about-card-title">5. The "Don't Be a Pain" Clauses</div>
+            <p class="animate-text">
+                We have a zero-tolerance policy for party crashers. If you attempt to compromise the Platform, our defensive subroutines will permanently restrict your coordinates. This includes:
+            </p>
+            <div class="about-list-item animate-text">
+                <i class="ph-bold ph-caret-right"></i>
+                <span><strong>1. No Scraping:</strong> Do not run crude Python scripts to crawl and steal our curated starlight index. We will notice, and we will block you.</span>
+            </div>
+            <div class="about-list-item animate-text">
+                <i class="ph-bold ph-caret-right"></i>
+                <span><strong>2. No Cloning:</strong> Do not copy our CSS layouts, interactive sound matrices, or system frameworks. Go build your own homework.</span>
+            </div>
+            <div class="about-list-item animate-text">
+                <i class="ph-bold ph-caret-right"></i>
+                <span><strong>3. No Toxic Payloads:</strong> Uploading malware, spam, or basic forum clutter is forbidden. Keep our community clean.</span>
+            </div>
+        </div>
+
+        <!-- Section 6: Intellectual Property -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-copyright large-backdrop-icon" style="color: var(--blue);"></i>
+            <div class="about-card-title">6. Intellectual Property (Stark Rules)</div>
+            <p class="animate-text">
+                We take our craft seriously. The proprietary starlight search compilation, custom Neumorphic style code, and interactive audio triggers are LearnEra assets.
+            </p>
+            <p class="animate-text">
+                If you contribute something brilliant to our collaborative learning boards, you retain ownership of your intellectual property. However, you grant LearnEra a worldwide, royalty-free, perpetual license to show off your genius to our community. Fair deal? Absolutely.
+            </p>
+        </div>
+
+        <!-- Section 7: Bulletproof Disclaimers -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-warning-octagon large-backdrop-icon" style="color: var(--pink);"></i>
+            <div class="about-card-title">7. Bulletproof Disclaimers</div>
+            <p class="animate-text">
+                Everything here is delivered 'as-is' and 'as-available'. We don't guarantee that the local network won't fail, or that your device won't run out of memory. 
+            </p>
+            <p class="animate-text">
+                Our AI does its best, but even cognitive engines have off days. Use your judgment, genius. If you fail a real-world test because you trusted an untested community theory, we are not liable. Keep your critical thinking caps on.
+            </p>
+        </div>
+
+        <!-- Section 8: Legal Armor -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-handshake large-backdrop-icon" style="color: var(--blue);"></i>
+            <div class="about-card-title">8. Legal Armor (Indemnification)</div>
+            <p class="animate-text">
+                If you do something highly questionable that violates these Terms and gets us dragged into legal crossfire, you're paying our bills. Our legal teams are exceptionally brilliant, highly expensive, and they don't do charity. Play smart so we don't have to call them.
+            </p>
+        </div>
+
+        <!-- Section 9: Local Jurisdiction -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-gavel large-backdrop-icon" style="color: var(--purple);"></i>
+            <div class="about-card-title">9. Local Jurisdiction (Era Studios)</div>
+            <p class="animate-text">
+                These terms are governed by the legal framework of Bilaspur, Chhattisgarh, India. If we ever have a real dispute, we settle it in the local courts near Era Studios, Pamgarh. No fancy intergalactic tribunals—just local law and straightforward facts.
+            </p>
+        </div>
+
+        <!-- Section 10: Future Hegemony -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-clock-countdown large-backdrop-icon" style="color: var(--pink-strong);"></i>
+            <div class="about-card-title">10. Future Hegemony (The Roadmap)</div>
+            <p class="animate-text">
+                We never sit still. LearnEra is just the staging ground. Our future roadmap is massive, and you have front-row seats:
+            </p>
+            <div class="about-list-item animate-text">
+                <i class="ph-bold ph-caret-right"></i>
+                <span><strong>CartiX:</strong> The next-generation decentralized marketplace. Frictionless trading with zero middlemen.</span>
+            </div>
+            <div class="about-list-item animate-text">
+                <i class="ph-bold ph-caret-right"></i>
+                <span><strong>Open World Game:</strong> An immersive 3D simulation where your real-world coding or legal knowledge dictates survival.</span>
+            </div>
+            <div class="about-list-item animate-text">
+                <i class="ph-bold ph-caret-right"></i>
+                <span><strong>The Secure Browser:</strong> A lightweight, privacy-fortified browser designed to protect your digital footprint with extreme prejudice.</span>
+            </div>
+        </div>
+
+        <!-- Section 11: Termination Policy -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-dots-three-circle large-backdrop-icon" style="color: var(--blue);"></i>
+            <div class="about-card-title">11. Termination Policy</div>
+            <p class="animate-text">
+                If you break these terms, attempt to hack our curation framework, or behave in a toxic manner, we will block your coordinates immediately. There is no appeal process for basic bad behavior. Respect the tech, respect the community, and we'll get along beautifully.
+            </p>
+        </div>
+
+        <!-- Section 12: Contact Coordinates -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-envelope-simple-open large-backdrop-icon" style="color: var(--pink);"></i>
+            <div class="about-card-title">12. Contact Coordinates</div>
+            <p class="animate-text">
+                Have questions or want to buy us a coffee? Reach out to our main coordinates. We read everything eventually:
+            </p>
+            <p class="animate-text">
+                Email: <a href="mailto:support@learnera.com" style="color: var(--pink); text-decoration: none;">officiallearnera@yahoo.com</a><br>
+                Address: Era Studio's, Pamgarh, Bilaspur, Chhattisgarh, India
+            </p>
+            <p class="animate-text">
+                <em>Last Updated: July 19, 2025</em>
+            </p>
+        </div>
+
+    </div>
+
+    <script>
+        // Sound FX System
+        (function initDashboardSoundFX(){
+            const LS_MASTER = 'touchSoundsEnabled';
+            const LS_GROUPS = 'touchSoundsGroupState';
+
+            const CLICK_SOUND_URLS = [
+                "Click1.ogg", "Click2.ogg", "Click3.ogg", "Click4.ogg", "Click5.ogg",
+                "Click6.ogg", "Click7.ogg", "Click8.ogg", "Click9.ogg", "Click10.ogg",
+                "Click11.ogg", "Click12.ogg", "Click13.ogg", "Click14.ogg"
+            ];
+
+            const GROUP_TO_CLICKS = {
+                'buttons'   : [1, 2, 3, 7, 8, 9, 14],
+                'navigation': [5],
+                'inputs'    : [4, 6],
+                'reserved'  : [10, 11, 12, 13]
+            };
+
+            const CLICK_TO_GROUP = {};
+            Object.keys(GROUP_TO_CLICKS).forEach(g => {
+                GROUP_TO_CLICKS[g].forEach(n => { CLICK_TO_GROUP[n] = g; });
+            });
+
+            const audioCache = {};
+            let _ac = null;
+            let _masterGain = null;
+            let _navBuffer = null;
+
+            function getAC(){
+                if (_ac) return _ac;
+                try {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (Ctx) {
+                        _ac = new Ctx();
+                        const comp = _ac.createDynamicsCompressor();
+                        comp.threshold.value = -10;
+                        comp.knee.value = 6;
+                        comp.ratio.value = 12;
+                        comp.attack.value = 0.001;
+                        comp.release.value = 0.05;
+                        _masterGain = _ac.createGain();
+                        _masterGain.gain.value = 1.0;
+                        comp.connect(_masterGain).connect(_ac.destination);
+                        _ac._busIn = comp;
+                    }
+                } catch(e){}
+                return _ac;
+            }
+
+            function ensureNavBuffer(){
+                const ac = getAC();
+                if (!ac || _navBuffer) return _navBuffer;
+                const sr = ac.sampleRate;
+                const dur = 0.09;
+                const len = Math.floor(sr * dur);
+                const buf = ac.createBuffer(1, len, sr);
+                const data = buf.getChannelData(0);
+                const f0 = 520, f1 = 300;
+                for (let i = 0; i < len; i++) {
+                    const t = i / sr;
+                    const k = i / len;
+                    const f = f0 + (f1 - f0) * k;
+                    const env = Math.min(1, i / (sr * 0.004)) * Math.pow(1 - k, 2.2);
+                    data[i] = Math.sin(2 * Math.PI * f * t) * env * 0.95;
+                }
+                _navBuffer = buf;
+                return buf;
+            }
+
+            function primeAudio(){
+                const ac = getAC();
+                if (ac && ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                ensureNavBuffer();
+            }
+
+            ['pointerdown','touchstart','keydown','click'].forEach(ev => {
+                document.addEventListener(ev, primeAudio, { capture: true, passive: true });
+            });
+
+            const SYNTH = {
+                1:  { f: 880,  d: 0.05, w: 'triangle', g: 0.18 },
+                2:  { f: 520,  d: 0.07, w: 'sine',     g: 0.22 },
+                3:  { f: 660,  d: 0.08, w: 'square',   g: 0.16 },
+                4:  { f: 1200, d: 0.03, w: 'sine',     g: 0.12 },
+                5:  { f: 740,  d: 0.05, w: 'triangle', g: 0.18 },
+                6:  { f: 1000, d: 0.025,w: 'sine',     g: 0.10 },
+                7:  { f: 600,  d: 0.05, w: 'square',   g: 0.16 },
+                8:  { f: 820,  d: 0.05, w: 'triangle', g: 0.18 },
+                9:  { f: 420,  d: 0.06, w: 'sine',     g: 0.18 },
+                10: { f: 480,  d: 0.05, w: 'triangle', g: 0.16 },
+                11: { f: 560,  d: 0.05, w: 'triangle', g: 0.16 },
+                12: { f: 640,  d: 0.05, w: 'triangle', g: 0.16 },
+                13: { f: 720,  d: 0.05, w: 'triangle', g: 0.16 },
+                14: { f: 440,  d: 0.08, w: 'sine',     g: 0.60 }
+            };
+
+            function synthClick(n){
+                const ac = getAC();
+                if (!ac) return;
+                if (ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                const r = SYNTH[n] || SYNTH[7];
+                const t0 = ac.currentTime;
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                osc.type = r.w;
+                osc.frequency.setValueAtTime(r.f, t0);
+                osc.frequency.exponentialRampToValueAtTime(Math.max(80, r.f * 0.6), t0 + r.d);
+                gain.gain.setValueAtTime(0.0001, t0);
+                gain.gain.exponentialRampToValueAtTime(r.g, t0 + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + r.d);
+                osc.connect(gain).connect(ac._busIn || ac.destination);
+                osc.start(t0);
+                osc.stop(t0 + r.d + 0.02);
+            }
+
+            function playClick(n, opts){
+                opts = opts || {};
+                const isMasterOn = localStorage.getItem(LS_MASTER) === '1' || localStorage.getItem(LS_MASTER) === null;
+                if (!opts.force && !isMasterOn) return;
+
+                let groupState = {};
+                try { groupState = JSON.parse(localStorage.getItem(LS_GROUPS) || '{}'); } catch(e){}
+                const groupId = CLICK_TO_GROUP[n];
+                if (!opts.force && groupId && groupState[groupId] === false) return;
+
+                const url = CLICK_SOUND_URLS[n - 1];
+                if (isRealUrl(url)) {
+                    try {
+                        if (n === 14) {
+                            const a = new Audio(url);
+                            a.volume = 1.0;
+                            a.play().catch(() => synthClick(14));
+                            return;
+                        }
+                        if (!audioCache[n]) {
+                            const a = new Audio(url);
+                            a.volume = 0.5;
+                            a.preload = 'auto';
+                            audioCache[n] = a;
+                        }
+                        const a = audioCache[n];
+                        a.currentTime = 0;
+                        const p = a.play();
+                        if (p && p.catch) p.catch(() => synthClick(n));
+                        return;
+                    } catch(e) {}
+                }
+                synthClick(n);
+            }
+
+            window.playTouchSound = playClick;
+
+            // Trigger STX touch sound on interaction
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.about-list-item')) {
+                    if (window.parent && typeof window.parent.playTouchSound === 'function') {
+                        window.parent.playTouchSound(5);
+                    } else {
+                        playClick(5);
+                    }
+                }
+            });
+        })();
+
+        function isRealUrl(u){
+            if (!u || typeof u !== 'string') return false;
+            return /^(https?:|data:|blob:|\/|\.\/|\.\.\/)/i.test(u) || /\//.test(u);
+        }
+
+        // Bootstrap on startup
+        document.addEventListener('DOMContentLoaded', () => {
+            // Simulated Skeleton Loading cycle
+            setTimeout(() => {
+                document.querySelectorAll('.skeleton-card').forEach(card => {
+                    card.classList.remove('skeleton-card');
+                });
+                initBlurTextEveryTime('sigma-blur-target', "Mediocrity is a choice. We choose to build a smarter tomorrow.");
+            }, 800);
+
+            // Staggered text animations
+            const animatedElements = document.querySelectorAll('.animate-text');
+            animatedElements.forEach((element, index) => {
+                element.style.transitionDelay = `${index * 0.05}s`;
+                setTimeout(() => {
+                    element.classList.add('show');
+                }, 50);
+            });
+
+            // GSAP ScrollTrigger blur text effect
+            function initBlurTextEveryTime(id, text) {
+                const container = document.getElementById(id);
+                if (!container) return;
+                
+                const words = text.split(' ');
+                container.innerHTML = ''; 
+                
+                words.forEach(word => {
+                    const span = document.createElement('span'); 
+                    span.className = 'blur-text-segment';
+                    span.textContent = word + ' ';
+                    container.appendChild(span);
+                });
+
+                gsap.fromTo(container.querySelectorAll('.blur-text-segment'), 
+                    { filter: 'blur(10px)', opacity: 0, y: 20 },
+                    { 
+                        filter: 'blur(0px)', opacity: 1, y: 0, 
+                        stagger: 0.05,
+                        scrollTrigger: {
+                            trigger: container,
+                            start: 'top 85%',
+                            end: 'bottom 50%',
+                            scrub: true 
+                        }
+                    }
+                );
+            }
+        });
+    </script>
+</body>
+
+</html>

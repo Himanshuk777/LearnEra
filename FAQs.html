@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LearnEra - FAQs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Early theme bootstrap -->
+    <script>
+        (function () {
+            try {
+                const savedTheme = localStorage.getItem('appThemeMode') || 'system';
+                const isDark = savedTheme === 'dark' ||
+                    (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const darkStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+                    document.documentElement.setAttribute('data-dark-text', darkStyle);
+                } else {
+                    document.documentElement.removeAttribute('data-dark-text');
+                }
+            } catch (e) {
+                console.warn("Theme setup error", e);
+            }
+            
+            const savedLang = localStorage.getItem('appLanguageSelection') || 'en';
+            document.documentElement.setAttribute('data-lang', savedLang);
+        })();
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        :root {
+            --body-bg: #e6edf7; 
+            --neu-shadow-light: #ffffff;
+            --neu-shadow-dark: #c8d3e4;
+            
+            --text-color: rgba(138, 43, 226, 0.8); 
+            --sub-text-color: #7a8b9e;
+            --divider-color: rgba(138, 43, 226, 0.15); /* Outline style color */
+            
+            /* LearnEra Brand Gradient Tokens */
+            --learnera-purple: #7c3aed;
+            --learnera-pink: #ec4899;
+            --smart-font-scale: 1;
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+        }
+
+        html[data-theme="dark"] {
+            --body-bg: #1e1e24; 
+            --neu-shadow-dark: #101014;
+            --neu-shadow-light: rgba(95, 94, 94, 0.1);
+            
+            --text-color: rgba(255, 255, 255, 0.7); 
+            --sub-text-color: rgba(163, 71, 232, 0.6);
+            --divider-color: rgba(255, 255, 255, 0.08);
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+        }
+
+        html[data-dark-text="deep-dark"] {
+            --body-bg: #0c0c0f; 
+            --neu-shadow-dark: #050506;
+            
+            --text-color: rgba(255, 255, 255, 0.4);
+            --sub-text-color: rgba(255, 255, 255, 0.3);
+            --divider-color: rgba(255, 255, 255, 0.04);
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.01);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.01);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.01);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.01);
+        }
+
+        /* Language Overrides */
+        html[data-lang="hi"] *, html[data-lang="ch"] *, html[data-lang="bh"] * {
+            font-family: 'Tiro Devanagari Hindi', serif !important;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            overflow-x: hidden;
+            overscroll-behavior: none;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 35px;
+            /* Smart fluid responsive base font-size */
+            font-size: calc(16px * var(--smart-font-scale)); 
+            transition: background-color 0.8s ease, color 0.8s ease, box-shadow 0.8s ease;
+        }
+
+        /* Content Container */
+        .faq-section {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 5px 15px 35px 15px; 
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Section Category Titles - Gradient Purple & Pink Theme */
+        .faq-category-title {
+            font-size: clamp(0.98em, calc(1.1em * var(--smart-font-scale)), 1.1em);
+            font-weight: 700;
+            margin: 15px 0 5px 5px;
+            text-align: left;
+            background: linear-gradient(110deg, var(--learnera-purple), var(--learnera-pink));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: color 0.4s ease;
+        }
+
+        /* Accordion Cards */
+        .faq-item {
+            background: var(--body-bg);
+            border-radius: 16px;
+            border: none;
+            box-shadow: var(--card-shadow-micro); 
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                        box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                        background-color 0.4s ease;
+            overflow: hidden;
+        }
+
+        html[data-theme="dark"] .faq-item, html[data-dark-text="deep-dark"] .faq-item {
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        /* Questions text with Gradient Purple & Pink Theme */
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 18px;
+            cursor: pointer;
+            font-size: clamp(0.68rem, calc(0.77em * var(--smart-font-scale)), 0.77em);
+            font-weight: 600;
+            background: linear-gradient(110deg, var(--learnera-purple), var(--learnera-pink));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: transform 0.3s ease, font-size 0.2s ease;
+        }
+
+        .faq-question .icon {
+            font-size: 0.9em;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0.85;
+        }
+
+        /* Super Smooth Answer Wrapper */
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease-out;
+        }
+
+        /* Answers text decreased by 0.05x (0.75em -> 0.70em with smart clamp) */
+        .faq-answer-content {
+            margin: 0 18px;
+            padding: 12px 0 18px 0;
+            border-top: 1px solid var(--divider-color);
+            color: var(--sub-text-color);
+            font-size: clamp(0.62rem, calc(0.70em * var(--smart-font-scale)), 0.70em);
+            line-height: 1.6;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(-5px);
+            transition: opacity 0.3s ease, transform 0.3s ease, font-size 0.2s ease;
+        }
+
+        /* Active Expanded State */
+        .faq-item.active {
+            box-shadow: var(--card-shadow-inset);
+            transform: scale(0.99);
+        }
+
+        .faq-item.active .faq-question .icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-item.active .faq-answer-content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- FAQ content layout -->
+    <div class="faq-section">
+        
+        <div class="faq-category-title">General Questions</div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                What is LearnEra? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    LearnEra is a futuristic learning platform dedicated to providing cutting-edge educational content across various domains. We blend interactive lessons, virtual labs, and AI-powered personalized learning paths to make education engaging and effective.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                How do I sign up for LearnEra? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    You can sign up directly from our homepage. Click on the "Sign Up" tab, fill in your details, and you're ready to start your learning journey! If you have a referral code, make sure to enter it during registration.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                Is LearnEra free to use? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    LearnEra offers a Freemium model. You can access a selection of free courses and resources. For full access to premium courses, advanced features, and certifications, we offer various subscription plans. Check our pricing page for more details.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                What devices are supported? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    LearnEra is designed to be responsive and accessible across a wide range of devices, including desktops, laptops, tablets, and smartphones. Our platform is optimized for modern web browsers.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                How do I reset my password? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    On the login screen, click "Forgot Password?". Enter your registered email address, and we'll send you a link to reset your password.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-category-title">Account & Profile</div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                Can I change my personal information? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Yes, you can update your profile details, including your name, email, mobile number, and more, from your account settings page after logging in.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                How does the referral program work? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Our "Refer & Earn" program allows you to share a unique referral code with friends. When they sign up using your code, both you and your friend can earn rewards, such as discounts on premium courses or special access. Visit the "Refer & Earn" section for your code and more details.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                What if my profile picture isn't showing? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Ensure your image file is a common format (JPEG, PNG). If you recently uploaded it, there might be a short delay for it to process. If the issue persists, try re-uploading or contact support.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                Can I link my social media accounts? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Currently, direct social media linking for login is not supported, but you can share your referral code easily across various social platforms from the "Refer & Earn" screen.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-category-title">Courses & Learning</div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                How do I enroll in a course? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Browse our course catalog, select the course you're interested in, and click the "Enroll" button. For premium courses, you will be guided through the subscription process.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                What learning formats does LearnEra offer? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    We offer a diverse range of formats including video lectures, interactive quizzes, downloadable resources, practical exercises, virtual labs, and live sessions with instructors for select courses.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                Are there certifications after completing a course? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Yes, many of our premium courses offer a verifiable certificate of completion upon successful mastery of the course material and assessments.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                How is progress tracked? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    LearnEra automatically tracks your progress through lessons, quizzes, and completed modules. You can view your overall progress on your dashboard.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                What if I need help with a course? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Each course has a dedicated Q&A section where you can ask questions and get responses from instructors or fellow learners. For technical issues, our support team is available.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-category-title">Technical Support</div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                I'm experiencing technical issues. What should I do? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    First, try refreshing the page or clearing your browser's cache. If the issue persists, please contact our technical support team with a detailed description of the problem, including screenshots if possible.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                My videos are buffering or not playing. <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Check your internet connection speed. If it's stable, try reducing the video quality settings. You can also try a different browser or clear your browser's cache and cookies.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                Is my data secure on LearnEra? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Absolutely. We employ robust security measures, including encryption and secure database practices, to protect your personal information and learning data. Your privacy is our top priority.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                How do I contact customer support? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    You can reach our support team via the "Contact Us" link in the footer or by sending an email to support@learnera.com. We aim to respond within 24-48 hours.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                Can I suggest new features or courses? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    We highly value user feedback! Please use the feedback form on our website or email us your suggestions. Your input helps us make LearnEra even better.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-category-title">Subscription & Billing</div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                How do I subscribe to a premium plan? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    You can upgrade to a premium plan by visiting the 'Pricing' or 'Subscription' section in your dashboard. Follow the prompts to choose your desired plan and complete the payment.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                What payment methods do you accept? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    We accept major credit cards (Visa, MasterCard, American Express), PayPal, and other popular digital payment options. Specific options may vary by region.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                Can I cancel my subscription? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Yes, you can cancel your subscription at any time from your account settings. Your access to premium content will continue until the end of your current billing cycle.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                Do you offer refunds? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Our refund policy varies depending on the subscription plan and time of cancellation. Please refer to our Terms of Service or contact support for detailed information.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                Will my subscription auto-renew? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Yes, by default, subscriptions are set to auto-renew. You can manage this setting in your account's subscription preferences.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-category-title">Community & Interaction</div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                How can I interact with other learners? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    LearnEra features dedicated community forums for each course and general discussion boards where you can connect with peers, ask questions, and share insights.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                Are there live sessions or webinars? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Select premium courses and learning paths may include live sessions, webinars, or interactive workshops with instructors and industry experts. Check individual course descriptions for availability.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                Can I provide feedback on courses? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Absolutely! We encourage learners to provide feedback on courses to help us maintain high quality. You can usually find a feedback or rating option within each course module.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                What is the LearnEra blog? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    Our blog features articles on various learning topics, industry trends, tips for effective studying, and updates about the LearnEra platform. It's a great resource for continuous learning.
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                How can I stay updated with new courses? <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <div class="faq-answer-content">
+                    You can subscribe to our newsletter, follow our social media channels, or regularly check the "New Courses" section on your dashboard.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Sound bridge connector
+        function playClickSound(soundId) {
+            try {
+                if (window.parent && typeof window.parent.playTouchSound === 'function') {
+                    window.parent.playTouchSound(soundId);
+                }
+            } catch (e) {
+                console.warn("Unable to establish touch sounds playback chain via parent window context", e);
+            }
+        }
+
+        // Smart Fluid Typography Calculator for seamlessly adapted text across all device sizes
+        function updateSmartFluidTypography() {
+            const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+            // Target scaling baseline calculated between 320px mobile to 768px desktop max container width
+            const fontScaleFactor = Math.max(0.88, Math.min(1.12, viewportWidth / 420));
+            document.documentElement.style.setProperty('--smart-font-scale', fontScaleFactor);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize smart dynamic font sizing
+            updateSmartFluidTypography();
+            window.addEventListener('resize', updateSmartFluidTypography, { passive: true });
+            window.addEventListener('orientationchange', updateSmartFluidTypography, { passive: true });
+
+            const faqItems = document.querySelectorAll('.faq-item');
+
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                const answerWrapper = item.querySelector('.faq-answer');
+                
+                question.addEventListener('click', () => {
+                    playClickSound(5); // Touch Sound 5 for menu actions
+                    
+                    const isActive = item.classList.contains('active');
+                    
+                    // Collapse all open entries smoothly
+                    faqItems.forEach(otherItem => {
+                        if (otherItem !== item) {
+                            otherItem.classList.remove('active');
+                            const otherAnswer = otherItem.querySelector('.faq-answer');
+                            otherAnswer.style.maxHeight = null; // Reset height to shrink smoothly
+                        }
+                    });
+
+                    // Toggle current active item with calculated scrollHeight
+                    if (isActive) {
+                        item.classList.remove('active');
+                        answerWrapper.style.maxHeight = null;
+                    } else {
+                        item.classList.add('active');
+                        // Set precise max-height based on the content inside for a buttery smooth slide
+                        answerWrapper.style.maxHeight = answerWrapper.scrollHeight + "px";
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

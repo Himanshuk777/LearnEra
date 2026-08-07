@@ -1,0 +1,2489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LearnEra - Affiliate Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Quicksand:wght@300;400;500;600;700&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+
+  <!-- Phosphor Icons CDN (backdrop card icons, mirrored from T&C.html) [NEW] -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <!-- Lottie Player CDN -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  <!-- Early theme bootstrap — mirrors LearnEra/CourseScreen so no flash of wrong theme [1] -->
+  <script>
+    (function () {
+      try {
+        const savedTheme = localStorage.getItem('appThemeMode') || 'system';
+        const isDark = savedTheme === 'dark' ||
+          (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          const darkStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+          document.documentElement.setAttribute('data-dark-text', darkStyle);
+        } else {
+          document.documentElement.removeAttribute('data-dark-text');
+        }
+        const topSp = localStorage.getItem('appTopSpace') || '5';
+        document.documentElement.style.setProperty('--top-space', topSp + 'vh');
+      } catch (e) {
+        document.documentElement.style.setProperty('--top-space', '5vh');
+      }
+    })();
+
+    function getLocalStorageItem(key, def) {
+      try { const v = localStorage.getItem(key); return v !== null ? v : def; } catch (e) { return def; }
+    }
+    function setLocalStorageItem(key, val) {
+      try { localStorage.setItem(key, val); } catch (e) {}
+    }
+  </script>
+
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif !important;
+    }
+
+    /* ===== Neumorphic theme tokens — mirrored 1:1 from LearnEra.html ===== */
+    :root {
+      --body-bg: #e6edf7;
+      --neu-shadow-light: #ffffff;
+      --neu-shadow-dark: #c8d3e4;
+
+      --text-color: #8A2BE2;
+      --sub-text-color: #7a8b9e;
+      --h1-color-part1: #a158e6;
+
+      --pink: #FF69B4;
+      --pink-strong: #FF1493;
+      --blue: #1E90FF;
+      --purple: #8A2BE2;
+      --green-soft: #4cc38a;
+      --gold: #d4a017;
+
+      --earned-color: var(--blue);
+      --sales-color: var(--green-soft);
+      --withdrawals-color: var(--purple);
+      --referrals-color: var(--pink);
+      --available-color: var(--pink-strong);
+      --promo-color: var(--gold);
+
+      /* EXACT SHADOWS AND ANGLES COPIED FROM LEARNERA.HTML */
+      --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+      --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+      --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+      --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+      --settings-shadow-sharp: 4px 4px 6px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+      --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+      --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+
+      --inner-highlight: inset 1px 1px 2px rgba(255,255,255,0.7);
+      --border-soft: 1px solid rgba(255,255,255,0.35);
+
+      --top-space: 5vh;
+      --transition-theme: background-color 0.8s ease, color 0.8s ease, box-shadow 0.8s ease, border-color 0.8s ease;
+    }
+
+    body[data-theme="dark"] {
+      --body-bg: #1e1e24;
+      --neu-shadow-dark: #101014;
+      --neu-shadow-light: rgba(255, 255, 255, 0.05);
+
+      --text-color: rgba(255, 255, 255, 0.78);
+      --sub-text-color: rgba(163, 71, 232, 0.7);
+      --h1-color-part1: rgba(233, 30, 99, 0.75);
+
+      --earned-color: rgba(30, 144, 255, 0.85);
+      --sales-color: rgba(76, 195, 138, 0.85);
+      --withdrawals-color: rgba(187, 134, 252, 0.85);
+      --referrals-color: rgba(255, 105, 180, 0.9);
+      --available-color: rgba(255, 20, 147, 0.95);
+      --promo-color: rgba(240, 200, 80, 0.9);
+
+      /* EXACT DARK COPIED FROM LEARNERA.HTML */
+      --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+      --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+      --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+      --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+      --settings-shadow-sharp: 4px 4px 6px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+      --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+      --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+
+      --inner-highlight: inset 1px 1px 2px rgba(255,255,255,0.04);
+      --border-soft: 1px solid rgba(255,255,255,0.05);
+    }
+
+    body[data-dark-text="deep-dark"] {
+      --body-bg: #0c0c0f;
+      --neu-shadow-dark: #050506;
+      --neu-shadow-light: rgba(255, 255, 255, 0.02);
+
+      --text-color: rgba(255, 255, 255, 0.4);
+      --sub-text-color: rgba(255, 255, 255, 0.3);
+      --h1-color-part1: rgba(255, 255, 255, 0.4);
+
+      --earned-color: rgba(255,255,255,0.4);
+      --sales-color: rgba(255,255,255,0.4);
+      --withdrawals-color: rgba(255,255,255,0.4);
+      --referrals-color: rgba(255,255,255,0.4);
+      --available-color: rgba(255,255,255,0.45);
+      --promo-color: rgba(255,255,255,0.4);
+    }
+
+    html, body {
+      height: 100%;
+      background-color: var(--body-bg);
+      margin: 0; padding: 0;
+      overflow-x: hidden;
+      transition: var(--transition-theme);
+    }
+
+    img {
+      -webkit-touch-callout: none !important;
+      pointer-events: none !important;
+      user-select: none !important;
+    }
+
+    /* ===== Premium Rupees Typography ===== */
+    .rupees-text {
+      font-family: 'Quicksand', 'Nunito', 'Poppins', sans-serif !important;
+      letter-spacing: -0.3px;
+    }
+
+    /* ===== Smarty Gradient Title / Username ===== */
+    .smarty-gradient-title {
+      font-weight: 700;
+    }
+    body:not([data-dark-text="deep-dark"]) .smarty-gradient-title {
+      background: linear-gradient(135deg, #8A2BE2, #a158e6, #DA70D6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    /* ===== Skeleton loading effect on cards [3] ===== */
+    .skeleton-card {
+      position: relative !important;
+      overflow: hidden !important;
+      border-color: transparent !important;
+    }
+    .skeleton-card * {
+      visibility: hidden !important;
+    }
+    .skeleton-card::after {
+      content: "";
+      position: absolute;
+      top: 0; left: -150%;
+      width: 150%; height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.25),
+        transparent
+      );
+      animation: skeleton-shimmer-animation 1.5s infinite;
+      z-index: 5;
+    }
+    body[data-theme="dark"] .skeleton-card::after {
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.08),
+        transparent
+      );
+    }
+    @keyframes skeleton-shimmer-animation {
+      0% { left: -150%; }
+      100% { left: 150%; }
+    }
+
+    /* ===== Layout container ===== */
+    .dash-container {
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: calc(var(--top-space) + 15px) 18px 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      opacity: 1; /* Retain visible so skeletons are displayed immediately [FIX] */
+      transition: opacity .6s ease, transform .6s cubic-bezier(.19,1,.22,1);
+    }
+
+    /* ===== Floating message box ===== */
+    .message-box-floating {
+      position: fixed;
+      top: 20px; left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      z-index: 4000;
+      padding: 12px 20px;
+      border-radius: 16px;
+      background: var(--body-bg);
+      color: var(--text-color);
+      box-shadow: var(--card-shadow-sm), var(--inner-highlight);
+      border: var(--border-soft);
+      text-align: center;
+      white-space: nowrap;
+      width: auto;
+      max-width: 90%;
+      font-size: .9em; font-weight: 500;
+      opacity: 0; pointer-events: none;
+      transition: opacity .4s ease, transform .4s cubic-bezier(.19,1,.22,1);
+    }
+    @media (min-width: 768px) {
+      .message-box-floating {
+        max-width: 450px;
+      }
+    }
+    .message-box-floating.show {
+      opacity: 1; pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .message-box-floating.error   { color: #ff6b6b; }
+    .message-box-floating.success { color: var(--green-soft); }
+    .message-box-floating.warning { color: var(--gold); }
+
+    /* Change the notification message text color to grey in Deep Dark Mode [5] */
+    body[data-dark-text="deep-dark"] .message-box-floating {
+      color: #888888 !important;
+      background-color: #121212 !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    /* ===== Profile header ===== */
+    .profile-header {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px 18px;
+      background: var(--body-bg);
+      border-radius: 22px;
+      /* Shadow mirrored 1:1 from T&C.html .about-card [Change 2] */
+      box-shadow: var(--card-shadow-micro), var(--inner-highlight);
+      border: var(--border-soft);
+      transition: var(--transition-theme), transform .3s ease, opacity .3s ease;
+      animation: cardRise .55s cubic-bezier(.19,1,.22,1) both;
+    }
+    .profile-header.profile-pic-hidden {
+      opacity: 0;
+      transform: translateX(-40px);
+      pointer-events: none;
+    }
+    .profile-pic-wrapper {
+      width: 76px; height: 76px;
+      border-radius: 50%;
+      background: var(--body-bg);
+      box-shadow: var(--shadow-inset-sharp);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      padding: 6px;
+      transition: transform .4s cubic-bezier(.25,.8,.25,1);
+    }
+    .profile-pic-wrapper:hover { transform: scale(1.05); }
+    .profile-pic {
+      width: 100%; height: 100%; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      background: var(--body-bg);
+      box-shadow: var(--card-shadow-micro);
+    }
+    .profile-pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .profile-pic svg { width: 60%; height: 60%; fill: var(--text-color); opacity: .7; }
+
+    /* Deep-dark mode profile grey color */
+    body[data-dark-text="deep-dark"] .profile-pic img,
+    body[data-dark-text="deep-dark"] .profile-pic svg {
+      filter: grayscale(100%) opacity(0.35) !important;
+    }
+
+    .user-info { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+    .greeting-text {
+      font-size: .78em; font-weight: 500;
+      color: var(--sub-text-color) !important;
+      letter-spacing: .5px;
+      opacity: .9;
+    }
+    body[data-dark-text="deep-dark"] .greeting-text {
+      color: #888888 !important;
+    }
+    
+    /* Dynamic full name color with Withdraw Funds gradient matching [8] */
+    #displayFullNameAffiliate {
+      margin: 2px 0 0;
+      font-size: 1.15em; font-weight: 700;
+      letter-spacing: .3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #displayFullNameAffiliate,
+    body #displayFullNameAffiliate,
+    html[data-dark-text] #displayFullNameAffiliate {
+      background-image: linear-gradient(135deg, #8A2BE2, #a158e6, #DA70D6) !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      color: transparent !important;
+      display: inline-block;
+      max-width: 100%;
+    }
+
+    /* ===== Stats grid ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--body-bg);
+      border-radius: 20px;
+      padding: 18px 14px;
+      /* Shadow mirrored 1:1 from T&C.html .about-card [Change 2] */
+      box-shadow: var(--card-shadow-micro), var(--inner-highlight);
+      border: var(--border-soft);
+      position: relative;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between;
+      min-height: 112px;
+      text-align: center;
+      transition: var(--transition-theme), transform .3s cubic-bezier(.19,1,.22,1), box-shadow .3s ease;
+      animation: cardRise .55s cubic-bezier(.19,1,.22,1) both;
+    }
+    .stat-card:nth-child(1){ animation-delay: .05s; }
+    .stat-card:nth-child(2){ animation-delay: .10s; }
+    .stat-card:nth-child(3){ animation-delay: .15s; }
+    .stat-card:nth-child(4){ animation-delay: .10s; }
+    .stat-card:nth-child(5){ animation-delay: .15s; }
+    .stat-card:nth-child(6){ animation-delay: .20s; }
+
+    .stat-card p {
+      margin: auto 0 0 0;
+      font-size: 1.55em; font-weight: 700;
+      line-height: 1.1;
+      transition: color .8s ease;
+    }
+
+    .stat-card h3 {
+      margin: auto 0 0 0;
+      font-size: 0.48em;
+      font-weight: 600;
+      letter-spacing: .8px; text-transform: uppercase;
+      color: var(--sub-text-color);
+      opacity: .85;
+      padding-top: 8px;
+    }
+
+    #totalEarningsCard p     { color: var(--earned-color); }
+    #totalSalesCard p        { color: var(--sales-color); }
+    #totalWithdrawalsCard p  { color: var(--withdrawals-color); }
+    #totalReferralsCard p    { color: var(--referrals-color); }
+
+    #totalReferralsCard, #totalWithdrawalsCard { cursor: pointer; }
+    #totalReferralsCard:active,
+    #totalWithdrawalsCard:active { box-shadow: var(--pressed-shadow); transform: scale(.97); }
+
+    /* Wide cards */
+    #availablePointsCard, #promoCodeCard {
+      grid-column: 1 / -1;
+      min-height: 140px;
+      padding: 22px;
+    }
+    #availablePointsCard {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+    #availablePointsCard h3 { text-align: left; margin: 0; font-size: 0.72em; }
+    #availablePointsCard p {
+      font-size: 2.2em;
+      color: var(--available-color);
+      text-align: left;
+      margin: 0;
+    }
+    .card-withdraw-btn {
+      align-self: flex-end;
+      background: var(--body-bg);
+      color: var(--pink-strong);
+      border: none;
+      border-radius: 14px;
+      padding: 10px 22px;
+      font-size: .9em; font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--card-shadow-sm), var(--inner-highlight);
+      transition: box-shadow .25s ease, transform .15s ease, color .8s ease;
+    }
+    body[data-theme="dark"] .card-withdraw-btn { color: var(--referrals-color); }
+    body[data-dark-text="deep-dark"] .card-withdraw-btn { color: var(--text-color); }
+    .card-withdraw-btn:active { box-shadow: var(--pressed-shadow); transform: scale(.96); }
+
+    #promoCodeCard p {
+      font-size: 1.7em; font-weight: 700;
+      color: var(--promo-color);
+      letter-spacing: 1.5px;
+      word-break: break-all;
+      margin: auto 0;
+    }
+    #promoCodeCard h3 {
+      font-size: 0.72em;
+    }
+
+    /* ===== Fixed Position Credit Card UI [2] ===== */
+    .credit-card-style {
+      position: relative;
+      background: linear-gradient(135deg, #FF69B4, #8A2BE2, #1E90FF);
+      padding: 16px 20px;
+      border-radius: 20px;
+      max-width: 340px;
+      width: 100%;
+      height: 195px; /* Compact height [2] */
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      margin: 0 auto 20px auto;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .credit-card-style header, .credit-card-style .logo { display: flex; align-items: center; justify-content: space-between; }
+    .credit-card-style .logo img {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      margin-right: 8px;
+      object-fit: cover;
+    }
+    .credit-card-style h5 { font-size: 13px; font-weight: 500; color: #fff; margin: 0; }
+    .credit-card-style header .chip { width: 40px; }
+    .credit-card-style .card-details {
+      margin-top: -8px;
+      margin-bottom: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .credit-card-style .info-row { margin-bottom: 2px; } /* Reduced gap [2] */
+    .credit-card-style h6 { color: rgba(255, 255, 255, 0.7); font-size: 8px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1px; }
+    .credit-card-style .static-text {
+      color: #fff;
+      font-size: 11px !important; /* Responsive font-size [3] */
+      font-weight: 500;
+      display: block;
+      padding: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .credit-card-style .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: 100%;
+      margin-top: 5px; /* Reduced vertical gap [2] */
+      padding-bottom: 2px; /* Fixed more upside position */
+    }
+    .credit-card-style .card-footer > div {
+      max-width: 55%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .credit-card-style .card-footer > div:last-child {
+      max-width: 40%;
+      text-align: right;
+    }
+
+    /* ===== Deep dark monochrome Credit Card style overrides [4] ===== */
+    body[data-dark-text="deep-dark"] .credit-card-style {
+      background: linear-gradient(135deg, #121212, #242424) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5) !important;
+    }
+    body[data-dark-text="deep-dark"] .credit-card-style header .logo img,
+    body[data-dark-text="deep-dark"] .credit-card-style header .chip {
+      filter: grayscale(100%) brightness(0.8) !important;
+    }
+    body[data-dark-text="deep-dark"] .credit-card-style h5,
+    body[data-dark-text="deep-dark"] .credit-card-style h6,
+    body[data-dark-text="deep-dark"] .credit-card-style .static-text {
+      color: #888888 !important;
+    }
+
+    /* ===== Neumorphic Input Fields ===== */
+    .input-group {
+      position: relative;
+      margin: 10px 0;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: none;
+      border-radius: 14px;
+      background: var(--body-bg);
+      color: var(--text-color);
+      font-size: .95em;
+      font-weight: 500;
+      box-shadow: var(--settings-shadow-inset-sharp);
+      outline: none;
+      transition: box-shadow .3s ease;
+    }
+    .input-group input::placeholder { color: var(--sub-text-color); opacity: .6; }
+    .input-group input:focus {
+      box-shadow: var(--settings-shadow-inset-sharp), 0 0 0 2px rgba(138, 43, 226, 0.18);
+    }
+    .input-group label {
+      position: absolute;
+      left: 14px; top: -8px;
+      background: var(--body-bg);
+      padding: 0 6px;
+      font-size: .7em; font-weight: 600;
+      color: var(--sub-text-color);
+      letter-spacing: .5px;
+      border-radius: 4px;
+    }
+
+    .withdrawal-form { display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      background: var(--body-bg);
+      color: var(--text-color);
+      font-size: 1em; font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--card-shadow-sm), var(--inner-highlight);
+      transition: box-shadow .25s ease, transform .15s ease, color .8s ease;
+    }
+    .btn.primary { color: var(--pink-strong); }
+    body[data-theme="dark"] .btn.primary { color: var(--referrals-color); }
+    body[data-dark-text="deep-dark"] .btn.primary { color: var(--text-color); }
+    .btn.secondary { color: var(--blue); }
+    body[data-dark-text="deep-dark"] .btn.secondary { color: var(--text-color); }
+    .btn:active:not(:disabled) { box-shadow: var(--pressed-shadow); transform: scale(.98); }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+    /* ===== Interactive Join Button Adaptation (No Rotation) [9] ===== */
+    .button {
+      --white: #ffe7ff;
+      --purple-100: #f4b1fd;
+      --purple-200: #d190ff;
+      --purple-300: #c389f2;
+      --purple-400: #8e26e2;
+      --purple-500: #5e2b83;
+      --radius: 18px;
+
+      border-radius: var(--radius);
+      outline: none;
+      cursor: pointer;
+      font-size: 18px;
+      font-family: Arial, 'Poppins', sans-serif !important;
+      background: transparent;
+      letter-spacing: -1px;
+      border: 0;
+      position: relative;
+      width: 100%;
+      height: 60px;
+      transform: none !important; /* No rotation or skew */
+      display: block;
+      margin-top: 15px;
+    }
+
+    .button .bg {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      filter: blur(1px);
+    }
+    .button .bg::before,
+    .button .bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: calc(var(--radius) * 1.1);
+      background: var(--purple-500);
+    }
+    /* Decreased the shadow distance 2x times [5] */
+    .button .bg::before {
+      filter: blur(2.5px);
+      transition: all 0.3s ease;
+      box-shadow:
+        -3.5px 3px 0 0 rgb(115 75 155 / 40%),
+        -7px 6px 0 0 rgb(115 75 155 / 30%),
+        -10.5px 9px 2px 0 rgb(115 75 155 / 25%);
+    }
+
+    .button .wrap {
+      border-radius: inherit;
+      overflow: hidden;
+      height: 100%;
+      transform: translate(6px, -6px);
+      padding: 3px;
+      background: linear-gradient(
+        to bottom,
+        var(--purple-100) 0%,
+        var(--purple-400) 100%
+      );
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    /* Exactly same flowing curly neon ring animation [5] */
+    .button .outline {
+      position: absolute;
+      overflow: hidden;
+      inset: 0;
+      opacity: 0;
+      outline: none;
+      border-radius: inherit;
+      transition: all 0.4s ease;
+    }
+    .button:hover .outline,
+    .button:active .outline,
+    .button:focus .outline {
+      opacity: 1;
+    }
+    .button .outline::before {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      width: 120px;
+      height: 300px;
+      margin: auto;
+      background: linear-gradient(
+        to right,
+        transparent 0%,
+        white 50%,
+        transparent 100%
+      );
+      animation: spin 3s linear infinite;
+      animation-play-state: paused;
+    }
+    .button:hover .outline::before,
+    .button:active .outline::before,
+    .button:focus .outline::before {
+      animation-play-state: running;
+    }
+
+    .button .content {
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+      position: relative;
+      height: 100%;
+      gap: 12px;
+      border-radius: calc(var(--radius) * 0.85);
+      font-weight: 600;
+      transition: all 0.3s ease;
+      background: linear-gradient(
+        to bottom,
+        var(--purple-300) 0%,
+        var(--purple-400) 100%
+      );
+      box-shadow:
+        inset -2px 12px 11px -5px var(--purple-200),
+        inset 1px -3px 11px 0px rgb(0 0 0 / 35%);
+    }
+    .button .content::before {
+      content: "";
+      inset: 0;
+      position: absolute;
+      z-index: 10;
+      width: 80%;
+      top: 45%;
+      bottom: 35%;
+      opacity: 0.7;
+      margin: auto;
+      background: linear-gradient(to bottom, transparent, var(--purple-400));
+      filter: brightness(1.3) blur(5px);
+    }
+
+    .button .char {
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .button .char span {
+      display: block;
+      color: transparent;
+      position: relative;
+    }
+    .button .char.state-1 span {
+      animation: charAppear 1.2s ease backwards calc(var(--i) * 0.03s);
+    }
+    .button .char.state-1 span::before,
+    .button .char span::after {
+      content: attr(data-label);
+      position: absolute;
+      color: var(--white);
+      text-shadow: -1px 1px 2px var(--purple-500);
+      left: 0;
+    }
+    .button .char span::before {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+    .button .char.state-2 {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+    }
+    .button .char.state-2 span::after {
+      opacity: 1;
+    }
+
+    .button:hover .char.state-1 { display: none; }
+    .button:hover .char.state-2 { display: flex; }
+    .button:hover .wrap { transform: translate(8px, -8px); }
+    .button:hover .outline { opacity: 1; }
+    .button:hover .outline::before { animation-play-state: running; }
+
+    /* ===== Deep dark monochrome button & shadow overrides [4] ===== */
+    body[data-dark-text="deep-dark"] .button {
+      --white: #ffffff;
+      --purple-100: #ffffff;
+      --purple-200: #888888;
+      --purple-300: #444444;
+      --purple-400: #222222;
+      --purple-500: #111111;
+    }
+    body[data-dark-text="deep-dark"] .button .wrap {
+      background: #1a1a1f !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    body[data-dark-text="deep-dark"] .button .content {
+      background: #121212 !important;
+      box-shadow: inset 0px 2px 4px rgba(255, 255, 255, 0.05), inset 0px -2px 4px rgba(0, 0, 0, 0.5) !important;
+    }
+    body[data-dark-text="deep-dark"] .button .bg::before {
+      background: #333333 !important;
+      box-shadow: none !important;
+    }
+    body[data-dark-text="deep-dark"] .button .char span::before,
+    body[data-dark-text="deep-dark"] .button .char span::after {
+      color: #888888 !important;
+      text-shadow: none !important;
+    }
+    body[data-dark-text="deep-dark"] .button .outline::before {
+      background: linear-gradient(to right, transparent 0%, #888888 50%, transparent 100%) !important;
+    }
+
+    /* Change the color of lottie file animation to grey only in Deep Dark Mode [4] */
+    body[data-dark-text="deep-dark"] lottie-player {
+      filter: grayscale(100%) opacity(0.4) !important;
+    }
+
+    /* Outcome dialog title & description deep dark styling [Change 1] */
+    body[data-dark-text="deep-dark"] #paymentResultTitle {
+      color: #888888 !important;
+    }
+    body[data-dark-text="deep-dark"] #paymentResultDesc {
+      color: #666666 !important;
+    }
+    body[data-dark-text="deep-dark"] .custom-modal {
+      background-color: #121212 !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes charAppear {
+      0% {
+        transform: translateY(50%);
+        opacity: 0;
+        filter: blur(20px);
+      }
+      20% {
+        transform: translateY(70%);
+        opacity: 1;
+      }
+      50% {
+        transform: translateY(-15%);
+        opacity: 1;
+        filter: blur(0);
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* ===== Cancel and Success Popup Modal (CourseScreen setup) ===== */
+    .custom-modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.5) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+    .custom-modal-overlay.show {
+      display: flex !important;
+    }
+    .custom-modal {
+      background: var(--body-bg);
+      border-radius: 24px;
+      padding: 25px;
+      text-align: center;
+      box-shadow: none !important;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    body[data-theme="dark"] .custom-modal {
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .back-pill-button {
+      position: relative;
+      background: var(--body-bg);
+      color: var(--text-color);
+      border: 2px solid var(--body-bg);
+      border-radius: 16px;
+      padding: 10px 14px;
+      cursor: pointer;
+      box-shadow: var(--card-shadow-micro), inset 1px 1px 2px rgba(255,255,255,0.7);
+      z-index: 70;
+      transition: opacity 0.4s ease, transform 0.4s ease, box-shadow 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      outline: none;
+    }
+    .back-pill-button:active {
+      transform: scale(0.95);
+      box-shadow: inset 2px 2px 4px var(--neu-shadow-dark) !important;
+    }
+
+    .spinner-inline {
+      display: none;
+      margin: 6px auto 0;
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      border-top-color: var(--pink-strong);
+      border-right-color: var(--blue);
+      animation: spin .9s linear infinite;
+    }
+    .spinner-inline.active { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== Sub screens ===== */
+    .sub-screen {
+      position: fixed; inset: 0;
+      background: var(--body-bg);
+      z-index: 2000;
+      overflow-y: auto;
+      padding: calc(var(--top-space) + 15px) 18px 80px;
+      opacity: 0; pointer-events: none;
+      transform: translateX(40px);
+      transition: opacity .45s ease, transform .45s cubic-bezier(.19,1,.22,1);
+    }
+    .sub-screen.visible {
+      opacity: 1; pointer-events: auto;
+      transform: translateX(0);
+    }
+
+    .sub-screen-inner {
+      max-width: 560px;
+      margin: 0 auto;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+
+    .sub-screen-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 6px;
+    }
+
+    .sub-back-btn {
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      background: var(--body-bg);
+      box-shadow: var(--card-shadow-micro), var(--inner-highlight);
+      border: var(--border-soft);
+      color: var(--text-color);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: box-shadow .25s ease, transform .15s ease;
+    }
+    .sub-back-btn:active { box-shadow: var(--pressed-shadow); transform: scale(.94); }
+    .sub-back-btn svg { width: 20px; height: 20px; }
+
+    .sub-screen-title {
+      margin: 0;
+      font-size: 1.15em; font-weight: 700;
+    }
+
+    .history-item, .referred-user-item {
+      background: var(--body-bg);
+      border-radius: 16px;
+      padding: 14px 16px;
+      /* Shadow mirrored 1:1 from T&C.html .about-card [Change 2] */
+      box-shadow: var(--card-shadow-micro), var(--inner-highlight);
+      border: var(--border-soft);
+      display: flex; flex-direction: column; gap: 4px;
+      color: var(--text-color);
+      font-size: .9em;
+      animation: cardRise .4s cubic-bezier(.19,1,.22,1) both;
+    }
+    .history-item .amount { font-weight: 700; color: var(--pink-strong); }
+    body[data-theme="dark"] .history-item .amount { color: var(--referrals-color); }
+    body[data-dark-text="deep-dark"] .history-item .amount { color: var(--text-color); }
+
+    .history-item .date { font-size: .75em; color: var(--sub-text-color); }
+    .history-item .status {
+      align-self: flex-start;
+      font-size: .72em; font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: var(--body-bg);
+      box-shadow: var(--card-shadow-micro);
+      text-transform: uppercase; letter-spacing: .5px;
+      margin-top: 4px;
+    }
+    .history-item .status.pending  { color: var(--gold); }
+    .history-item .status.approved,
+    .history-item .status.success { color: var(--green-soft); }
+    .history-item .status.rejected { color: #ff6b6b; }
+
+    .referred-user-item strong { font-size: 1em; color: var(--blue); }
+    body[data-dark-text="deep-dark"] .referred-user-item strong { color: var(--text-color); }
+    .referred-user-item p { margin: 0; font-size: .85em; color: var(--sub-text-color); }
+
+    .empty-message {
+      text-align: center;
+      color: var(--sub-text-color);
+      font-style: italic;
+      padding: 30px 10px;
+    }
+    .hidden { display: none !important; }
+
+
+    /* ===== Backdrop low-opacity icons — mirrored 1:1 from T&C.html [Change 4] ===== */
+    .large-backdrop-icon {
+      position: absolute;
+      bottom: -24px;
+      right: -24px;
+      font-size: 9em;
+      opacity: 0.08;
+      pointer-events: none;
+      transform: rotate(-12deg);
+      z-index: 1;
+      line-height: 1;
+    }
+    .stat-card > *:not(.large-backdrop-icon) {
+      position: relative;
+      z-index: 2;
+    }
+    /* Bigger, left-side, mirrored-angle backdrop icons [Change 2] */
+    .large-backdrop-icon.backdrop-icon-left {
+      font-size: 13em;
+      bottom: -34px;
+      left: -34px;
+      right: auto;
+      transform: rotate(12deg) scaleX(-1);
+    }
+
+    body[data-dark-text="deep-dark"] .large-backdrop-icon {
+      color: rgba(255, 255, 255, 0.35) !important;
+      opacity: 0.06;
+    }
+
+    /* ===== Scroll-in animation — mirrored 1:1 from ListScrollingEffect.html [Change 5] ===== */
+    .scroll-list-container {
+      position: relative;
+      width: 100%;
+    }
+    .scroll-list {
+      max-height: 70vh;
+      overflow-y: auto;
+      padding: 6px 4px 10px;
+      scroll-behavior: smooth;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      list-style: none;
+      margin: 0;
+    }
+    .scroll-list::-webkit-scrollbar { width: 6px; }
+    .scroll-list::-webkit-scrollbar-track { background: transparent; }
+    .scroll-list::-webkit-scrollbar-thumb {
+      background: var(--neu-shadow-dark);
+      border-radius: 4px;
+    }
+    .animated-item {
+      cursor: pointer;
+      opacity: 0;
+      transform: scale(0.7);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      will-change: transform, opacity;
+    }
+    .animated-item.in-view {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .scroll-list .top-gradient,
+    .scroll-list-container .top-gradient {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 50px;
+      background: linear-gradient(to bottom, var(--body-bg), transparent);
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+      opacity: 0;
+    }
+    .scroll-list-container .bottom-gradient {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 70px;
+      background: linear-gradient(to top, var(--body-bg), transparent);
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+      opacity: 1;
+    }
+
+    /* ===== Validation / Success popup — textbox inset shadow style [Change 1] ===== */
+    .neu-inset-modal {
+      box-shadow: var(--settings-shadow-inset-sharp) !important;
+      border: var(--border-soft) !important;
+    }
+    body[data-dark-text="deep-dark"] .neu-inset-modal {
+      box-shadow: inset 3px 3px 6px #050506, inset -2px -2px 4px rgba(255,255,255,0.02) !important;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 380px) {
+      .stats-grid { gap: 12px; }
+      .stat-card { min-height: 96px; padding: 14px 10px; }
+      .stat-card p { font-size: 1.25em; }
+      #availablePointsCard p { font-size: 1.8em; }
+      .profile-pic-wrapper { width: 66px; height: 66px; }
+      .user-info h2 { font-size: 1.05em; }
+    }
+  /* Deep-Dark ("darkest") mode: grey the user's full-name text. */
+  body[data-dark-text="deep-dark"] #displayFullNameAffiliate {
+      background: none !important;
+      -webkit-background-clip: initial !important;
+      background-clip: initial !important;
+      -webkit-text-fill-color: #9a9a9a !important;
+      color: #9a9a9a !important;
+  }
+  </style>
+</head>
+<body>
+
+  <div id="messageBoxFloating" class="message-box-floating"></div>
+
+  <!-- Neumorphic outcome dialog for withdrawal cancel & success feedback [7] -->
+  <div id="paymentResultModal" class="custom-modal-overlay">
+      <div class="custom-modal neu-inset-modal" style="width: 90%; max-width: 340px;">
+          <div id="paymentLottieContainer" style="width: 150px; height: 150px; margin: 0 auto 15px;"></div>
+          <h3 id="paymentResultTitle" style="font-weight: 800; margin-bottom: 5px; font-size: 1.25rem !important;">Payment Successful</h3>
+          <p id="paymentResultDesc" style="color: var(--sub-text-color); font-size: 0.85em; margin: 10px 0 20px; line-height: 1.4; display: block;"></p>
+          <button class="back-pill-button" onclick="closePaymentResultModal()" style="width: 100%; border-radius: 12px; justify-content: center;">Close</button>
+      </div>
+  </div>
+
+  <!-- Custom validation popup for empty credentials on Withdraw Funds screen [Change 1] -->
+  <div id="fieldAlertModal" class="custom-modal-overlay" style="z-index: 10500;">
+      <div class="custom-modal neu-inset-modal" style="width: 90%; max-width: 340px;">
+          <div id="fieldAlertLottieContainer" style="width: 150px; height: 150px; margin: 0 auto 15px;"></div>
+          <h3 id="fieldAlertTitle" class="smarty-gradient-title" style="font-weight: 800; margin-bottom: 5px; font-size: 1.25rem !important;">Missing Details</h3>
+          <p id="fieldAlertDesc" style="color: var(--sub-text-color); font-size: 0.85em; margin: 10px 0 20px; line-height: 1.4;"></p>
+          <button class="back-pill-button" onclick="window.closeFieldAlert()" style="width: 100%; border-radius: 12px; justify-content: center;">Okay</button>
+      </div>
+  </div>
+
+  <!-- Completely removed starting lottie file animation [3] -->
+  <div id="loadingArrangement" style="display: none !important;"></div>
+
+  <!-- Hidden fields kept so JS references don't break -->
+  <div class="hidden">
+    <span id="userName"></span>
+    <span id="userIdDisplay"></span>
+  </div>
+
+  <main class="dash-container" style="opacity: 1; transform: none;" id="dashboardContainer"> <!-- Skeletons show instantly [FIX] -->
+
+    <!-- Profile header [8, 3] -->
+    <section class="profile-header skeleton-card" id="profileHeaderAffiliate">
+      <div class="profile-pic-wrapper">
+        <div class="profile-pic" id="profilePicAffiliate"></div>
+      </div>
+      <div class="user-info">
+        <span class="greeting-text">Hello Earner</span>
+        <h2 id="displayFullNameAffiliate" class="smarty-gradient-title">Loading…</h2>
+      </div>
+    </section>
+
+    <!-- Stats grid [3] -->
+    <section class="stats-grid">
+      <div class="stat-card skeleton-card" id="totalEarningsCard">
+        <i class="ph ph-fill ph-currency-inr large-backdrop-icon" style="color: var(--earned-color);"></i>
+        <p id="totalEarnings" class="rupees-text">₹ 0</p>
+        <h3 style="padding-top: 8px;">Total Earned</h3>
+      </div>
+      <div class="stat-card skeleton-card" id="totalSalesCard">
+        <i class="ph ph-fill ph-shopping-bag-open large-backdrop-icon" style="color: var(--sales-color);"></i>
+        <p id="totalSales">0</p>
+        <h3 style="padding-top: 8px;">Total Sales</h3>
+      </div>
+      <div class="stat-card skeleton-card" id="totalWithdrawalsCard">
+        <i class="ph ph-fill ph-bank large-backdrop-icon" style="color: var(--withdrawals-color);"></i>
+        <p id="totalWithdrawals">0</p>
+        <h3 style="padding-top: 8px;">Total Withdrawals</h3>
+      </div>
+      <div class="stat-card skeleton-card" id="totalReferralsCard">
+        <i class="ph ph-fill ph-users-three large-backdrop-icon" style="color: var(--referrals-color);"></i>
+        <p id="totalReferrals">0</p>
+        <h3 style="padding-top: 8px;">Total Referrals</h3>
+      </div>
+
+      <div class="stat-card skeleton-card" id="availablePointsCard">
+        <h3>Available Points</h3>
+        <p id="availablePoints" class="rupees-text">₹ 0</p>
+        <button class="card-withdraw-btn" id="availablePointsWithdrawBtn">Withdraw</button>
+      </div>
+
+      <div class="stat-card skeleton-card" id="promoCodeCard" style="display: flex; flex-direction: column; align-items: stretch; gap: 10px;">
+        <h3>Your Promo Code</h3>
+        <p id="userPromoCode" style="font-size: 1.7em; font-weight: 700; color: var(--promo-color); letter-spacing: 1.5px; word-break: break-all; margin: 0; text-align: center !important; width: 100%;">LEARNERA123</p> <!-- Center aligned [5] -->
+        <button class="card-withdraw-btn" id="promoCodeCopyBtn" style="align-self: flex-end;">Copy</button> <!-- Copy button exactly same [4] -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Withdraw Screen Arrangement -->
+  <div class="sub-screen" id="withdrawalSubScreen">
+    <div class="sub-screen-inner">
+      <div class="sub-screen-header">
+        <button class="sub-back-btn" id="withdrawalBackBtn" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <h2 class="sub-screen-title smarty-gradient-title">Withdraw Funds</h2>
+      </div>
+
+      <!-- Current Balance at top of Withdrawal Screen [13] -->
+      <div class="stat-card" style="min-height: 80px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; box-shadow: var(--pressed-shadow) !important; border-radius: 18px; margin-bottom: 15px;">
+          <h3 style="padding-top: 0; margin-bottom: 4px;">Current Balance</h3>
+          <p id="withdrawCurrentBalance" class="rupees-text" style="color: var(--available-color); font-size: 1.8em; font-weight: 700; margin: 0;">₹ 0</p>
+      </div>
+      
+      <!-- Credit Card Container styled exactly like CreditCard.html [10] -->
+      <div class="credit-card-style">
+        <header>
+          <span class="logo" style="display: flex; align-items: center; gap: 8px;">
+            <img src="https://i.ibb.co/bgWVZn48/LearnEra-Logo.webp" alt="LearnEra Logo" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" />
+            <h5 style="font-size: 13px; font-weight: 500; color: #fff; font-family: 'Poppins', sans-serif !important; margin: 0;">LearnEra</h5>
+          </span>
+          <img src="https://i.ibb.co/ZR4fJ8Fk/chip.png" alt="Chip" class="chip" />
+        </header>
+
+        <div class="card-details">
+          <!-- UPI Mode Group containing Amount row specifically [Change 2] -->
+          <div id="ccUpiGroup">
+            <div class="info-row">
+              <h6>UPI No./ID</h6>
+              <span class="static-text" id="ccUpi">premshahi@oksbi</span>
+            </div>
+            <div class="info-row">
+              <h6>Amount</h6>
+              <span class="static-text rupees-text" id="ccAmount">₹ 0.00</span>
+            </div>
+          </div>
+
+          <!-- Bank Transfer Mode Group [Change 1, Change 3, Change 4] -->
+          <div id="ccBankGroup" style="display: none;">
+            <!-- Bank short form at the top [Change 1, Change 4] -->
+            <div class="info-row">
+              <h6>Bank Name</h6>
+              <span class="static-text" id="ccBankName">Select Bank Name</span>
+            </div>
+            <!-- Account number with IFSC code near the right side [Change 1, Change 4] -->
+            <div class="info-row">
+              <h6>Account No. &amp; IFSC</h6>
+              <span class="static-text">
+                <span id="ccAccountNo">—</span>
+                <span id="ccIfsc" style="font-size: 11px !important; opacity: 0.85; margin-left: 8px;"></span>
+              </span>
+            </div>
+            <!-- User full name dynamically displayed here [Change 4] -->
+            <div class="info-row">
+              <h6>LearnEra's Earner</h6>
+              <span class="static-text" id="ccUserFullName" style="font-size: 11px !important;">—</span>
+            </div>
+            <!-- Amount row mirrored from UPI mode so Bank Details card shows the same Payment Method option [NEW] -->
+            <div class="info-row">
+              <h6>Amount</h6>
+              <span class="static-text rupees-text" id="ccAmountBank">₹ 0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div>
+            <!-- User full name dynamically displayed here [8] -->
+            <h6>LearnEra's Earner</h6>
+            <h5 id="ccName">Prem Kumar Shahi</h5>
+          </div>
+          <!-- Option of Payment Method [Change 1, Change 3] -->
+          <div style="text-align: right; display: block;" id="ccPaymentMethodContainer">
+            <h6>Payment Method</h6>
+            <h5 id="ccPaymentMethod">UPI</h5>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn secondary" id="changePaymentDetailsBtn" style="margin-bottom: 15px;">Select Payment Method</button>
+
+      <form class="withdrawal-form" id="withdrawalForm" novalidate>
+        <div id="upiInputGroup" class="input-group">
+          <input type="text" id="upiNumberInput" placeholder="yourname@upi">
+          <label for="upiNumberInput">UPI No.</label>
+        </div>
+
+        <!-- Neuromorphic Options for Account No, IFSC, Bank Name [13] -->
+        <div id="bankInputGroup" style="display: none;">
+          <div class="input-group" style="margin-bottom: 14px;">
+              <input type="text" id="bankNameInput" placeholder="Select Bank Name" readonly>
+              <label for="bankNameInput">Bank Name</label>
+          </div>
+          <div class="input-group" style="margin-bottom: 14px;">
+              <input type="text" id="accountNumberInput" placeholder="Enter Account Number">
+              <label for="accountNumberInput">Account Number</label>
+          </div>
+          <div class="input-group" style="margin-bottom: 14px;">
+              <input type="text" id="ifscCodeInput" placeholder="Enter IFSC Code" maxlength="11"> <!-- Added limit [2] -->
+              <label for="ifscCodeInput">IFSC Code</label>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <input type="number" id="withdrawalAmount" placeholder="0" min="1" max="99999" step="0.01" maxlength="5" inputmode="numeric">
+          <label for="withdrawalAmount">Amount</label>
+        </div>
+
+        <!-- Interactive Withdraw Button [9] -->
+        <button type="submit" class="button" id="withdrawBtn" style="margin-top: 15px;">
+          <div class="bg"></div>
+          <div class="wrap">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 221 42"
+              class="path"
+              preserveAspectRatio="none"
+              style="position: absolute; inset: 0; width: 100%; height: 100%; stroke-dasharray: 150 480; stroke-dashoffset: 150; pointer-events: none; transition: all 0.4s ease;"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-width="3"
+                d="M182.674 2H203C211.837 2 219 9.16344 219 18V24C219 32.8366 211.837 40 203 40H18C9.16345 40 2 32.8366 2 24V18C2 9.16344 9.16344 2 18 2H47.8855"
+              ></path>
+            </svg>
+            <div class="outline"></div>
+            <div class="content">
+              <span class="char state-1">
+                <span data-label="W" style="--i: 1">W</span>
+                <span data-label="i" style="--i: 2">i</span>
+                <span data-label="t" style="--i: 3">t</span>
+                <span data-label="h" style="--i: 4">h</span>
+                <span data-label="d" style="--i: 5">d</span>
+                <span data-label="r" style="--i: 6">r</span>
+                <span data-label="a" style="--i: 7">a</span>
+                <span data-label="w" style="--i: 8">w</span>
+              </span>
+
+              <span class="char state-2">
+                <span data-label="P" style="--i: 1">P</span>
+                <span data-label="r" style="--i: 2">r</span>
+                <span data-label="o" style="--i: 3">o</span>
+                <span data-label="c" style="--i: 4">c</span>
+                <span data-label="e" style="--i: 5">e</span>
+                <span data-label="s" style="--i: 6">s</span>
+                <span data-label="s" style="--i: 7">s</span>
+                <span data-label="i" style="--i: 8">i</span>
+                <span data-label="n" style="--i: 9">n</span>
+                <span data-label="g" style="--i: 10">g</span>
+              </span>
+            </div>
+          </div>
+        </button>
+
+        <div class="spinner-inline" id="withdrawalSpinner"></div>
+      </form>
+      <button class="btn secondary" id="viewWithdrawalHistoryBtn">View Withdrawal History</button>
+    </div>
+  </div>
+
+  <!-- Withdrawal History Screen -->
+  <div class="sub-screen" id="withdrawalHistoryScreen">
+    <div class="sub-screen-inner">
+      <div class="sub-screen-header">
+        <button class="sub-back-btn" id="historyBackBtn" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <h2 class="sub-screen-title smarty-gradient-title">Withdrawal History</h2>
+      </div>
+      <div class="scroll-list-container" id="historyScrollContainer">
+        <div class="top-gradient" id="historyTopGradient"></div>
+        <ul class="history-list scroll-list" id="historyList"></ul>
+        <div class="bottom-gradient" id="historyBottomGradient"></div>
+      </div>
+      
+      <!-- Lottie empty state animation -->
+      <div class="empty-message hidden" id="noHistoryMessage" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <lottie-player class="history-empty-lottie" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
+          <p style="margin-top: 15px;">No withdrawal history found.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Referred Users Screen -->
+  <div class="sub-screen" id="referredUsersScreen">
+    <div class="sub-screen-inner">
+      <div class="sub-screen-header">
+        <button class="sub-back-btn" id="referredUsersBackButton" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <h2 class="sub-screen-title smarty-gradient-title">Referred Users</h2>
+      </div>
+      <div class="scroll-list-container" id="referredScrollContainer">
+        <div class="top-gradient" id="referredTopGradient"></div>
+        <ul class="referred-users-list scroll-list" id="referredUsersList"></ul>
+        <div class="bottom-gradient" id="referredBottomGradient"></div>
+      </div>
+      
+      <!-- Lottie empty state animation [3] -->
+      <div class="empty-message hidden" id="noReferredUsersMessage" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <lottie-player class="referred-empty-lottie" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
+          <p style="margin-top: 15px;">No referred users found.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom List Selector Popup Modal (App's Theme Aligned) [1] -->
+  <div class="custom-modal-overlay" id="customListSelectorModal" style="display: none; z-index: 6000;">
+      <div class="custom-modal no-outer-shadow-modal" style="width: 85%; max-width: 320px; border-radius: 20px; padding: 20px;">
+          <h3 id="listSelectorTitle" style="color: var(--text-color); margin-bottom: 15px; font-size: 1.2em; font-weight: 700; text-align: center;" class="smarty-gradient-title">Select Value</h3>
+          <div id="listSelectorItemsContainer" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto;"></div>
+          <button class="back-pill-button" onclick="window.closeCustomListSelector()" style="width: 100%; margin-top: 15px; border-radius: 12px; padding: 10px; justify-content: center;">Cancel</button>
+      </div>
+  </div>
+
+  <!-- Sound FX System (LearnEra setup) -->
+  <script>
+    (function initDashboardSoundFX(){
+        const LS_MASTER = 'touchSoundsEnabled';
+        const LS_GROUPS = 'touchSoundsGroupState';
+
+        const CLICK_SOUND_URLS = [
+            "Click1.ogg", "Click2.ogg", "Click3.ogg", "Click4.ogg", "Click5.ogg",
+            "Click6.ogg", "Click7.ogg", "Click8.ogg", "Click9.ogg", "Click10.ogg",
+            "Click11.ogg", "Click12.ogg", "Click13.ogg", "Click14.ogg"
+        ];
+
+        const GROUP_TO_CLICKS = {
+            'buttons'   : [1, 2, 3, 7, 8, 9, 14],
+            'navigation': [5],
+            'inputs'    : [4, 6],
+            'reserved'  : [10, 11, 12, 13]
+        };
+
+        const CLICK_TO_GROUP = {};
+        Object.keys(GROUP_TO_CLICKS).forEach(g => {
+            GROUP_TO_CLICKS[g].forEach(n => { CLICK_TO_GROUP[n] = g; });
+        });
+
+        const audioCache = {};
+        let _ac = null;
+        let _masterGain = null;
+        let _navBuffer = null;
+
+        function getAC(){
+            if (_ac) return _ac;
+            try {
+                const Ctx = window.AudioContext || window.webkitAudioContext;
+                if (Ctx) {
+                    _ac = new Ctx();
+                    const comp = _ac.createDynamicsCompressor();
+                    comp.threshold.value = -10;
+                    comp.knee.value = 6;
+                    comp.ratio.value = 12;
+                    comp.attack.value = 0.001;
+                    comp.release.value = 0.05;
+                    _masterGain = _ac.createGain();
+                    _masterGain.gain.value = 1.0;
+                    comp.connect(_masterGain).connect(_ac.destination);
+                    _ac._busIn = comp;
+                }
+            } catch(e){}
+            return _ac;
+        }
+
+        function ensureNavBuffer(){
+            const ac = getAC();
+            if (!ac || _navBuffer) return _navBuffer;
+            const sr = ac.sampleRate;
+            const dur = 0.09;
+            const len = Math.floor(sr * dur);
+            const buf = ac.createBuffer(1, len, sr);
+            const data = buf.getChannelData(0);
+            const f0 = 520, f1 = 300;
+            for (let i = 0; i < len; i++) {
+                const t = i / sr;
+                const k = i / len;
+                const f = f0 + (f1 - f0) * k;
+                const env = Math.min(1, i / (sr * 0.004)) * Math.pow(1 - k, 2.2);
+                data[i] = Math.sin(2 * Math.PI * f * t) * env * 0.95;
+            }
+            _navBuffer = buf;
+            return buf;
+        }
+
+        function primeAudio(){
+            const ac = getAC();
+            if (ac && ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+            ensureNavBuffer();
+        }
+
+        ['pointerdown','touchstart','keydown','click'].forEach(ev => {
+            document.addEventListener(ev, primeAudio, { capture: true, passive: true });
+        });
+
+        function isRealUrl(u){
+            if (!u || typeof u !== 'string') return false;
+            return /^(https?:|data:|blob:|\/|\.\/|\.\.\/)/i.test(u) || /\//.test(u);
+        }
+
+        const SYNTH = {
+            1:  { f: 880,  d: 0.05, w: 'triangle', g: 0.18 },
+            2:  { f: 520,  d: 0.07, w: 'sine',     g: 0.22 },
+            3:  { f: 660,  d: 0.08, w: 'square',   g: 0.16 },
+            4:  { f: 1200, d: 0.03, w: 'sine',     g: 0.12 },
+            5:  { f: 740,  d: 0.05, w: 'triangle', g: 0.18 },
+            6:  { f: 1000, d: 0.025,w: 'sine',     g: 0.10 },
+            7:  { f: 600,  d: 0.05, w: 'square',   g: 0.16 },
+            8:  { f: 820,  d: 0.05, w: 'triangle', g: 0.18 },
+            9:  { f: 420,  d: 0.06, w: 'sine',     g: 0.18 },
+            10: { f: 480,  d: 0.05, w: 'triangle', g: 0.16 },
+            11: { f: 560,  d: 0.05, w: 'triangle', g: 0.16 },
+            12: { f: 640,  d: 0.05, w: 'triangle', g: 0.16 },
+            13: { f: 720,  d: 0.05, w: 'triangle', g: 0.16 },
+            14: { f: 440,  d: 0.08, w: 'sine',     g: 0.60 }
+        };
+
+        function synthClick(n){
+            const ac = getAC();
+            if (!ac) return;
+            if (ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+            const r = SYNTH[n] || SYNTH[7];
+            const t0 = ac.currentTime;
+            const osc = ac.createOscillator();
+            const gain = ac.createGain();
+            osc.type = r.w;
+            osc.frequency.setValueAtTime(r.f, t0);
+            osc.frequency.exponentialRampToValueAtTime(Math.max(80, r.f * 0.6), t0 + r.d);
+            gain.gain.setValueAtTime(0.0001, t0);
+            gain.gain.exponentialRampToValueAtTime(r.g, t0 + 0.005);
+            gain.gain.exponentialRampToValueAtTime(0.0001, t0 + r.d);
+            osc.connect(gain).connect(ac._busIn || ac.destination);
+            osc.start(t0);
+            osc.stop(t0 + r.d + 0.02);
+        }
+
+        function playNavClick(){
+            const ac = getAC();
+            if (!ac) { synthClick(14); return; }
+            if (ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+            const buf = ensureNavBuffer();
+            if (!buf) { synthClick(14); return; }
+            const src = ac.createBufferSource();
+            src.buffer = buf;
+            const g = ac.createGain();
+            g.gain.value = 2.0;
+            src.connect(g).connect(ac._busIn || ac.destination);
+            src.start();
+        }
+
+        function playClick(n, opts){
+            opts = opts || {};
+            const isMasterOn = localStorage.getItem(LS_MASTER) === '1' || localStorage.getItem(LS_MASTER) === null;
+            if (!opts.force && !isMasterOn) return;
+
+            let groupState = {};
+            try { groupState = JSON.parse(localStorage.getItem(LS_GROUPS) || '{}'); } catch(e){}
+            const groupId = CLICK_TO_GROUP[n];
+            if (!opts.force && groupId && groupState[groupId] === false) return;
+
+            const url = CLICK_SOUND_URLS[n - 1];
+            if (isRealUrl(url)) {
+                try {
+                    if (n === 14) {
+                        const a = new Audio(url);
+                        a.volume = 1.0;
+                        a.play().catch(() => playNavClick());
+                        return;
+                    }
+                    if (!audioCache[n]) {
+                        const a = new Audio(url);
+                        a.volume = 0.5;
+                        a.preload = 'auto';
+                        audioCache[n] = a;
+                    }
+                    const a = audioCache[n];
+                    a.currentTime = 0;
+                    const p = a.play();
+                    if (p && p.catch) p.catch(() => synthClick(n));
+                    return;
+                } catch(e) {}
+            }
+            if (n === 14) playNavClick(); else synthClick(n);
+        }
+
+        window.playTouchSound = playClick;
+
+        // Auto trigger mapping on clicks
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.sub-back-btn, .back-pill-button')) {
+                playClick(9);
+            } else if (e.target.closest('.card-withdraw-btn, .btn, #withdrawBtn, .button')) {
+                playClick(1);
+            } else if (e.target.closest('.stat-card, .sharp-inner-item')) {
+                playClick(5);
+            }
+        });
+
+        document.addEventListener('focusin', (e) => {
+            if (e.target.tagName === 'INPUT') {
+                playClick(4);
+            }
+        });
+    })();
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+    import { getDatabase, ref, get, update, onValue, push, query, orderByChild, equalTo }
+      from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBWOdk2_NJntQ4Pob7_tN6kb1W5rMy-tcw",
+      authDomain: "learnera-d6309.firebaseapp.com",
+      projectId: "learnera-d6309",
+      storageBucket: "learnera-d6309.firebasestorage.app",
+      appId: "1:752970675909:web:9c4513809ca51ea60122ac",
+      databaseURL: "https://learnera-d6309-default-rtdb.firebaseio.com"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getDatabase(app);
+
+    // ============================================================
+    // DOM Elements Mapping
+    // ============================================================
+    const loadingArrangement   = document.getElementById('loadingArrangement');
+    const dashboardContainer   = document.getElementById('dashboardContainer');
+    const messageBoxFloating   = document.getElementById('messageBoxFloating');
+
+    const totalEarningsEl      = document.getElementById('totalEarnings');
+    const totalReferralsEl     = document.getElementById('totalReferrals');
+    const totalWithdrawalsEl   = document.getElementById('totalWithdrawals');
+    const totalSalesEl         = document.getElementById('totalSales');
+    const availablePointsEl    = document.getElementById('availablePoints');
+    const withdrawCurrentBalance = document.getElementById('withdrawCurrentBalance');
+    const userPromoCodeEl      = document.getElementById('userPromoCode');
+    const cardHolderNameEl     = document.getElementById('ccName');
+
+    const withdrawalSubScreen  = document.getElementById('withdrawalSubScreen');
+    const withdrawalBackBtn    = document.getElementById('withdrawalBackBtn');
+    const withdrawalForm       = document.getElementById('withdrawalForm');
+    const upiNumberInput       = document.getElementById('upiNumberInput');
+    const bankNameInput        = document.getElementById('bankNameInput');
+    const accountNumberInput   = document.getElementById('accountNumberInput');
+    const ifscCodeInput        = document.getElementById('ifscCodeInput');
+    const withdrawalAmountInput= document.getElementById('withdrawalAmount');
+    const withdrawBtn          = document.getElementById('withdrawBtn');
+    const withdrawalSpinner    = document.getElementById('withdrawalSpinner');
+
+    const availablePointsWithdrawBtn = document.getElementById('availablePointsWithdrawBtn');
+    const viewWithdrawalHistoryBtn   = document.getElementById('viewWithdrawalHistoryBtn');
+
+    const withdrawalHistoryScreen = document.getElementById('withdrawalHistoryScreen');
+    const historyList             = document.getElementById('historyList');
+    const noHistoryMessage        = document.getElementById('noHistoryMessage');
+    const historyBackBtn          = document.getElementById('historyBackBtn');
+
+    const totalReferralsCard       = document.getElementById('totalReferralsCard');
+    const referredUsersScreen      = document.getElementById('referredUsersScreen');
+    const referredUsersList        = document.getElementById('referredUsersList');
+    const noReferredUsersMessage   = document.getElementById('noReferredUsersMessage');
+    const referredUsersBackButton  = document.getElementById('referredUsersBackButton');
+
+    const profileHeaderAffiliate   = document.getElementById('profileHeaderAffiliate');
+    const profilePicAffiliate      = document.getElementById('profilePicAffiliate');
+    const displayFullNameAffiliate = document.getElementById('displayFullNameAffiliate');
+
+    const changePaymentDetailsBtn  = document.getElementById('changePaymentDetailsBtn');
+
+    const promoCodeCopyBtn         = document.getElementById('promoCodeCopyBtn');
+
+    const DEFAULT_USER_SVG = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+      </svg>`;
+
+    // ============================================================
+    // IndexedDB (profile pictures) — preserved
+    // ============================================================
+    const DB_NAME = 'userProfileDB';
+    const STORE_NAME = 'profilePictures';
+    const DB_VERSION = 5;
+    let dbIndexed = null;
+
+    function openIndexedDB() {
+      return new Promise((resolve, reject) => {
+        if (dbIndexed) return resolve(dbIndexed);
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = (e) => {
+          const database = e.target.result;
+          if (!database.objectStoreNames.contains(STORE_NAME)) {
+            database.createObjectStore(STORE_NAME, { keyPath: 'uid' });
+          }
+        };
+        request.onsuccess = (e) => { dbIndexed = e.target.result; resolve(dbIndexed); };
+        request.onerror   = (e) => reject(e.target.error);
+      });
+    }
+
+    async function getImageFromIndexedDB(uid) {
+      try {
+        if (!dbIndexed) await openIndexedDB();
+        if (!dbIndexed) return null;
+        const tx = dbIndexed.transaction([STORE_NAME], 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.get(uid);
+        return await new Promise((resolve, reject) => {
+          req.onsuccess = (e) => resolve(e.target.result ? e.target.result.imageData : null);
+          req.onerror   = (e) => reject(e.target.error);
+        });
+      } catch (err) {
+        console.error('IndexedDB error:', err);
+        return null;
+      }
+    }
+
+    openIndexedDB().catch(err => console.warn('IndexedDB init failed:', err));
+
+    // ============================================================
+    // Helpers & Out-of-the-box Lottie Setup
+    // ============================================================
+    function showMessageBox(msg, type) {
+      messageBoxFloating.textContent = msg;
+      messageBoxFloating.className = `message-box-floating ${type || ''} show`;
+      clearTimeout(messageBoxFloating._t);
+      messageBoxFloating._t = setTimeout(() => {
+        messageBoxFloating.classList.remove('show');
+      }, 3800);
+    }
+    function showSpinner(s){ s.classList.add('active'); }
+    function hideSpinner(s){ s.classList.remove('active'); }
+
+    function formatCurrency(amount) {
+      return `₹ ${parseFloat(amount).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    }
+
+    function showLoading(show) {
+      if (show) {
+        loadingArrangement.classList.remove('hide');
+        loadingArrangement.style.display = 'flex';
+        dashboardContainer.classList.remove('loaded-content');
+      } else {
+        loadingArrangement.hide ? loadingArrangement.classList.add('hide') : (loadingArrangement.style.display = 'none');
+        dashboardContainer.classList.add('loaded-content');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      showLoading(true);
+      loadLottieDataOffline('.history-empty-lottie', 'lottie_nodata', 'https://ik.imagekit.io/lssafvcmr/Others/No%20data%20found.json');
+      loadLottieDataOffline('.referred-empty-lottie', 'lottie_nodata', 'https://ik.imagekit.io/lssafvcmr/Others/No%20data%20found.json');
+    });
+
+    // ============================================================
+    // Offline Lottie loader Setup (LearnEra Setup) [3]
+    // ============================================================
+    async function loadLottieDataOffline(playerSelector, cacheKey, fallbackUrl) {
+        const players = document.querySelectorAll(playerSelector);
+        players.forEach(async (player) => {
+            try {
+                const cachedData = localStorage.getItem(cacheKey);
+                if (cachedData) {
+                    player.load(JSON.parse(cachedData));
+                    return;
+                }
+            } catch (e) {
+                console.warn("Lottie cache read failed", e);
+            }
+            try {
+                const res = await fetch(fallbackUrl);
+                const data = await res.json();
+                player.load(data);
+                localStorage.setItem(cacheKey, JSON.stringify(data));
+            } catch (err) {
+                player.setAttribute('src', fallbackUrl);
+            }
+        });
+    }
+
+    // ============================================================
+    // Outcome dialog for cancel and success popup setup [7]
+    // ============================================================
+    window.closePaymentResultModal = function() {
+        const modal = document.getElementById('paymentResultModal');
+        if (modal) {
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+        }
+    };
+
+    function showPaymentOutcome(success, titleMessage, descMessage = "") {
+        const modal = document.getElementById('paymentResultModal');
+        const container = document.getElementById('paymentLottieContainer');
+        const title = document.getElementById('paymentResultTitle');
+        const desc = document.getElementById('paymentResultDesc');
+
+        if (!modal || !container) return;
+
+        container.innerHTML = '';
+        let lottieUrl = "";
+
+        if (success) {
+            lottieUrl = "https://ik.imagekit.io/lssafvcmr/Others/success.json";
+            title.textContent = titleMessage || "Withdrawal Successful";
+            title.style.color = "#32CD32";
+        } else {
+            lottieUrl = "https://ik.imagekit.io/lssafvcmr/Others/cancel%20animation.json";
+            title.textContent = titleMessage || "Withdrawal Cancelled";
+            title.style.color = "#dc143c";
+        }
+
+        desc.textContent = descMessage;
+        desc.style.display = descMessage ? "block" : "none";
+
+        container.innerHTML = `<lottie-player src="${lottieUrl}" background="transparent" speed="1.2" style="width: 150px; height: 150px;" loop autoplay></lottie-player>`;
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+    }
+
+    // ============================================================
+    // Custom validation popup for empty credentials [Change 1]
+    // ============================================================
+    const FIELD_ALERT_LOTTIE = "https://ik.imagekit.io/lssafvcmr/Others/cancel%20animation.json";
+    const SUCCESS_LOTTIE     = "https://ik.imagekit.io/lssafvcmr/Others/success.json";
+
+    window.closeFieldAlert = function() {
+        const modal = document.getElementById('fieldAlertModal');
+        if (!modal) return;
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+    };
+
+    function showFieldAlert(title, description) {
+        const modal = document.getElementById('fieldAlertModal');
+        const box   = document.getElementById('fieldAlertLottieContainer');
+        if (!modal || !box) return;
+        document.getElementById('fieldAlertTitle').textContent = title || 'Missing Details';
+        document.getElementById('fieldAlertDesc').textContent  = description || '';
+        box.innerHTML = `<lottie-player src="${FIELD_ALERT_LOTTIE}" background="transparent" speed="1.2" style="width: 150px; height: 150px;" loop autoplay></lottie-player>`;
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+    }
+
+    // Dismiss the validation popup by tapping the blurred backdrop
+    document.getElementById('fieldAlertModal').addEventListener('click', (e) => {
+        if (e.target.id === 'fieldAlertModal') window.closeFieldAlert();
+    });
+
+    // ============================================================
+    // Scroll-in animation helper — mirrored from ListScrollingEffect.html [Change 5]
+    // ============================================================
+    function setupScrollAnimation(listEl, topGradient, bottomGradient) {
+      if (!listEl) return;
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+          } else {
+            entry.target.classList.remove('in-view');
+          }
+        });
+      }, { root: listEl, threshold: 0.2 });
+
+      listEl.querySelectorAll('.animated-item').forEach(el => observer.observe(el));
+
+      const syncGradients = () => {
+        const { scrollTop, scrollHeight, clientHeight } = listEl;
+        if (topGradient) topGradient.style.opacity = Math.min(scrollTop / 50, 1);
+        const bottomDistance = scrollHeight - (scrollTop + clientHeight);
+        if (bottomGradient) {
+          bottomGradient.style.opacity = scrollHeight <= clientHeight ? 0 : Math.min(bottomDistance / 50, 1);
+        }
+      };
+      listEl.onscroll = syncGradients;
+      syncGradients();
+    }
+
+    // ============================================================
+    // Passive theme logic — Syncs completely with LearnEra.html values [11]
+    // ============================================================
+    function applyAppSelectedTheme() {
+      const savedTheme = localStorage.getItem('appThemeMode') || 'system';
+      const darkStyle  = localStorage.getItem('darkTextStyle') || 'colorful';
+      const isDark = savedTheme === 'dark' ||
+        (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+      if (isDark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.body.setAttribute('data-theme', 'dark');
+        document.documentElement.setAttribute('data-dark-text', darkStyle);
+        document.body.setAttribute('data-dark-text', darkStyle);
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        document.body.removeAttribute('data-theme');
+        document.documentElement.removeAttribute('data-dark-text');
+        document.body.removeAttribute('data-dark-text');
+      }
+    }
+
+    // Live storage sync
+    window.addEventListener('storage', (ev) => {
+      if (ev.key === 'appThemeMode' || ev.key === 'darkTextStyle') {
+        applyAppSelectedTheme();
+      }
+    });
+
+    // Device system theme changes
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (localStorage.getItem('appThemeMode') === 'system' || !localStorage.getItem('appThemeMode')) {
+          applyAppSelectedTheme();
+        }
+      });
+    }
+
+    // Window focus checks
+    window.addEventListener('focus', applyAppSelectedTheme);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') applyAppSelectedTheme();
+    });
+
+    applyAppSelectedTheme();
+
+    // ============================================================
+    // Custom List Selector (missing implementation — added) [FIX]
+    // Opens #customListSelectorModal, renders items, invokes onSelect.
+    // ============================================================
+    (function defineCustomListSelector(){
+        const modal = document.getElementById('customListSelectorModal');
+        const titleEl = document.getElementById('listSelectorTitle');
+        const itemsContainer = document.getElementById('listSelectorItemsContainer');
+        let _onSelect = null;
+
+        window.openCustomListSelector = function(title, items, onSelect) {
+            if (!modal || !itemsContainer) return;
+            titleEl.textContent = title || 'Select';
+            _onSelect = typeof onSelect === 'function' ? onSelect : null;
+
+            itemsContainer.innerHTML = '';
+            (items || []).forEach((item) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'sharp-inner-item';
+                btn.style.cssText = 'width:100%; border:none; background:var(--body-bg); color:var(--text-color); font-weight:600; border-radius:12px; padding:12px; margin-bottom:8px; text-align:left;';
+                btn.textContent = item;
+                btn.addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    const cb = _onSelect;
+                    window.closeCustomListSelector();
+                    if (cb) {
+                        try { cb(item); } catch (err) { console.error(err); }
+                    }
+                });
+                itemsContainer.appendChild(btn);
+            });
+
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeCustomListSelector = function() {
+            if (!modal) return;
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+            _onSelect = null;
+        };
+
+        // Click outside to dismiss
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) window.closeCustomListSelector();
+            });
+        }
+    })();
+
+    // ============================================================
+    // Payment Method selection logic (integrated with Custom List Selector) [1]
+    // ============================================================
+    let activePaymentMethod = "UPI";
+
+    const topBanks = [
+        "State Bank of India (SBI)",
+        "HDFC Bank",
+        "ICICI Bank",
+        "Punjab National Bank (PNB)",
+        "Bank of Baroda (BoB)",
+        "Axis Bank",
+        "Canara Bank",
+        "Union Bank of India",
+        "Indian Bank",
+        "Bank of India (BoI)",
+        "Central Bank of India",
+        "Indian Overseas Bank (IOB)",
+        "UCO Bank",
+        "Bank of Maharashtra",
+        "Punjab & Sind Bank",
+        "Kotak Mahindra Bank",
+        "IndusInd Bank",
+        "Federal Bank",
+        "IDBI Bank",
+        "Yes Bank"
+    ];
+
+    function selectPaymentMethod(method) {
+        activePaymentMethod = method;
+        
+        // Show correct label dynamically [Change 1, 3]
+        document.getElementById('ccPaymentMethod').textContent = method === "UPI" ? "UPI" : "BANK TRANSFER";
+
+        const upiGroup = document.getElementById('upiInputGroup');
+        const bankGroup = document.getElementById('bankInputGroup');
+
+        const ccUpiGroup = document.getElementById('ccUpiGroup');
+        const ccBankGroup = document.getElementById('ccBankGroup');
+        const ccPaymentMethodContainer = document.getElementById('ccPaymentMethodContainer');
+
+        // Swap display / visibility cleanly using direct style declarations [FIX]
+        // Payment Method label now remains visible in bottom-right corner for BOTH methods [Change 1, 3]
+        if (method === "UPI") {
+            if (upiGroup) upiGroup.style.display = 'block';
+            if (bankGroup) bankGroup.style.display = 'none';
+
+            if (ccUpiGroup) ccUpiGroup.style.display = 'block';
+            if (ccBankGroup) ccBankGroup.style.display = 'none';
+        } else {
+            if (upiGroup) upiGroup.style.display = 'none';
+            if (bankGroup) bankGroup.style.display = 'block';
+
+            if (ccUpiGroup) ccUpiGroup.style.display = 'none';
+            if (ccBankGroup) ccBankGroup.style.display = 'block';
+        }
+        if (ccPaymentMethodContainer) {
+            ccPaymentMethodContainer.style.display = 'block'; // Ensure always block displayed [Change 1, 3]
+        }
+        syncCardUI();
+    }
+
+    // Custom list selector for selecting the Payment Method Option [1]
+    changePaymentDetailsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.openCustomListSelector("Select Payment Method", ["UPI", "Bank Transfer"], (selectedMethod) => {
+            const method = selectedMethod === "UPI" ? "UPI" : "Bank";
+            selectPaymentMethod(method);
+        });
+    });
+
+    // Helper to get bank short form from "Bank Name (SHORT)" [4]
+    function getBankShortForm(bankFullName) {
+        if (!bankFullName) return "Select Bank";
+        const match = bankFullName.match(/\(([^)]+)\)/);
+        if (match) {
+            return match[1];
+        }
+        return bankFullName.split(' ')[0];
+    }
+
+    // Unified Card UI Synchronizer for Real-Time rendering
+    function syncCardUI() {
+        const upiVal = upiNumberInput.value.trim();
+        const bankVal = bankNameInput.value.trim();
+        const accVal = accountNumberInput.value.trim();
+        const ifscVal = ifscCodeInput.value.trim();
+        const amtVal = parseFloat(withdrawalAmountInput.value) || 0;
+
+        // Sync amount on BOTH UPI and Bank Details card UIs [NEW]
+        const formattedAmt = amtVal > 0 ? `₹ ${amtVal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '₹ 0.00';
+        document.getElementById('ccAmount').textContent = formattedAmt;
+        const ccAmtBank = document.getElementById('ccAmountBank');
+        if (ccAmtBank) ccAmtBank.textContent = formattedAmt;
+
+        if (activePaymentMethod === "UPI") {
+            document.getElementById('ccUpi').textContent = upiVal || "premshahi@oksbi";
+        } else {
+            document.getElementById('ccBankName').textContent = getBankShortForm(bankVal);
+            document.getElementById('ccAccountNo').textContent = accVal || "—";
+            document.getElementById('ccIfsc').textContent = ifscVal ? `(IFSC: ${ifscVal})` : "";
+        }
+    }
+
+    document.getElementById('bankNameInput').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.openCustomListSelector("Select Bank Name", topBanks, (selectedBank) => {
+            document.getElementById('bankNameInput').value = selectedBank;
+            syncCardUI();
+        });
+    });
+
+    upiNumberInput.addEventListener('input', syncCardUI);
+    accountNumberInput.addEventListener('input', syncCardUI);
+    
+    // Alphanumeric, exactly 11 characters limit and uppercase automatically applied to IFSC code [2]
+    ifscCodeInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (e.target.value.length > 11) {
+            e.target.value = e.target.value.slice(0, 11);
+        }
+        syncCardUI();
+    });
+    
+    withdrawalAmountInput.addEventListener('input', (e) => {
+      // Enforce 5-digit max on Amount textbox (integer portion) [NEW]
+      let v = e.target.value;
+      if (v.includes('.')) {
+        const [intPart, decPart] = v.split('.');
+        if (intPart.length > 5) {
+          e.target.value = intPart.slice(0, 5) + '.' + decPart;
+        }
+      } else if (v.length > 5) {
+        e.target.value = v.slice(0, 5);
+      }
+      syncCardUI();
+    });
+
+    // ============================================================
+    // Promo code Copy logic [4]
+    // ============================================================
+    promoCodeCopyBtn.addEventListener('click', () => {
+        const textToCopy = userPromoCodeEl.textContent;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showMessageBox(`Referral code ${textToCopy} copied successfully.`, "success");
+        }).catch(() => {
+            showMessageBox("Clipboard copying bypassed.", "error");
+        });
+    });
+
+    // ============================================================
+    // Auth + data (fetching user values from Realtime Database) [4]
+    // ============================================================
+    let userProfileLoaded = false;
+    let affiliateDataLoaded = false;
+
+    function checkAllDataLoaded() {
+        if (userProfileLoaded && affiliateDataLoaded) {
+            document.querySelectorAll('.skeleton-card').forEach(el => {
+                el.classList.remove('skeleton-card');
+            });
+            showLoading(false);
+        }
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        showLoading(false);
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const userId = user.uid;
+
+      // User profile
+      const userRef = ref(db, `users/${userId}`);
+      onValue(userRef, async (snap) => {
+        try {
+          if (snap.exists()) {
+            const d = snap.val();
+            const fullName = `${d.firstName || ''} ${d.lastName || ''}`.trim();
+            displayFullNameAffiliate.textContent = fullName || 'New User';
+            cardHolderNameEl.textContent = (fullName || 'LearnEra User').toUpperCase();
+            userPromoCodeEl.textContent = d.referralCode || 'N/A';
+            
+            const ccUserFullName = document.getElementById('ccUserFullName');
+            if (ccUserFullName) {
+                ccUserFullName.textContent = fullName.toUpperCase(); // Add user full name in CC [4]
+            }
+
+          profilePicAffiliate.innerHTML = '';
+          // Profile pic: prefer the exact `profilePicURL` value stored on the
+          // Firebase users/{uid} node. Fall back to IndexedDB cache only when
+          // Firebase has no usable URL.
+          let picSrc = null;
+          const fbPicURL = (d.profilePicURL || '').trim();
+          if (/^https?:\/\//i.test(fbPicURL)) {
+            picSrc = fbPicURL;
+          } else {
+            picSrc = await getImageFromIndexedDB(userId);
+          }
+          if (picSrc) {
+            const el = document.createElement('img');
+            el.src = picSrc; el.alt = 'Profile';
+            profilePicAffiliate.appendChild(el);
+          } else {
+            profilePicAffiliate.innerHTML = DEFAULT_USER_SVG;
+          }
+
+          // Fetch stored payment methods recursively [4]
+          if (d.paymentMethods) {
+              const methods = d.paymentMethods;
+              if (methods.upiID) {
+                  upiNumberInput.value = methods.upiID;
+              }
+              if (methods.bankDetails) {
+                  const bank = methods.bankDetails;
+                  bankNameInput.value = bank.bankName || "";
+                  accountNumberInput.value = bank.accountNo || "";
+                  ifscCodeInput.value = bank.ifscCode || "";
+              }
+              if (methods.activeMethod) {
+                  selectPaymentMethod(methods.activeMethod);
+              } else {
+                  selectPaymentMethod("UPI");
+              }
+              syncCardUI();
+          } else {
+              selectPaymentMethod("UPI");
+              syncCardUI();
+          }
+        } else {
+          displayFullNameAffiliate.textContent = 'Guest User';
+          cardHolderNameEl.textContent = 'GUEST USER';
+          userPromoCodeEl.textContent = 'N/A';
+          profilePicAffiliate.innerHTML = DEFAULT_USER_SVG;
+          selectPaymentMethod("UPI");
+        }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          userProfileLoaded = true;
+          checkAllDataLoaded();
+        }
+      }, (err) => {
+          console.error(err);
+          userProfileLoaded = true;
+          checkAllDataLoaded();
+      });
+
+      // Affiliate data
+      const affiliateRef = ref(db, `affiliate/${userId}`);
+      onValue(affiliateRef, (snap) => {
+        try {
+          if (snap.exists()) {
+            const a = snap.val();
+            totalEarningsEl.textContent    = formatCurrency(a.totalEarnings || 0);
+            totalReferralsEl.textContent   = (a.totalRefer || 0).toString();
+            totalWithdrawalsEl.textContent = (a.totalWithdrawals || 0).toString();
+            totalSalesEl.textContent       = (a.totalSales || 0).toString();
+            availablePointsEl.textContent  = formatCurrency(a.availablePoints || 0);
+            withdrawCurrentBalance.textContent = formatCurrency(a.availablePoints || 0);
+          } else {
+            update(affiliateRef, {
+              totalRefer: 0, totalEarnings: 0,
+              totalWithdrawals: 0, availablePoints: 0, totalSales: 0
+            }).catch(err => console.error('Init affiliate failed:', err));
+            totalEarningsEl.textContent    = '₹ 0';
+            totalReferralsEl.textContent   = '0';
+            totalWithdrawalsEl.textContent = '0';
+            totalSalesEl.textContent       = '0';
+            availablePointsEl.textContent  = '₹ 0';
+            withdrawCurrentBalance.textContent = '₹ 0';
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          affiliateDataLoaded = true;
+          checkAllDataLoaded();
+        }
+      }, (err) => {
+          console.error(err);
+          affiliateDataLoaded = true;
+          checkAllDataLoaded();
+      });
+    });
+
+    // ============================================================
+    // Withdrawal logic with detailed Outcome and Firebase Storage [4, 7]
+    // ============================================================
+    withdrawalForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showSpinner(withdrawalSpinner);
+      withdrawBtn.disabled = true;
+
+      const upiNumber = upiNumberInput.value.trim();
+      const bankName  = bankNameInput.value.trim();
+      const accNumber = accountNumberInput.value.trim();
+      const ifscCode  = ifscCodeInput.value.trim();
+      const amountToWithdraw = parseFloat(withdrawalAmountInput.value);
+      const userId = auth.currentUser.uid;
+      const affiliateRef = ref(db, `affiliate/${userId}`);
+      const withdrawalHistoryRef = ref(db, `withdrawalHistory/${userId}`);
+      const userRef = ref(db, `users/${userId}`);
+
+      if (activePaymentMethod === "UPI" && !upiNumber) {
+        showFieldAlert("Missing Information", "Please provide a valid UPI Address/ID (e.g. name@upi) to request the withdrawal.");
+        hideSpinner(withdrawalSpinner); withdrawBtn.disabled = false; return;
+      }
+      if (activePaymentMethod === "Bank" && !bankName) {
+        showFieldAlert("Missing Bank Name", "Please select your bank name from the list to request the withdrawal.");
+        hideSpinner(withdrawalSpinner); withdrawBtn.disabled = false; return;
+      }
+      if (activePaymentMethod === "Bank" && !accNumber) {
+        showFieldAlert("Missing Account Number", "Please enter a valid Bank Account Number to proceed with the transaction.");
+        hideSpinner(withdrawalSpinner); withdrawBtn.disabled = false; return;
+      }
+      if (activePaymentMethod === "Bank" && !ifscCode) {
+        showFieldAlert("Missing IFSC Code", "The requested Bank Transfer withdrawal requires a valid IFSC Code. Please fill all fields.");
+        hideSpinner(withdrawalSpinner); withdrawBtn.disabled = false; return;
+      }
+      if (!withdrawalAmountInput.value.trim()) {
+        showFieldAlert("Please fill: Amount", "Enter the amount you want to withdraw before requesting the withdrawal.");
+        hideSpinner(withdrawalSpinner); withdrawBtn.disabled = false; return;
+      }
+      if (isNaN(amountToWithdraw) || amountToWithdraw <= 0) {
+        showFieldAlert("Invalid Amount", "The requested withdrawal amount must be a positive number.");
+        hideSpinner(withdrawalSpinner); withdrawBtn.disabled = false; return;
+      }
+
+      try {
+        const snap = await get(affiliateRef);
+        if (snap.exists()) {
+          const cur = snap.val();
+          const avail = cur.availablePoints || 0;
+          if (amountToWithdraw > avail) {
+            showPaymentOutcome(false, "Insufficient Balance", `Your current available balance is ${formatCurrency(avail)}, which is lower than your requested withdrawal of ${formatCurrency(amountToWithdraw)}.`);
+          } else {
+            // Update withdrawal counts
+            await update(affiliateRef, {
+              availablePoints: avail - amountToWithdraw,
+              totalWithdrawals: (cur.totalWithdrawals || 0) + 1
+            });
+            await push(withdrawalHistoryRef, {
+              amount: amountToWithdraw,
+              upi: activePaymentMethod === "UPI" ? upiNumber : `${bankName} - ${accNumber} (IFSC: ${ifscCode})`,
+              date: new Date().toISOString(),
+              status: 'Pending'
+            });
+
+            // Persist payment methods configuration to Firebase Realtime Database [4]
+            const pmData = {};
+            pmData["paymentMethods/activeMethod"] = activePaymentMethod;
+            if (activePaymentMethod === "UPI") {
+                pmData["paymentMethods/upiID"] = upiNumber;
+            } else {
+                pmData["paymentMethods/bankDetails"] = {
+                    bankName: bankName,
+                    ifscCode: ifscCode,
+                    accountNo: accNumber
+                };
+            }
+            await update(userRef, pmData);
+
+            showPaymentOutcome(true, "Withdrawal Requested", `Your request of ${formatCurrency(amountToWithdraw)} has been successfully submitted and is under verification. Our admin team will approve it shortly.`);
+            withdrawalAmountInput.value = '';
+            withdrawalSubScreen.classList.remove('visible');
+          }
+        } else {
+          showPaymentOutcome(false, "Withdrawal Cancelled", "Affiliate profile data not found.");
+        }
+      } catch (err) {
+        console.error('Withdrawal Error:', err);
+        showPaymentOutcome(false, "Withdrawal Cancelled", "Internal server verification failed. Please try again.");
+      } finally {
+        hideSpinner(withdrawalSpinner);
+        withdrawBtn.disabled = false;
+      }
+    });
+
+    // Opening & closing the new Withdrawal arrangement sub screen
+    availablePointsWithdrawBtn.addEventListener('click', () => {
+      withdrawalSubScreen.classList.add('visible');
+    });
+
+    withdrawalBackBtn.addEventListener('click', () => {
+      withdrawalSubScreen.classList.remove('visible');
+    });
+
+    // ============================================================
+    // Profile pic hide-on-scroll
+    // ============================================================
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      if (Math.abs(y - lastScroll) < 10) return;
+      if (y > lastScroll && y > 80) {
+        profileHeaderAffiliate.classList.add('profile-pic-hidden');
+      } else {
+        profileHeaderAffiliate.classList.remove('profile-pic-hidden');
+      }
+      lastScroll = y;
+    }, { passive: true });
+
+    // ============================================================
+    // Withdrawal History screen
+    // ============================================================
+    viewWithdrawalHistoryBtn.addEventListener('click', async () => {
+      withdrawalHistoryScreen.classList.add('visible');
+      await loadWithdrawalHistory();
+    });
+    // Tapping the Total Withdrawals card opens the Withdrawal History screen [Change 6]
+    document.getElementById('totalWithdrawalsCard').addEventListener('click', async () => {
+      withdrawalHistoryScreen.classList.add('visible');
+      await loadWithdrawalHistory();
+    });
+
+    historyBackBtn.addEventListener('click', () => {
+      withdrawalHistoryScreen.classList.remove('visible');
+    });
+
+    async function loadWithdrawalHistory() {
+      historyList.innerHTML = '';
+      noHistoryMessage.classList.add('hidden');
+
+      const userId = auth.currentUser.uid;
+      const refH = ref(db, `withdrawalHistory/${userId}`);
+      try {
+        const snap = await get(refH);
+        if (!snap.exists()) { noHistoryMessage.classList.remove('hidden'); return; }
+        const data = snap.val();
+        const arr = Object.keys(data).map(k => ({ id: k, ...data[k] }));
+        arr.sort((a,b) => new Date(b.date) - new Date(a.date));
+        if (!arr.length) { noHistoryMessage.classList.remove('hidden'); return; }
+
+        arr.forEach((item, i) => {
+          const wrapper = document.createElement('li');
+          wrapper.className = 'animated-item';
+          const li = document.createElement('div');
+          li.className = 'history-item';
+          li.style.animationDelay = `${i * 0.04}s`;
+          const date = new Date(item.date).toLocaleString('en-IN', {
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          });
+          li.innerHTML = `
+            <span>Amount: <span class="amount">${formatCurrency(item.amount)}</span></span>
+            <span>Detail: ${item.upi}</span>
+            <span class="date">${date}</span>
+            <span class="status ${(item.status||'').toLowerCase()}">${item.status}</span>
+          `;
+          wrapper.appendChild(li);
+          historyList.appendChild(wrapper);
+        });
+
+        // Scroll-in animation exactly like ListScrollingEffect.html [Change 5]
+        setupScrollAnimation(historyList,
+          document.getElementById('historyTopGradient'),
+          document.getElementById('historyBottomGradient'));
+      } catch (err) {
+        console.error('History load error:', err);
+        showMessageBox('Failed to load withdrawal history.', 'error');
+        noHistoryMessage.classList.remove('hidden');
+      }
+    }
+
+    // ============================================================
+    // Referred Users screen
+    // ============================================================
+    totalReferralsCard.addEventListener('click', async () => {
+      referredUsersScreen.classList.add('visible');
+      await loadReferredUsers();
+    });
+    referredUsersBackButton.addEventListener('click', () => {
+      referredUsersScreen.classList.remove('visible');
+    });
+
+    async function loadReferredUsers() {
+      referredUsersList.innerHTML = '';
+      noReferredUsersMessage.classList.add('hidden');
+
+      const currentUserId = auth.currentUser && auth.currentUser.uid;
+      if (!currentUserId) {
+        noReferredUsersMessage.textContent = 'Please log in to view referred users.';
+        noReferredUsersMessage.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const usersRef = ref(db, 'users');
+        const q = query(usersRef, orderByChild('referredBy'), equalTo(currentUserId));
+        const snap = await get(q);
+        if (!snap.exists() || snap.size === 0) {
+          noReferredUsersMessage.classList.remove('hidden'); // Also show empty state Lottie for referrals [3]
+          return;
+        }
+        let i = 0;
+        snap.forEach(child => {
+          const d = child.val();
+          const fullName = `${d.firstName || ''} ${d.lastName || ''}`.trim();
+          const wrapper = document.createElement('li');
+          wrapper.className = 'animated-item';
+          const li = document.createElement('div');
+          li.className = 'referred-user-item';
+          li.style.animationDelay = `${i * 0.04}s`;
+          li.innerHTML = `
+            <strong>${fullName}</strong>
+            <p>Gender: ${d.gender || 'N/A'}</p>
+            <p>Country: ${d.country || 'N/A'}</p>
+            <p>Referral Code: ${d.referralCode || 'N/A'}</p>
+          `;
+          wrapper.appendChild(li);
+          referredUsersList.appendChild(wrapper);
+          i++;
+        });
+
+        // Scroll-in animation exactly like ListScrollingEffect.html [Change 5]
+        setupScrollAnimation(referredUsersList,
+          document.getElementById('referredTopGradient'),
+          document.getElementById('referredBottomGradient'));
+      } catch (err) {
+        console.error('Referred users error:', err);
+        showMessageBox('Failed to load referred users.', 'error');
+        noReferredUsersMessage.classList.remove('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

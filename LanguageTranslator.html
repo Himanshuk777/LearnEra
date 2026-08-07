@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LearnEra - Translator</title>
+    <!-- Updated Google Fonts import to include Open Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Poppins:wght@300;400;500;600;700&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Lottie & GSAP libraries -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <!-- Early theme bootstrap -->
+    <script>
+        (function () {
+            try {
+                const savedTheme = localStorage.getItem('appThemeMode') || 'system';
+                const isDark = savedTheme === 'dark' ||
+                    (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const darkStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.documentElement.setAttribute('data-dark-text', darkStyle);
+                } else {
+                    document.documentElement.removeAttribute('data-dark-text');
+                }
+                const topSp = localStorage.getItem('appTopSpace') || '5';
+                document.documentElement.style.setProperty('--top-space', topSp + 'vh');
+            } catch (e) {
+                document.documentElement.style.setProperty('--top-space', '5vh');
+            }
+            
+            const savedLang = localStorage.getItem('appLanguageSelection') || 'en';
+            document.documentElement.setAttribute('data-lang', savedLang);
+        })();
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        :root {
+            --body-bg: #e6edf7; 
+            --neu-shadow-light: #ffffff;
+            --neu-shadow-dark: #c8d3e4;
+            
+            --text-color: #2d3748; 
+            --sub-text-color: #718096; 
+            
+            --pink: #FF69B4;
+            --pink-strong: #FF1493;
+            --blue: #1E90FF;
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+            
+            --inner-highlight: inset 1px 1px 2px rgba(255,255,255,0.7);
+            --border-soft: 1px solid rgba(255,255,255,0.35);
+            
+            --top-space: 5vh;
+            --transition-theme: background-color 0.8s ease, color 0.8s ease, box-shadow 0.8s ease, border-color 0.8s ease;
+        }
+
+        html[data-theme="dark"] {
+            --body-bg: #1e1e24; 
+            --neu-shadow-dark: #101014;
+            --neu-shadow-light: rgba(255, 255, 255, 0.05);
+            
+            --text-color: #d1d9e6; 
+            --sub-text-color: #a3b1c6; 
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+        }
+
+        html[data-dark-text="deep-dark"] {
+            --body-bg: #0c0c0f; 
+            --neu-shadow-dark: #050506;
+            --neu-shadow-light: rgba(255, 255, 255, 0.02);
+            
+            --text-color: rgba(255, 255, 255, 0.35); 
+            --sub-text-color: rgba(255, 255, 255, 0.3); 
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.01);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.01);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.01);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.01);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.02);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -2px -2px 4px rgba(255, 255, 255, 0.02);
+        }
+
+        /* Language Overrides */
+        html[data-lang="hi"] *, html[data-lang="ch"] *, html[data-lang="bh"] * {
+            font-family: 'Tiro Devanagari Hindi', serif !important;
+        }
+
+        /* Prevent standard viewport scrollbars */
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            overflow: hidden; 
+            overscroll-behavior: none;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-items: center;
+            font-size: 13px; 
+            transition: var(--transition-theme);
+        }
+
+        /* Custom top screen toast styling */
+        #customToast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #ff4d4d;
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            z-index: 99999;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif !important;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+            width: 90%;
+            max-width: 400px;
+            justify-content: center;
+        }
+
+        html[data-dark-text="deep-dark"] #customToast {
+            background: #242424 !important;
+            color: rgba(255, 255, 255, 0.35) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+        }
+
+        /* Responsive Layout Container */
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 15px 15px 15px; 
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: flex-start;
+            height: auto;
+            min-height: 100%;
+        }
+
+        .app-card {
+            background: var(--body-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--card-shadow), inset 1px 1px 2px rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.35);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition-theme);
+            margin-top: 15px; 
+        }
+
+        /* Language selection row styles */
+        .language-selection-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .custom-dropdown {
+            width: calc(50% - 25px);
+            position: relative;
+        }
+
+        .dropdown-selected-value {
+            box-shadow: var(--card-shadow-micro) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            border-radius: 14px !important;
+            background: var(--body-bg) !important;
+            padding: 12px 14px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .dropdown-selected-value:active:not(.skeleton-loading) {
+            box-shadow: var(--card-shadow-inset) !important;
+            transform: scale(0.98);
+        }
+
+        /* Modified: Hovered animations completely stripped, click actions disabled */
+        .swap-button {
+            box-shadow: var(--card-shadow-micro) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            border-radius: 50% !important;
+            background: var(--body-bg) !important;
+            color: var(--text-color);
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: default;
+            outline: none;
+            transition: box-shadow 0.15s ease;
+            pointer-events: none; /* Fixed to English source, swapping completely locked */
+        }
+
+        /* Input / Output Group Layouts */
+        .text-areas {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .text-input-group, .text-output-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        textarea, .output-box {
+            width: 100%;
+            height: 110px;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 14px;
+            background: var(--body-bg);
+            color: var(--text-color);
+            font-family: 'Open Sans', sans-serif !important;
+            font-size: 0.95em;
+            font-weight: 500;
+            box-shadow: var(--settings-shadow-inset-sharp);
+            outline: none;
+            resize: none;
+            transition: box-shadow 0.3s ease;
+        }
+
+        textarea:focus, .output-box:focus-within {
+            box-shadow: var(--settings-shadow-inset-sharp), 0 0 0 2px rgba(30, 144, 255, 0.15);
+        }
+
+        .output-box {
+            overflow-y: auto;
+            word-wrap: break-word;
+        }
+
+        .text-area-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 0 4px;
+        }
+
+        .text-area-controls button {
+            background: none;
+            border: none;
+            color: var(--sub-text-color);
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.15s ease;
+            outline: none;
+        }
+
+        /* Modified: Removed hover scale shifts on text controls */
+        .text-area-controls button:hover {
+            color: var(--blue);
+        }
+
+        .text-area-controls button:active {
+            transform: scale(0.95);
+        }
+
+        /* Neumorphic Action Button Layout */
+        .button {
+          --radius: 14px;
+          cursor: pointer;
+          border-radius: var(--radius);
+          border: 3px solid var(--body-bg) !important; 
+          background: var(--body-bg);
+          box-shadow: var(--card-shadow-sm), var(--inner-highlight) !important;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 600ms cubic-bezier(0.16, 1, 0.3, 1);
+          width: 100%;
+          padding: 12px 20px; 
+          height: 54px; 
+          font-family: inherit;
+          font-style: normal;
+          font-size: 16px;
+          font-weight: 600;
+          outline: none; 
+          z-index: 10;
+          touch-action: manipulation !important;
+          -webkit-user-select: none !important;
+          user-select: none !important;
+          -webkit-touch-callout: none !important;
+        }
+        body[data-theme="dark"] .button {
+          --neutral-1: #1e1e24;
+          --neutral-2: #101014;
+        }
+        body[data-theme="dark"][data-dark-text="deep-dark"] .button {
+          --neutral-1: #0c0c0f;
+          --neutral-2: #050506;
+          box-shadow: none !important;
+        }
+        
+        /* Modified: Removed hover scale up animation and transitions */
+        .button.button--hovered {
+          transform: none !important;
+          box-shadow: var(--card-shadow) !important;
+        }
+
+        .button:active, .button:focus {
+          transform: scale(0.98);
+          box-shadow: var(--pressed-shadow) !important; 
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: var(--card-shadow-micro) !important;
+        }
+
+        .state p {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0;
+        }
+        .state p span {
+          display: block;
+          opacity: 1; 
+          color: var(--text-color);
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.15);
+            border-top: 3px solid var(--text-color);
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin-left: 8px;
+        }
+
+        .button.loading .spinner {
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Component-Level Skeleton Shimmer System */
+        .skeleton-loading {
+            background: var(--body-bg) !important;
+            border-color: transparent !important;
+            box-shadow: var(--settings-shadow-inset-sharp) !important;
+            color: transparent !important;
+            pointer-events: none !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+        .dropdown-selected-value.skeleton-loading,
+        .swap-button.skeleton-loading {
+            box-shadow: var(--card-shadow-micro) !important;
+        }
+        .skeleton-loading::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -150%;
+            width: 150%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+            animation: skeleton-shimmer-animation 1.5s infinite;
+        }
+        body[data-theme="dark"] .skeleton-loading::after {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+        }
+        @keyframes skeleton-shimmer-animation {
+            0% { left: -150%; }
+            100% { left: 150%; }
+        }
+
+        /* Deep Dark Mode Monochrome Overrides */
+        html[data-dark-text="deep-dark"] {
+            --blue: #888888 !important; 
+            --pink: #555555 !important;
+            --pink-strong: #444444 !important;
+        }
+        body[data-dark-text="deep-dark"] .dropdown-selected-value {
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: rgba(255, 255, 255, 0.35) !important;
+        }
+        body[data-dark-text="deep-dark"] .dropdown-list-item {
+            color: rgba(255, 255, 255, 0.35) !important;
+        }
+        body[data-dark-text="deep-dark"] .dropdown-list-item:hover {
+            background: rgba(255, 255, 255, 0.02) !important;
+        }
+        body[data-dark-text="deep-dark"] .dropdown-list-item.selected {
+            box-shadow: var(--pressed-shadow) !important;
+        }
+        body[data-dark-text="deep-dark"] .swap-button {
+            color: rgba(255, 255, 255, 0.35) !important;
+        }
+        body[data-dark-text="deep-dark"] .text-area-controls button:hover {
+            color: rgba(255, 255, 255, 0.35) !important;
+        }
+
+        /* Modified: Custom Popup Box / Overlay styles with absolute background blur */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.45) !important;
+            backdrop-filter: blur(16px) !important; /* Perfect background elements blur effect */
+            -webkit-backdrop-filter: blur(16px) !important;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 20000;
+        }
+        .custom-modal-overlay.show {
+            display: flex !important;
+        }
+        .custom-modal {
+            background: var(--body-bg);
+            border-radius: 24px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: none !important;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        body[data-theme="dark"] .custom-modal {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .back-pill-button {
+            position: relative;
+            background: var(--body-bg);
+            color: var(--text-color);
+            border: 2px solid var(--body-bg);
+            border-radius: 16px;
+            padding: 10px 14px;
+            cursor: pointer;
+            box-shadow: var(--card-shadow-micro), inset 1px 1px 2px rgba(255,255,255,0.7);
+            z-index: 70;
+            transition: transform 0.15s ease, box-shadow 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+            font-weight: 600;
+        }
+        .back-pill-button:active {
+            transform: scale(0.95);
+            box-shadow: inset 2px 2px 4px var(--neu-shadow-dark) !important;
+        }
+
+        .sharp-inner-item {
+            box-shadow: var(--card-shadow-micro) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            border-radius: 12px !important;
+            background: var(--body-bg) !important;
+            margin-bottom: 8px;
+            padding: 10px 14px;
+            font-size: 0.9em;
+            font-weight: 500;
+            color: var(--text-color);
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            display: block;
+            outline: none;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .sharp-inner-item:active {
+            box-shadow: var(--card-shadow-inset) !important;
+            transform: scale(0.98);
+        }
+
+        /* Enable vertical scroll logic ONLY on compact or low height viewports */
+        @media (max-height: 680px) {
+            html, body {
+                overflow-y: auto; 
+            }
+            body {
+                justify-content: flex-start;
+                padding-top: 15px;
+                padding-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Custom Toast Notification Element -->
+    <div id="customToast">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span id="customToastText">Please choose languages.</span>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="app-container">
+        <div class="app-card" id="appCard">
+            
+            <div class="language-selection-bar">
+                <div class="custom-dropdown" id="sourceLanguageDropdown">
+                    <div class="dropdown-selected-value" id="sourceDropdownVal">
+                        <span id="sourceLangName">English</span>
+                        <i class="fas fa-chevron-down arrow-icon"></i>
+                    </div>
+                    <input type="hidden" id="sourceLanguage" value="en">
+                </div>
+
+                <div class="swap-button" id="swapLanguages" title="Directional Arrow">
+                    <i class="fas fa-arrow-right"></i> 
+                </div>
+
+                <div class="custom-dropdown" id="targetLanguageDropdown">
+                    <div class="dropdown-selected-value" id="targetDropdownVal">
+                        <span id="targetLangName">Hindi</span>
+                        <i class="fas fa-chevron-down arrow-icon"></i>
+                    </div>
+                    <input type="hidden" id="targetLanguage" value="hi">
+                </div>
+            </div>
+
+            <div class="text-areas">
+                <div class="text-input-group">
+                    <!-- Modified: Removed the Rate limit self-heal message from placeholder -->
+                    <textarea id="inputText" placeholder="Enter text here..." rows="4"></textarea>
+                    <div class="text-area-controls">
+                        <button id="pasteInput" title="Paste Text">
+                            <i class="fa-regular fa-clipboard"></i> 
+                        </button>
+                        <button id="speechToTextInput" title="Speech to Text">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button id="clearInput" title="Clear Text">
+                            <i class="fas fa-times-circle"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-output-group">
+                    <div id="outputText" class="output-box">Translation will appear here.</div>
+                    <div class="text-area-controls">
+                        <button id="copyOutput" title="Copy Translation">
+                            <i class="fa-regular fa-clone"></i> 
+                        </button>
+                        <button id="speakOutput" title="Listen Translation">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="button" id="translateButton">
+                <div class="state" style="display: flex; align-items: center; justify-content: center;">
+                    <p><span>Translate</span></p>
+                    <span class="spinner"></span>
+                </div>
+            </button>
+
+        </div>
+    </div>
+
+    <!-- Custom Popup Box / Modal Overlay for Language Selection Picker -->
+    <div class="custom-modal-overlay" id="customListSelectorModal" style="display: none; z-index: 21000;">
+        <div class="custom-modal" style="width: 85%; max-width: 320px; border-radius: 20px; padding: 20px;">
+            <h3 id="listSelectorTitle" style="color: var(--text-color); margin-bottom: 15px; font-size: 1.2em; font-weight: 700; text-align: center;">Select Language</h3>
+            <div id="listSelectorItemsContainer" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; padding-right: 4px;"></div>
+            <button class="back-pill-button" onclick="window.closeCustomListSelector()" style="width: 100%; margin-top: 15px; border-radius: 12px; padding: 10px; justify-content: center; display: flex; align-items: center;">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // Sound FX System
+        (function initDashboardSoundFX(){
+            const LS_MASTER = 'touchSoundsEnabled';
+            const LS_GROUPS = 'touchSoundsGroupState';
+
+            const CLICK_SOUND_URLS = [
+                "Click1.ogg", "Click2.ogg", "Click3.ogg", "Click4.ogg", "Click5.ogg",
+                "Click6.ogg", "Click7.ogg", "Click8.ogg", "Click9.ogg", "Click10.ogg",
+                "Click11.ogg", "Click12.ogg", "Click13.ogg", "Click14.ogg"
+            ];
+
+            const GROUP_TO_CLICKS = {
+                'buttons'   : [1, 2, 3, 7, 8, 9, 14],
+                'navigation': [5],
+                'inputs'    : [4, 6],
+                'reserved'  : [10, 11, 12, 13]
+            };
+
+            const CLICK_TO_GROUP = {};
+            Object.keys(GROUP_TO_CLICKS).forEach(g => {
+                GROUP_TO_CLICKS[g].forEach(n => { CLICK_TO_GROUP[n] = g; });
+            });
+
+            const audioCache = {};
+            let _ac = null;
+            let _masterGain = null;
+
+            function getAC(){
+                if (_ac) return _ac;
+                try {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (Ctx) {
+                        _ac = new Ctx();
+                        const comp = _ac.createDynamicsCompressor();
+                        comp.threshold.value = -10;
+                        comp.knee.value = 6;
+                        comp.ratio.value = 12;
+                        comp.attack.value = 0.001;
+                        comp.release.value = 0.05;
+                        _masterGain = _ac.createGain();
+                        _masterGain.gain.value = 1.0;
+                        comp.connect(_masterGain).connect(_ac.destination);
+                        _ac._busIn = comp;
+                    }
+                } catch(e){}
+                return _ac;
+            }
+
+            function synthClick(n){
+                const ac = getAC();
+                if (!ac) return;
+                if (ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                const SYNTH = {
+                    1:  { f: 880,  d: 0.05, w: 'triangle', g: 0.18 },
+                    2:  { f: 520,  d: 0.07, w: 'sine',     g: 0.22 },
+                    3:  { f: 660,  d: 0.08, w: 'square',   g: 0.16 },
+                    4:  { f: 1200, d: 0.03, w: 'sine',     g: 0.12 },
+                    5:  { f: 740,  d: 0.05, w: 'triangle', g: 0.18 },
+                    6:  { f: 1000, d: 0.025,w: 'sine',     g: 0.10 },
+                    7:  { f: 600,  d: 0.05, w: 'square',   g: 0.16 },
+                    8:  { f: 820,  d: 0.05, w: 'triangle', g: 0.18 },
+                    9:  { f: 420,  d: 0.06, w: 'sine',     g: 0.18 },
+                    10: { f: 480,  d: 0.05, w: 'triangle', g: 0.16 },
+                    11: { f: 560,  d: 0.05, w: 'triangle', g: 0.16 },
+                    12: { f: 640,  d: 0.05, w: 'triangle', g: 0.16 },
+                    13: { f: 720,  d: 0.05, w: 'triangle', g: 0.16 },
+                    14: { f: 440,  d: 0.08, w: 'sine',     g: 0.60 }
+                };
+                const r = SYNTH[n] || SYNTH[7];
+                const t0 = ac.currentTime;
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                osc.type = r.w;
+                osc.frequency.setValueAtTime(r.f, t0);
+                osc.frequency.exponentialRampToValueAtTime(Math.max(80, r.f * 0.6), t0 + r.d);
+                gain.gain.setValueAtTime(0.0001, t0);
+                gain.gain.exponentialRampToValueAtTime(r.g, t0 + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + r.d);
+                osc.connect(gain).connect(ac._busIn || ac.destination);
+                osc.start(t0);
+                osc.stop(t0 + r.d + 0.02);
+            }
+
+            function playClick(n, opts){
+                opts = opts || {};
+                const isMasterOn = localStorage.getItem(LS_MASTER) === '1' || localStorage.getItem(LS_MASTER) === null;
+                if (!opts.force && !isMasterOn) return;
+
+                let groupState = {};
+                try { groupState = JSON.parse(localStorage.getItem(LS_GROUPS) || '{}'); } catch(e){}
+                const groupId = CLICK_TO_GROUP[n];
+                if (!opts.force && groupId && groupState[groupId] === false) return;
+
+                const url = CLICK_SOUND_URLS[n - 1];
+                try {
+                    if (n === 14) {
+                        const a = new Audio(url);
+                        a.volume = 1.0;
+                        a.play().catch(() => synthClick(14));
+                        return;
+                    }
+                    if (!audioCache[n]) {
+                        const a = new Audio(url);
+                        a.volume = 0.5;
+                        a.preload = 'auto';
+                        audioCache[n] = a;
+                    }
+                    const a = audioCache[n];
+                    a.currentTime = 0;
+                    const p = a.play();
+                    if (p && p.catch) p.catch(() => synthClick(n));
+                    return;
+                } catch(e) {
+                    synthClick(n);
+                }
+            }
+
+            window.playTouchSound = playClick;
+
+            ['pointerdown','touchstart','keydown','click'].forEach(ev => {
+                document.addEventListener(ev, () => {
+                    const ac = getAC();
+                    if (ac && ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                }, { capture: true, passive: true });
+            });
+        })();
+
+        // Firebase Configuration Setup
+        const firebaseConfig = {
+          apiKey: "AIzaSyBWOdk2_NJntQ4Pob7_tN6kb1W5rMy-tcw",
+          authDomain: "learnera-d6309.firebaseapp.com",
+          projectId: "learnera-d6309",
+          messagingSenderId: "752970675909",
+          appId: "1:752970675909:web:9c4513809ca51ea60122ac",
+          databaseURL: "https://learnera-d6309-default-rtdb.firebaseio.com"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        // Custom Neumorphic Toast Controller with Status-specific adaptations
+        window.showToast = function(message, type = 'error') {
+            const toast = document.getElementById('customToast');
+            const toastText = document.getElementById('customToastText');
+            const toastIcon = toast.querySelector('i');
+            if (!toast || !toastText) return;
+            
+            toastText.textContent = message;
+            
+            // Modified: Changes the background style color and dynamic icon based on action response outcome
+            if (type === 'success') {
+                toast.style.background = '#32CD32'; 
+                toast.style.color = '#fff';
+                toastIcon.className = "fa-solid fa-circle-check"; 
+            } else {
+                toast.style.background = '#ff4d4d'; 
+                toast.style.color = '#fff';
+                toastIcon.className = "fa-solid fa-triangle-exclamation"; 
+            }
+
+            const isDeepDark = document.documentElement.getAttribute('data-dark-text') === 'deep-dark';
+            if (isDeepDark) {
+                toast.style.background = '#242424';
+                toast.style.color = 'rgba(255, 255, 255, 0.35)';
+                toast.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+            } else {
+                toast.style.border = 'none';
+            }
+            
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+            
+            if (window.toastTimeout) clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => {
+                toast.style.transform = 'translateX(-50%) translateY(-100px)';
+            }, 3000);
+        };
+
+        // Complete set of cross-engine supported target translation languages
+        const languages = [
+            { code: "en", name: "English" }, { code: "hi", name: "Hindi" }, { code: "es", name: "Spanish" }, 
+            { code: "fr", name: "French" }, { code: "de", name: "German" }, { code: "it", name: "Italian" }, 
+            { code: "pt", name: "Portuguese" }, { code: "ru", name: "Russian" }, { code: "ja", name: "Japanese" }, 
+            { code: "zh", name: "Chinese" }, { code: "ar", name: "Arabic" }, { code: "tr", name: "Turkish" }, 
+            { code: "nl", name: "Dutch" }, { code: "pl", name: "Polish" }, { code: "mr", name: "Marathi" },
+            { code: "ta", name: "Tamil" }, { code: "bn", name: "Bengali" }, { code: "te", name: "Telugu" },
+            { code: "kn", name: "Kannada" }, { code: "ml", name: "Malayalam" }
+        ];
+
+        // Component Skeleton Loading Application
+        function applySkeletons() {
+            document.getElementById('sourceDropdownVal').classList.add('skeleton-loading');
+            document.getElementById('targetDropdownVal').classList.add('skeleton-loading');
+            document.getElementById('swapLanguages').classList.add('skeleton-loading');
+            document.getElementById('inputText').classList.add('skeleton-loading');
+            document.getElementById('outputText').classList.add('skeleton-loading');
+            document.getElementById('translateButton').disabled = true;
+        }
+
+        function removeSkeletons() {
+            document.getElementById('sourceDropdownVal').classList.remove('skeleton-loading');
+            document.getElementById('targetDropdownVal').classList.remove('skeleton-loading');
+            document.getElementById('swapLanguages').classList.remove('skeleton-loading');
+            document.getElementById('inputText').classList.remove('skeleton-loading');
+            document.getElementById('outputText').classList.remove('skeleton-loading');
+            document.getElementById('translateButton').disabled = false;
+        }
+
+        // Custom Popup Box modal overlay generator
+        window.openCustomListSelector = function(title, options, currentSelected, callback) {
+            document.getElementById('listSelectorTitle').textContent = title;
+            const container = document.getElementById('listSelectorItemsContainer');
+            container.innerHTML = '';
+            
+            options.forEach(lang => {
+                const btn = document.createElement('button');
+                btn.className = `sharp-inner-item ${lang.code === currentSelected ? 'selected' : ''}`;
+                btn.textContent = lang.name;
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    if (window.playTouchSound) window.playTouchSound(4);
+                    callback(lang);
+                    window.closeCustomListSelector();
+                };
+                container.appendChild(btn);
+            });
+            
+            const modal = document.getElementById('customListSelectorModal');
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+        };
+
+        window.closeCustomListSelector = function() {
+            const modal = document.getElementById('customListSelectorModal');
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+        };
+
+        // --- Engine 1: Google Translate API ---
+        async function fetchGoogleTranslate(text, from, to) {
+            let url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text)}`;
+            let res = await fetch(url);
+            if (!res.ok) throw new Error("Google Rate Limit / Error");
+            let data = await res.json();
+            let resultText = "";
+            data[0].forEach(segment => { resultText += segment[0]; });
+            return resultText;
+        }
+
+        // --- Engine 2: MyMemory Translation Engine ---
+        async function fetchMyMemoryTranslate(text, from, to) {
+            let url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`;
+            let res = await fetch(url);
+            if (!res.ok) throw new Error("MyMemory Limit / Error");
+            let data = await res.json();
+            if (data.responseStatus !== 200) throw new Error(data.responseDetails);
+            return data.responseData.translatedText;
+        }
+
+        // --- Engine 3: LibreTranslate Mirror Instance ---
+        async function fetchLibreTranslate(text, from, to) {
+            let url = "https://translate.terraprint.co/translate"; 
+            let res = await fetch(url, {
+                method: "POST",
+                body: JSON.stringify({ q: text, source: from, target: to, format: "text" }),
+                headers: { "Content-Type": "application/json" }
+            });
+            if (!res.ok) throw new Error("LibreTranslate Mirror Limit / Error");
+            let data = await res.json();
+            return data.translatedText;
+        }
+
+        // Modified: Waterfall Routing Multi-Engine Fallback translation logic ported directly
+        async function performTranslation(text) {
+            const sourceLang = document.getElementById('sourceLanguage').value;
+            const targetLang = document.getElementById('targetLanguage').value;
+            const outputBox = document.getElementById('outputText');
+            const transBtn = document.getElementById('translateButton');
+
+            if (!text.trim()) {
+                outputBox.textContent = "Translation will appear here.";
+                return;
+            }
+
+            transBtn.classList.add('loading');
+            transBtn.disabled = true;
+            outputBox.textContent = "Attempting translation...";
+
+            let translatedResult = "";
+            let success = false;
+
+            // Try Engine 1: Google Translate
+            try {
+                translatedResult = await fetchGoogleTranslate(text, sourceLang, targetLang);
+                success = true;
+                // Modified: Triggers simplified green success toast
+                window.showToast("Translated successfully!", "success");
+            } catch (err) {
+                console.warn("Primary Google failed. Routing to MyMemory...");
+                outputBox.textContent = "Primary engine busy. Routing to Fallback 1...";
+            }
+
+            // Try Engine 2: MyMemory Fallback
+            if (!success) {
+                try {
+                    translatedResult = await fetchMyMemoryTranslate(text, sourceLang, targetLang);
+                    success = true;
+                    // Modified: Triggers simplified green success toast
+                    window.showToast("Translated successfully!", "success");
+                } catch (err) {
+                    console.warn("Fallback 1 failed. Routing to LibreTranslate...");
+                    outputBox.textContent = "Engine busy. Routing to Fallback 2...";
+                }
+            }
+
+            // Try Engine 3: LibreTranslate Fallback
+            if (!success) {
+                try {
+                    translatedResult = await fetchLibreTranslate(text, sourceLang, targetLang);
+                    success = true;
+                    // Modified: Triggers simplified green success toast
+                    window.showToast("Translated successfully!", "success");
+                } catch (err) {
+                    console.error("All engines failed.");
+                    outputBox.textContent = "All translation servers are temporarily busy. Please wait a minute and try again.";
+                    window.showToast("All translation engines are offline.", "error");
+                    if (window.playTouchSound) window.playTouchSound(9);
+                }
+            }
+
+            if (success) {
+                outputBox.textContent = translatedResult;
+                if (window.playTouchSound) window.playTouchSound(14);
+            }
+
+            // Modified: Correctly reset the animating spinner and loading classes on trigger button
+            transBtn.classList.remove('loading');
+            transBtn.disabled = false;
+        }
+
+        // Initialize core elements
+        document.addEventListener('DOMContentLoaded', async () => {
+            applySkeletons();
+
+            // Set default languages (Modified: Kept English strictly as default locked source)
+            document.getElementById('sourceLanguage').value = "en";
+            document.getElementById('sourceLangName').textContent = "English";
+            document.getElementById('targetLanguage').value = "hi";
+            document.getElementById('targetLangName').textContent = "Hindi";
+
+            setTimeout(() => {
+                removeSkeletons();
+            }, 1200);
+
+            // Programmatic Hover Configuration (Modified: Hover visual scaling completely stripped)
+            const transBtn = document.getElementById('translateButton');
+            let hoverTimeout = null;
+
+            transBtn.addEventListener('mouseenter', () => {
+                if (transBtn.disabled) return;
+                transBtn.classList.add('button--hovered');
+                if (hoverTimeout) clearTimeout(hoverTimeout);
+                hoverTimeout = setTimeout(() => { transBtn.classList.remove('button--hovered'); }, 2000);
+            });
+            transBtn.addEventListener('mouseleave', () => {
+                transBtn.classList.remove('button--hovered');
+                if (hoverTimeout) clearTimeout(hoverTimeout);
+            });
+            transBtn.addEventListener('mousedown', () => { transBtn.classList.remove('button--hovered'); });
+            
+            // Translate Trigger click
+            transBtn.addEventListener('click', () => {
+                if (window.playTouchSound) window.playTouchSound(1);
+                performTranslation(document.getElementById('inputText').value);
+            });
+
+            // Target Dropdown selectors mapped to Custom Popup modal window list selections
+            const srcDrop = document.getElementById('sourceLanguageDropdown');
+            const targetDrop = document.getElementById('targetLanguageDropdown');
+
+            srcDrop.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (window.playTouchSound) window.playTouchSound(9);
+                window.showToast("Source language locked to English.");
+            });
+
+            // Modified: Opens custom popup modal overlay for language target list selections
+            targetDrop.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (window.playTouchSound) window.playTouchSound(4);
+                
+                const currentSelected = document.getElementById('targetLanguage').value;
+                // Modified: Filters English out of target selector since source is locked to English
+                const targetLanguagesOptions = languages.filter(lang => lang.code !== "en");
+                
+                window.openCustomListSelector("Select Language", targetLanguagesOptions, currentSelected, (selectedLang) => {
+                    document.getElementById('targetLanguage').value = selectedLang.code;
+                    document.getElementById('targetLangName').textContent = selectedLang.name;
+                    
+                    if (document.getElementById('inputText').value.trim() !== "") {
+                        performTranslation(document.getElementById('inputText').value.trim());
+                    }
+                });
+            });
+
+            // Clear Input action button
+            document.getElementById('clearInput').addEventListener('click', () => {
+                if (window.playTouchSound) window.playTouchSound(6);
+                document.getElementById('inputText').value = '';
+                document.getElementById('outputText').textContent = "Translation will appear here.";
+                window.showToast("Input cleared.");
+            });
+
+            // Paste Input action button 
+            document.getElementById('pasteInput').addEventListener('click', async () => {
+                if (window.playTouchSound) window.playTouchSound(6);
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (text) {
+                        document.getElementById('inputText').value = text;
+                        performTranslation(text);
+                        window.showToast("Text pasted from clipboard!");
+                    }
+                } catch (err) {
+                    window.showToast("Could not access clipboard.");
+                }
+            });
+
+            // Copy Translation action button 
+            document.getElementById('copyOutput').addEventListener('click', () => {
+                if (window.playTouchSound) window.playTouchSound(6);
+                const outText = document.getElementById('outputText').textContent;
+                if (outText && outText !== "Translation will appear here." && outText !== "Please enter text to translate.") {
+                    navigator.clipboard.writeText(outText).then(() => {
+                        window.showToast("Translation copied!", "success");
+                    }).catch(() => {
+                        window.showToast("Failed to copy text.");
+                    });
+                } else {
+                    window.showToast("No text to copy.");
+                }
+            });
+
+            // Listen Speech Audio synthesis action button
+            document.getElementById('speakOutput').addEventListener('click', () => {
+                if (window.playTouchSound) window.playTouchSound(6);
+                const textToSpeak = document.getElementById('outputText').textContent;
+                if (textToSpeak && textToSpeak !== "Translation will appear here." && !textToSpeak.startsWith("Attempting")) {
+                    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                    utterance.lang = document.getElementById('targetLanguage').value;
+                    speechSynthesis.speak(utterance);
+                    window.showToast("Speaking output translation...");
+                } else {
+                    window.showToast("No content to speak.");
+                }
+            });
+
+            // Speech Recognition Microphone action button
+            document.getElementById('speechToTextInput').addEventListener('click', () => {
+                if (window.playTouchSound) window.playTouchSound(6);
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (SpeechRecognition) {
+                    const recognition = new SpeechRecognition();
+                    recognition.lang = document.getElementById('sourceLanguage').value;
+                    recognition.interimResults = false;
+                    recognition.maxAlternatives = 1;
+
+                    window.showToast("Listening... Speak now");
+                    recognition.start();
+
+                    recognition.onresult = (e) => {
+                        const voiceText = e.results[0][0].transcript;
+                        document.getElementById('inputText').value = voiceText;
+                        performTranslation(voiceText);
+                    };
+
+                    recognition.onerror = () => {
+                        window.showToast("Could not recognize voice. Type manually.");
+                    };
+                } else {
+                    window.showToast("Voice recognition not supported in browser.");
+                }
+            });
+
+            // Throttled real-time typing translator triggering
+            let typingTimer;
+            document.getElementById('inputText').addEventListener('keyup', () => {
+                clearTimeout(typingTimer);
+                const inputVal = document.getElementById('inputText').value;
+                if (inputVal) {
+                    typingTimer = setTimeout(() => {
+                        performTranslation(inputVal);
+                    }, 1000);
+                } else {
+                    document.getElementById('outputText').textContent = "Translation will appear here.";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

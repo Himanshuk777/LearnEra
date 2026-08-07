@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>About LearnEra - Futuristic Learning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons & GSAP scripts -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    
+    <!-- Early theme bootstrap — mirrors LearnEra/Affiliate screen exactly -->
+    <script>
+        (function () {
+            try {
+                const savedTheme = localStorage.getItem('appThemeMode') || 'system';
+                const isDark = savedTheme === 'dark' ||
+                    (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const darkStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.documentElement.setAttribute('data-dark-text', darkStyle);
+                } else {
+                    document.documentElement.removeAttribute('data-dark-text');
+                }
+                const topSp = localStorage.getItem('appTopSpace') || '5';
+                document.documentElement.style.setProperty('--top-space', topSp + 'vh');
+            } catch (e) {
+                document.documentElement.style.setProperty('--top-space', '5vh');
+            }
+            
+            const savedLang = localStorage.getItem('appLanguageSelection') || 'en';
+            document.documentElement.setAttribute('data-lang', savedLang);
+        })();
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        :root {
+            --body-bg: #e6edf7; 
+            --neu-shadow-light: #ffffff;
+            --neu-shadow-dark: #c8d3e4;
+            
+            --text-color: rgba(138, 43, 226, 0.4); 
+            --sub-text-color: #7a8b9e;
+            
+            --pink: #FF69B4;
+            --pink-strong: #FF149380;
+            --blue: #1E90FF;
+            --purple: #8A2BE2;
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+            
+            --inner-highlight: inset 1px 1px 2px rgba(255,255,255,0.7);
+            --border-soft: 1px solid rgba(255,255,255,0.35);
+            
+            --top-space: 5vh;
+            --transition-theme: background-color 0.8s ease, color 0.8s ease, box-shadow 0.8s ease, border-color 0.8s ease;
+        }
+
+        /* Standard Dark Colorful Mode: Background color `#1e1e24` and shadow `#101014` [LearnEra standard] */
+        html[data-theme="dark"] {
+            --body-bg: #1e1e24; /* Adjusted background color to have a beautiful soft grey tone */
+            --neu-shadow-dark: #101014; /* Matched the soft shadow values */
+            --neu-shadow-light: rgba(255, 255, 255, 0.05);
+            
+            --text-color: #ffffff; 
+            --sub-text-color: #88888c; 
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+        }
+
+        /* Deep Dark Mode: Background color `#0c0c0f` and shadow `#050506` [LearnEra standard] [3] */
+        html[data-dark-text="deep-dark"] {
+            --body-bg: #0c0c0f; 
+            --neu-shadow-dark: #050506;
+            --neu-shadow-light: rgba(255, 255, 255, 0.02);
+            
+            --text-color: rgba(255, 255, 255, 0.35);
+            --sub-text-color: rgba(255, 255, 255, 0.25);
+
+            /* Overrides the dynamic purple/pink highlights directly to soft monochrome grey */
+            --pink: rgba(255, 255, 255, 0.35);
+            --pink-strong: rgba(255, 255, 255, 0.35);
+            --blue: rgba(255, 255, 255, 0.35);
+            --purple: rgba(255, 255, 255, 0.35);
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.01);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.01);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.01);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.01);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.02);
+        }
+
+        /* Language Overrides */
+        html[data-lang="hi"] *, html[data-lang="ch"] *, html[data-lang="bh"] * {
+            font-family: 'Tiro Devanagari Hindi', serif !important;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            overflow-x: hidden;
+            overscroll-behavior: none;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 35px;
+            font-size: 13px; 
+            transition: var(--transition-theme);
+        }
+
+        /* Responsive Layout Container */
+        .about-container {
+            width: 100%;
+            max-width: 560px;
+            margin: 0 auto;
+            /* Top area space gap matches AffiliateDashboard_9.html exactly */
+            padding: calc(var(--top-space) + 15px) 15px 35px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Large main sections card shadow effect very sharp exactly same as For You section buttons */
+        .about-card {
+            background: var(--body-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--card-shadow-micro), var(--inner-highlight);
+            border: var(--border-soft);
+            color: var(--text-color);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-theme);
+        }
+
+        /* Dynamic Title Styling - Colorful Purple Gradients in Light and Dark Colorful Mode */
+        .about-card-title {
+            font-size: 1.15em;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-align: left;
+            transition: color 0.4s ease;
+        }
+
+        html:not([data-dark-text="deep-dark"]) .about-card-title {
+            background: linear-gradient(135deg, #8A2BE2, #a158e6, #DA70D6) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            display: inline-block;
+            transition: var(--transition-theme);
+        }
+
+        .about-card p {
+            font-size: 0.85em;
+            line-height: 1.6;
+            color: var(--sub-text-color);
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 2;
+        }
+        .about-card p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* CEO Custom Card Structure */
+        .ceo-profile-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+        .ceo-pic-wrapper {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: var(--body-bg);
+            box-shadow: var(--card-shadow-inset);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            padding: 6px;
+        }
+        .ceo-pic {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: var(--card-shadow-micro);
+        }
+        .ceo-pic img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        html[data-dark-text="deep-dark"] .ceo-pic img {
+            filter: grayscale(100%) opacity(0.35) !important;
+        }
+        .ceo-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex: 1;
+        }
+        .ceo-name {
+            font-size: 1.1em;
+            font-weight: 700;
+        }
+        html:not([data-dark-text="deep-dark"]) .ceo-name {
+            background: linear-gradient(135deg, #8A2BE2, #a158e6, #DA70D6) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            display: inline-block;
+            transition: var(--transition-theme);
+        }
+        .ceo-title {
+            font-size: 0.78em;
+            font-weight: 600;
+            color: var(--sub-text-color);
+            opacity: 0.9;
+            letter-spacing: 0.3px;
+        }
+        .ceo-quote-block {
+            box-shadow: var(--card-shadow-inset);
+            border-radius: 14px;
+            padding: 14px;
+            font-style: italic;
+            font-size: 0.82em;
+            color: var(--sub-text-color);
+            line-height: 1.5;
+            margin-top: 10px;
+        }
+
+        /* Values Grid with Inside Shadow and Large Rotated Low Opacity Icons on Right */
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 10px;
+        }
+        .value-card {
+            background: var(--body-bg);
+            border-radius: 16px;
+            padding: 18px 16px;
+            box-shadow: var(--card-shadow-inset); /* Inside shadow effect on value cards */
+            border: var(--border-soft);
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+            min-height: 85px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* Removed hover scaling transitions entirely */
+            transition: var(--transition-theme);
+        }
+        .value-card:active {
+            transform: scale(0.98);
+        }
+        .value-card h4 {
+            font-size: 0.85em;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-color);
+            position: relative;
+            z-index: 2;
+        }
+        .value-card p {
+            font-size: 0.72em;
+            color: var(--sub-text-color);
+            line-height: 1.45;
+            margin-bottom: 0;
+            position: relative;
+            z-index: 2;
+            padding-right: 40px; /* space so text doesn't clash with right icon */
+        }
+        .value-card .value-icon-right {
+            position: absolute;
+            right: -10px;
+            bottom: -15px;
+            font-size: 4.8em; /* Enlarged rotated super large icon in bottom right corner */
+            color: var(--pink);
+            opacity: 0.08; /* Lowest transparency effect */
+            z-index: 1;
+            pointer-events: none;
+            transform: rotate(-15deg); 
+            text-shadow: none;
+        }
+
+        /* Large backdrop low transparency icons on content cards */
+        .large-backdrop-icon {
+            position: absolute;
+            bottom: -24px;
+            right: -24px;
+            font-size: 9em;
+            opacity: 0.08;
+            pointer-events: none;
+            transform: rotate(-12deg);
+            z-index: 1;
+        }
+
+        /* Key Metrics Grid - Sharp outline card style similar to boards card */
+        .key-metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 10px;
+        }
+        .metric-card {
+            background: var(--body-bg);
+            border-radius: 20px;
+            padding: 18px 14px;
+            border: 3.5px solid var(--body-bg) !important; /* Thick outline card style matching boards card */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+            text-align: center;
+            transition: var(--transition-theme);
+            box-shadow: var(--card-shadow-micro), inset 1px 1px 2px rgba(255,255,255,0.7) !important;
+        }
+        body[data-theme="dark"] .metric-card {
+            border: 3.5px solid rgba(255, 255, 255, 0.12) !important; /* Thick prominent outline on dark mode */
+            box-shadow: var(--card-shadow-micro), inset 1px 1px 2px rgba(255, 255, 255, 0.05) !important;
+        }
+        html[data-dark-text="deep-dark"] .metric-card {
+            border: 3.5px solid rgba(255, 255, 255, 0.05) !important;
+            box-shadow: var(--card-shadow-micro), inset 1px 1px 2px rgba(255, 255, 255, 0.01) !important;
+        }
+        .metric-card .number {
+            font-size: 1.55em;
+            font-weight: 700;
+            color: var(--pink-strong);
+        }
+        body[data-theme="dark"] .metric-card .number {
+            color: var(--pink);
+        }
+        .metric-card .label {
+            font-size: 0.6em;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--sub-text-color);
+            margin-top: 6px;
+        }
+
+        /* Separated Text Highlights style */
+        .about-list-item strong {
+            color: var(--text-color); /* Important texts render crisp and vibrant */
+            font-weight: 700;
+        }
+        .about-list-item span {
+            color: var(--sub-text-color); /* Descriptions render in muted grey */
+        }
+
+        /* Neumorphic List Items with Phosphor Icons */
+        .about-list-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 14px;
+            background: var(--body-bg);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow-micro);
+            border: var(--border-soft);
+            margin-bottom: 10px;
+            font-size: 0.8em;
+            text-align: left;
+        }
+        .about-list-item:last-child {
+            margin-bottom: 0;
+        }
+        .about-list-item i {
+            color: var(--blue);
+            margin-top: 3px;
+            font-size: 0.9em;
+            flex-shrink: 0;
+        }
+        .about-list-item span {
+            line-height: 1.45;
+        }
+
+        /* Blur reveals styling */
+        .blur-text-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--text-color);
+            text-align: center;
+            padding: 0;
+        }
+        .blur-text-segment {
+            display: inline-block;
+            will-change: transform, filter, opacity;
+            margin-right: 6px;
+        }
+
+
+        /* Dark Colorful Mode: soften the pink/purple gradient text */
+        html[data-theme="dark"]:not([data-dark-text="deep-dark"]) .about-card-title,
+        html[data-theme="dark"]:not([data-dark-text="deep-dark"]) .ceo-name {
+            opacity: 0.75;
+        }
+
+        /* Deep Dark Mode Monochrome Overrides from LearnEra.html [3] */
+        html[data-dark-text="deep-dark"] .about-card-title,
+        html[data-dark-text="deep-dark"] .ceo-name,
+        html[data-dark-text="deep-dark"] .metric-card .number,
+        html[data-dark-text="deep-dark"] .metric-card .label,
+        html[data-dark-text="deep-dark"] .about-list-item i,
+        html[data-dark-text="deep-dark"] .about-list-item strong,
+        html[data-dark-text="deep-dark"] .large-backdrop-icon,
+        html[data-dark-text="deep-dark"] .value-icon-right,
+        html[data-dark-text="deep-dark"] .blur-text-container * {
+            color: rgba(255, 255, 255, 0.35) !important;
+            fill: rgba(255, 255, 255, 0.35) !important;
+            background: none !important;
+            background-image: none !important;
+            -webkit-background-clip: initial !important;
+            background-clip: initial !important;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.35) !important;
+        }
+        html[data-dark-text="deep-dark"] img,
+        html[data-dark-text="deep-dark"] .ceo-pic img {
+            filter: grayscale(100%) opacity(0.35) !important;
+        }
+
+        /* Skeleton Loading System */
+        .skeleton-card {
+            position: relative !important;
+            overflow: hidden !important;
+            border-color: transparent !important;
+            box-shadow: var(--card-shadow-micro) !important; /* Matches For You horizontal button shadows */
+        }
+        .skeleton-card * {
+            visibility: hidden !important;
+        }
+        .skeleton-card::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -150%;
+            width: 150%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            animation: skeleton-shimmer-animation 1.5s infinite;
+            z-index: 5;
+        }
+        body[data-theme="dark"] .skeleton-card::after {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+        }
+        @keyframes skeleton-shimmer-animation {
+            0% { left: -150%; }
+            100% { left: 150%; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="about-container">
+        
+        <!-- 1. Leadership Section (Most top area) -->
+        <div class="about-card skeleton-card">
+            <div class="about-card-title">Leadership</div>
+            <div class="ceo-profile-header">
+                <div class="ceo-pic-wrapper">
+                    <div class="ceo-pic">
+                        <img src="https://i.ibb.co/jkyHZJgm/IMG-2026080213022632911.webp" alt="Himanshu Khandekar">
+                    </div>
+                </div>
+                <div class="ceo-info">
+                    <div class="ceo-name">Himanshu Khandekar</div>
+                    <div class="ceo-title">Founder & CEO, LearnEra</div>
+                </div>
+            </div>
+            <p>
+                Himanshu Khandekar is the visionary force behind LearnEra. With a background in Artificial Intelligence and Cognitive Science, Himanshu spearheaded the development of LearnEra's proprietary adaptive learning algorithms. His unwavering commitment to educational equity and technological innovation drives our mission to empower learners worldwide. Under his leadership, LearnEra has grown from a groundbreaking concept into a global phenomenon, redefining how millions acquire knowledge and skills.
+            </p>
+            <div class="ceo-quote-block">
+                "Learn as an Learner not as an Student, If you learn as an Student, You'll never Learn..."
+                <br><br>- A Backbencher
+            </div>
+        </div>
+
+        <!-- 2. Our Impact Section (Positioned below Leadership Section, using sharp micro-shadows & thick outlines) -->
+        <div class="about-card skeleton-card">
+            <div class="about-card-title">Our Impact</div>
+            <p style="margin-bottom: 18px;">We don't just speculate results. We build and deploy them with extreme scale:</p>
+            <div class="key-metrics-grid">
+                <div class="metric-card">
+                    <!-- Configured exactly to 475,897 Learners -->
+                    <span class="number" data-target="475897" data-suffix="" data-float="false">0</span>
+                    <span class="label">Learners</span>
+                </div>
+                <div class="metric-card">
+                    <!-- Configured exactly to 50+ Courses -->
+                    <span class="number" data-target="50" data-suffix="+" data-float="false">0</span>
+                    <span class="label">Courses</span>
+                </div>
+                <div class="metric-card">
+                    <!-- Configured exactly to 10+ Countries -->
+                    <span class="number" data-target="10" data-suffix="+" data-float="false">0</span>
+                    <span class="label">Countries</span>
+                </div>
+                <div class="metric-card">
+                    <!-- Configured exactly to 84.7% satisfied -->
+                    <span class="number" data-target="84.7" data-suffix="%" data-float="true">0</span>
+                    <span class="label">% Satisfied</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll-Trigger fade-blur text segment matching Test2.html (Tight gaps margin) -->
+        <div id="sigma-blur-target" class="blur-text-container" style="padding: 0; margin-top: -15px; margin-bottom: -15px;"></div>
+
+        <!-- 3. Our Values Section (Positioned below Our Impact Section, using Inset Shadows + Large Rotated Low Opacity Icons on Right side) -->
+        <div class="about-card skeleton-card">
+            <div class="about-card-title" style="margin-bottom: 18px;">Our Values</div>
+            <div class="values-grid">
+                <div class="value-card">
+                    <i class="ph-bold ph-lightbulb value-icon-right"></i>
+                    <h4>Innovation</h4>
+                    <p>Standard is boring. We constantly build, break, and reconstruct models to keep you ahead of light speed.</p>
+                </div>
+                <div class="value-card">
+                    <i class="ph-bold ph-globe value-icon-right"></i>
+                    <h4>Accessibility</h4>
+                    <p>Genius is universal. We completely destroy economic and physical barriers so free intelligence can run wild.</p>
+                </div>
+                <div class="value-card">
+                    <!-- Fixed: Empowerment card icon changed to Phosphor ph-bold ph-rocket-launch & large bottom right scale layout -->
+                    <i class="ph-bold ph-rocket-launch value-icon-right"></i>
+                    <h4>Empowerment</h4>
+                    <p>We empower individuals to take control of their learning journey.</p>
+                </div>
+                <div class="value-card">
+                    <i class="ph-bold ph-shield-check value-icon-right"></i>
+                    <h4>Integrity</h4>
+                    <p>Fortress-grade trust. Your privacy is locked tighter than a secure vault, ensuring bulletproof execution.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vision Card (with large backdrop low transparency icon) -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-eye large-backdrop-icon" style="color: var(--blue);"></i>
+            <div class="about-card-title">Vision</div>
+            <p>
+                Unlocking Tomorrow's Potential, Today. Actually, we're building the future because the present is way too slow. While others are playing with basic solar calculators, we are busy weaponizing starlight to power civilization. Welcome to LearnEra. You're welcome.
+            </p>
+        </div>
+
+        <!-- Story Card (with large backdrop low transparency icon) -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-clock-counter-clockwise large-backdrop-icon" style="color: var(--purple);"></i>
+            <div class="about-card-title">Our Story</div>
+            <p>
+                Standard learning was so prehistoric it belonged in a museum. We got tired of watching minds get forced into identical molds, so we built starlight algorithms to dismantle the assembly line.
+            </p>
+            <p>
+                We recognized the limitations of static curricula and one-size-fits-all approaches. Our founders envisioned a system that could dynamically curate, synthesize, and deliver educational content tailored to each individual's unique needs and aspirations. This vision is now a reality.
+            </p>
+        </div>
+
+        <!-- Mission Card (with large backdrop low transparency icon) -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-target large-backdrop-icon" style="color: var(--pink-strong);"></i>
+            <div class="about-card-title">Our Mission</div>
+            <p>
+                Absolute cognitive dominance for anyone, anywhere. We're shipping high-yield AI resources to every coordinate on earth. No premium paywalls, no exceptions, no VIP gates, just absolute cognitive dominance for anyone with an internet connection.
+            </p>
+            <p>
+                We are committed to breaking down traditional barriers to education, making advanced learning accessible to everyone. Our platform is designed to be intuitive, inclusive, and constantly evolving, ensuring that our users always have access to the most relevant and cutting-edge resources.
+            </p>
+        </div>
+
+        <!-- Philosophy Card (with large backdrop low transparency icon) -->
+        <div class="about-card skeleton-card">
+            <i class="ph-bold ph-compass large-backdrop-icon" style="color: var(--pink);"></i>
+            <div class="about-card-title">Our Philosophy</div>
+            <p>
+                Rote learning is a relic. We want you to break paradigms, question axioms, and rebuild them stronger. Your mind isn't a storage unit; it's a launchpad.
+            </p>
+            <p>
+                We champion curiosity and encourage our learners to explore diverse subjects, challenge conventional wisdom, and develop a growth mindset. Our platform is built to inspire, providing a rich tapestry of content and tools that cater to various interests and learning preferences.
+            </p>
+        </div>
+
+        <!-- Upcoming Projects -->
+        <div class="about-card skeleton-card">
+            <div class="about-card-title">Upcoming Projects</div>
+            <p style="margin-bottom: 18px;">Standard apps are outdated. We are actively forging a new digital frontier to make basic tech feel ancient:</p>
+            <div class="about-list-item">
+                <i class="ph-bold ph-arrow-right"></i>
+                <span><strong>Social Media App:</strong> Not your typical feed. A secure collaborative learning hive where starlight minds assemble.</span>
+            </div>
+            <div class="about-list-item">
+                <i class="ph-bold ph-arrow-right"></i>
+                <span><strong>Open World Game:</strong> An immersive 3D simulation where your real-world coding or legal knowledge dictates survival.</span>
+            </div>
+            <div class="about-list-item">
+                <i class="ph-bold ph-arrow-right"></i>
+                <span><strong>Browser:</strong> A lightweight, privacy-fortified browser designed to guard your digital footprint with extreme prejudice.</span>
+            </div>
+            <div class="about-list-item">
+                <i class="ph-bold ph-arrow-right"></i>
+                <span><strong>E Commerce: CartiX:</strong> The absolute future of decentralized trading. No middlemen, no limits.</span>
+            </div>
+            <div class="about-list-item">
+                <i class="ph-bold ph-arrow-right"></i>
+                <span><strong>Many more:</strong> Because staying still is not in our DNA. We relentlessly innovate.</span>
+            </div>
+        </div>
+
+        <!-- Community Section -->
+        <div class="about-card skeleton-card">
+            <div class="about-card-title">Community</div>
+            <p style="margin-bottom: 18px;">The heart of LearnEra beats within its vibrant global community. We believe collective intelligence accelerates individual growth:</p>
+            <div class="about-list-item">
+                <i class="ph-bold ph-arrow-right"></i>
+                <span><strong>Interactive Forums:</strong> Engage with peers, ask questions, and collaborate in a supportive environment.</span>
+            </div>
+            <div class="about-list-item">
+                <i class="ph-bold ph-arrow-right"></i>
+                <span><strong>Live Expert Sessions:</strong> Participate in live webinars and Q&As with industry leaders and creators.</span>
+            </div>
+            <div class="about-list-item">
+                <i class="ph-bold ph-arrow-right"></i>
+                <span><strong>Peer Mentorship:</strong> Connect with experienced mentors who can guide you through challenging concepts.</span>
+            </div>
+        </div>
+
+        <!-- Future Section -->
+        <div class="about-card skeleton-card">
+            <div class="about-card-title">Future Plans</div>
+            <p style="margin-bottom: 18px;">We are relentlessly innovating to bring you the next generation of educational experiences:</p>
+            <div class="about-list-item">
+                <i class="ph-bold ph-arrow-right"></i>
+                <span><strong>Decentralized Credentials:</strong> Implementing blockchain-based certificates for verifiable Recognition.</span>
+            </div>
+            <div class="about-list-item">
+                <i class="ph-bold ph-arrow-right"></i>
+                <span><strong>Micro-Learning Modules:</strong> Refining AI content generation on-demand, tailored to individual gaps.</span>
+            </div>
+            <div class="about-list-item">
+                <i class="ph-bold ph-arrow-right"></i>
+                <span><strong>AI-Powered Placement:</strong> Connecting learners with ideal career opportunities matching their path.</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Sound FX System
+        (function initDashboardSoundFX(){
+            const LS_MASTER = 'touchSoundsEnabled';
+            const LS_GROUPS = 'touchSoundsGroupState';
+
+            const CLICK_SOUND_URLS = [
+                "Click1.ogg", "Click2.ogg", "Click3.ogg", "Click4.ogg", "Click5.ogg",
+                "Click6.ogg", "Click7.ogg", "Click8.ogg", "Click9.ogg", "Click10.ogg",
+                "Click11.ogg", "Click12.ogg", "Click13.ogg", "Click14.ogg"
+            ];
+
+            const GROUP_TO_CLICKS = {
+                'buttons'   : [1, 2, 3, 7, 8, 9, 14],
+                'navigation': [5],
+                'inputs'    : [4, 6],
+                'reserved'  : [10, 11, 12, 13]
+            };
+
+            const CLICK_TO_GROUP = {};
+            Object.keys(GROUP_TO_CLICKS).forEach(g => {
+                GROUP_TO_CLICKS[g].forEach(n => { CLICK_TO_GROUP[n] = g; });
+            });
+
+            const audioCache = {};
+            let _ac = null;
+            let _masterGain = null;
+            let _navBuffer = null;
+
+            function getAC(){
+                if (_ac) return _ac;
+                try {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (Ctx) {
+                        _ac = new Ctx();
+                        const comp = _ac.createDynamicsCompressor();
+                        comp.threshold.value = -10;
+                        comp.knee.value = 6;
+                        comp.ratio.value = 12;
+                        comp.attack.value = 0.001;
+                        comp.release.value = 0.05;
+                        _masterGain = _ac.createGain();
+                        _masterGain.gain.value = 1.0;
+                        comp.connect(_masterGain).connect(_ac.destination);
+                        _ac._busIn = comp;
+                    }
+                } catch(e){}
+                return _ac;
+            }
+
+            function ensureNavBuffer(){
+                const ac = getAC();
+                if (!ac || _navBuffer) return _navBuffer;
+                const sr = ac.sampleRate;
+                const dur = 0.09;
+                const len = Math.floor(sr * dur);
+                const buf = ac.createBuffer(1, len, sr);
+                const data = buf.getChannelData(0);
+                const f0 = 520, f1 = 300;
+                for (let i = 0; i < len; i++) {
+                    const t = i / sr;
+                    const k = i / len;
+                    const f = f0 + (f1 - f0) * k;
+                    const env = Math.min(1, i / (sr * 0.004)) * Math.pow(1 - k, 2.2);
+                    data[i] = Math.sin(2 * Math.PI * f * t) * env * 0.95;
+                }
+                _navBuffer = buf;
+                return buf;
+            }
+
+            function primeAudio(){
+                const ac = getAC();
+                if (ac && ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                ensureNavBuffer();
+            }
+
+            ['pointerdown','touchstart','keydown','click'].forEach(ev => {
+                document.addEventListener(ev, primeAudio, { capture: true, passive: true });
+            });
+
+            const SYNTH = {
+                1:  { f: 880,  d: 0.05, w: 'triangle', g: 0.18 },
+                2:  { f: 520,  d: 0.07, w: 'sine',     g: 0.22 },
+                3:  { f: 660,  d: 0.08, w: 'square',   g: 0.16 },
+                4:  { f: 1200, d: 0.03, w: 'sine',     g: 0.12 },
+                5:  { f: 740,  d: 0.05, w: 'triangle', g: 0.18 },
+                6:  { f: 1000, d: 0.025,w: 'sine',     g: 0.10 },
+                7:  { f: 600,  d: 0.05, w: 'square',   g: 0.16 },
+                8:  { f: 820,  d: 0.05, w: 'triangle', g: 0.18 },
+                9:  { f: 420,  d: 0.06, w: 'sine',     g: 0.18 },
+                10: { f: 480,  d: 0.05, w: 'triangle', g: 0.16 },
+                11: { f: 560,  d: 0.05, w: 'triangle', g: 0.16 },
+                12: { f: 640,  d: 0.05, w: 'triangle', g: 0.16 },
+                13: { f: 720,  d: 0.05, w: 'triangle', g: 0.16 },
+                14: { f: 440,  d: 0.08, w: 'sine',     g: 0.60 }
+            };
+
+            function synthClick(n){
+                const ac = getAC();
+                if (!ac) return;
+                if (ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                const r = SYNTH[n] || SYNTH[7];
+                const t0 = ac.currentTime;
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                osc.type = r.w;
+                osc.frequency.setValueAtTime(r.f, t0);
+                osc.frequency.exponentialRampToValueAtTime(Math.max(80, r.f * 0.6), t0 + r.d);
+                gain.gain.setValueAtTime(0.0001, t0);
+                gain.gain.exponentialRampToValueAtTime(r.g, t0 + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + r.d);
+                osc.connect(gain).connect(ac._busIn || ac.destination);
+                osc.start(t0);
+                osc.stop(t0 + r.d + 0.02);
+            }
+
+            function playClick(n, opts){
+                opts = opts || {};
+                const isMasterOn = localStorage.getItem(LS_MASTER) === '1' || localStorage.getItem(LS_MASTER) === null;
+                if (!opts.force && !isMasterOn) return;
+
+                let groupState = {};
+                try { groupState = JSON.parse(localStorage.getItem(LS_GROUPS) || '{}'); } catch(e){}
+                const groupId = CLICK_TO_GROUP[n];
+                if (!opts.force && groupId && groupState[groupId] === false) return;
+
+                const url = CLICK_SOUND_URLS[n - 1];
+                if (isRealUrl(url)) {
+                    try {
+                        if (n === 14) {
+                            const a = new Audio(url);
+                            a.volume = 1.0;
+                            a.play().catch(() => synthClick(14));
+                            return;
+                        }
+                        if (!audioCache[n]) {
+                            const a = new Audio(url);
+                            a.volume = 0.5;
+                            a.preload = 'auto';
+                            audioCache[n] = a;
+                        }
+                        const a = audioCache[n];
+                        a.currentTime = 0;
+                        const p = a.play();
+                        if (p && p.catch) p.catch(() => synthClick(n));
+                        return;
+                    } catch(e) {}
+                }
+                synthClick(n);
+            }
+
+            window.playTouchSound = playClick;
+
+            // Bind sound clicks to elements (Safely bypasses Our Values section click sfx)
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.value-card')) {
+                    return; // Explicitly mute and bypass sound trigger for Values cards
+                }
+                if (e.target.closest('.metric-card, .about-list-item')) {
+                    if (window.parent && typeof window.parent.playTouchSound === 'function') {
+                        window.parent.playTouchSound(5);
+                    } else {
+                        playClick(5);
+                    }
+                }
+            });
+
+            document.addEventListener('focusin', (e) => {
+                if (e.target.tagName === 'INPUT') {
+                    if (window.parent && typeof window.parent.playTouchSound === 'function') {
+                        window.parent.playTouchSound(4);
+                    } else {
+                        playClick(4);
+                    }
+                }
+            });
+        })();
+
+        // Bootstrap on startup
+        document.addEventListener('DOMContentLoaded', () => {
+            // Simulated Skeleton Loading cycle
+            setTimeout(() => {
+                document.querySelectorAll('.skeleton-card').forEach(card => {
+                    card.classList.remove('skeleton-card');
+                });
+                initCounters();
+                initBlurTextEveryTime('sigma-blur-target', "Mediocrity is a choice. We choose to build a smarter tomorrow.");
+            }, 800);
+
+            // Dynamic Counter Activation
+            function initCounters() {
+                const metricCards = document.querySelectorAll('.metric-card');
+                const observerOptions = {
+                    root: null,
+                    rootMargin: '0px',
+                    threshold: 0.1
+                };
+
+                const observer = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const numberSpan = entry.target.querySelector('.number');
+                            if (numberSpan && !numberSpan.dataset.animated) {
+                                const target = parseFloat(numberSpan.dataset.target);
+                                const suffix = numberSpan.dataset.suffix || "";
+                                const isFloat = numberSpan.dataset.float === "true";
+                                animateNumber(numberSpan, target, suffix, isFloat);
+                                numberSpan.dataset.animated = 'true';
+                            }
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, observerOptions);
+
+                metricCards.forEach(card => {
+                    observer.observe(card);
+                });
+            }
+
+            function animateNumber(element, targetNumber, suffix, isFloat) {
+                const start = 0;
+                const duration = 2000;
+                let startTime = null;
+
+                const step = (currentTime) => {
+                    if (!startTime) startTime = currentTime;
+                    const progress = Math.min((currentTime - startTime) / duration, 1);
+                    let currentValue;
+                    
+                    if (isFloat) {
+                        currentValue = (progress * (targetNumber - start) + start).toFixed(1);
+                    } else {
+                        currentValue = Math.floor(progress * (targetNumber - start) + start).toLocaleString('en-US');
+                    }
+                    
+                    element.textContent = currentValue + suffix;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(step);
+                    } else {
+                        if (isFloat) {
+                            element.textContent = targetNumber.toFixed(1) + suffix;
+                        } else {
+                            element.textContent = targetNumber.toLocaleString('en-US') + suffix;
+                        }
+                    }
+                };
+                requestAnimationFrame(step);
+            }
+
+            // GSAP ScrollTrigger blur text effect exactly same as Test2.html
+            function initBlurTextEveryTime(id, text) {
+                const container = document.getElementById(id);
+                if (!container) return;
+                
+                const words = text.split(' ');
+                container.innerHTML = ''; 
+                
+                words.forEach(word => {
+                    const span = document.createElement('span'); 
+                    span.className = 'blur-text-segment';
+                    span.textContent = word + ' ';
+                    container.appendChild(span);
+                });
+
+                gsap.fromTo(container.querySelectorAll('.blur-text-segment'), 
+                    { filter: 'blur(10px)', opacity: 0, y: 20 },
+                    { 
+                        filter: 'blur(0px)', opacity: 1, y: 0, 
+                        stagger: 0.05,
+                        scrollTrigger: {
+                            trigger: container,
+                            start: 'top 85%',
+                            end: 'bottom 50%',
+                            scrub: true 
+                        }
+                    }
+                );
+            }
+        });
+    </script>
+</body>
+
+</html>

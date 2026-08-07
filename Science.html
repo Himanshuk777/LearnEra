@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LearnEra - Science Hub</title>
+    
+    <!-- External Font Assets -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- React & Babel CDN Engine -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Early theme bootstrap -->
+    <script>
+        (function () {
+            try {
+                const savedTheme = localStorage.getItem('appThemeMode') || 'system';
+                const isDark = savedTheme === 'dark' ||
+                    (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const darkStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.documentElement.setAttribute('data-dark-text', darkStyle);
+                } else {
+                    document.documentElement.removeAttribute('data-dark-text');
+                }
+                const topSp = localStorage.getItem('appTopSpace') || '5';
+                document.documentElement.style.setProperty('--top-space', topSp + 'vh');
+            } catch (e) {
+                document.documentElement.style.setProperty('--top-space', '5vh');
+            }
+            const savedLang = localStorage.getItem('appLanguageSelection') || 'en';
+            document.documentElement.setAttribute('data-lang', savedLang);
+        })();
+    </script>
+
+    <style>
+        /* CSS Reset Elements */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        /* Color Tokens & Global Variables */
+        :root {
+            --body-bg: #e6edf7; 
+            --neu-shadow-light: #ffffff;
+            --neu-shadow-dark: #c8d3e4;
+            
+            --text-color: #2d3748; 
+            --sub-text-color: #718096; 
+            --blue: #1E90FF;
+            --select-active-color: #1E90FF;
+            --divider-color: rgba(138, 43, 226, 0.15);
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            --card-shadow-micro: 3px 3px 6px var(--neu-shadow-dark), -3px -3px 6px var(--neu-shadow-light);
+            --card-shadow-inset: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+            
+            --top-space: 5vh;
+            --transition-theme: background-color 0.8s ease, color 0.8s ease, box-shadow 0.8s ease, border-color 0.8s ease;
+
+            /* LearnEra Header Gradient Outline Tokens */
+            --header-gradient: linear-gradient(135deg, #8A2BE2, #a158e6, #DA70D6);
+        }
+
+        /* Standard Dark Mode Modifiers */
+        html[data-theme="dark"] {
+            --body-bg: #1e1e24; 
+            --neu-shadow-dark: #101014;
+            --neu-shadow-light: rgba(255, 255, 255, 0.05);
+            
+            --text-color: #d1d9e6; 
+            --sub-text-color: #a3b1c6; 
+            --divider-color: rgba(255, 255, 255, 0.08);
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+            --card-shadow-micro: 3px 3px 6px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+            --card-shadow-inset: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px rgba(255, 255, 255, 0.02);
+        }
+
+        /* Deep-Dark Mode Specific Styles */
+        html[data-dark-text="deep-dark"] {
+            --body-bg: #0c0c0f; 
+            --neu-shadow-dark: #050506;
+            --divider-color: rgba(255, 255, 255, 0.04);
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.01);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.01);
+            --card-shadow-micro: 3px 3px 6px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.01);
+            --card-shadow-inset: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.01);
+            
+            --blue: #7a8b9e;
+            --select-active-color: #7a8b9e;
+            --header-gradient: linear-gradient(135deg, #7a8b9e, #55555d);
+        }
+
+        html[data-dark-text="deep-dark"] *,
+        html[data-dark-text="deep-dark"] i,
+        html[data-dark-text="deep-dark"] h3,
+        html[data-dark-text="deep-dark"] h4,
+        html[data-dark-text="deep-dark"] p,
+        html[data-dark-text="deep-dark"] span,
+        html[data-dark-text="deep-dark"] li,
+        html[data-dark-text="deep-dark"] button,
+        html[data-dark-text="deep-dark"] input {
+            color: #7a8b9e !important;
+        }
+
+        html[data-dark-text="deep-dark"] .category-pill {
+            border-color: #55555d !important;
+        }
+
+        /* Custom Scrollbar Visual Hidden Settings */
+        ::-webkit-scrollbar {
+            display: none !important;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            overflow-y: auto; 
+            overscroll-behavior: none;
+            font-family: 'Poppins', sans-serif !important;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-items: center;
+            font-size: 13px; 
+            transition: var(--transition-theme);
+            padding-top: var(--top-space);
+        }
+
+        /* Layout Framework Container */
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 15px 15px 15px; 
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: flex-start;
+            height: auto;
+            min-height: 100%;
+        }
+
+        /* Neumorphic Responsive Card Style */
+        .app-card {
+            background: var(--body-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--card-shadow), inset 1px 1px 2px rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.35);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition-theme);
+            height: auto;
+        }
+
+        /* Horizontal Scroller Section Buttons */
+        .categories-filter-wrapper {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            width: 100%;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+
+        /* Inactive category pills: Grey outline style */
+        .category-pill {
+            flex: 1;
+            text-align: center;
+            flex-shrink: 0;
+            padding: 12px 14px;
+            border-radius: 14px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            background: transparent !important;
+            color: var(--sub-text-color);
+            box-shadow: none !important;
+            border: 1.5px solid rgba(150, 150, 150, 0.35) !important;
+            transition: all 0.25s ease;
+        }
+
+        html[data-theme="dark"] .category-pill {
+            border: 1.5px solid rgba(180, 180, 180, 0.30) !important;
+        }
+
+        .category-pill:active {
+            transform: scale(0.97);
+        }
+
+        /* Active Section Button: Gradient Outline Style */
+        .category-pill.active {
+            box-shadow: none !important;
+            border: 1.5px solid transparent !important;
+            background: linear-gradient(var(--body-bg), var(--body-bg)) padding-box, 
+                        var(--header-gradient) border-box !important;
+            color: #8A2BE2 !important;
+            font-weight: 700;
+        }
+
+        html[data-dark-text="deep-dark"] .category-pill {
+            border: 1.5px solid rgba(122, 139, 158, 0.3) !important;
+            color: #7a8b9e !important;
+        }
+
+        html[data-dark-text="deep-dark"] .category-pill.active {
+            border: 1.5px solid #7a8b9e !important;
+            background: #0c0c0f !important;
+            color: #7a8b9e !important;
+        }
+
+        /* Section Switching Smooth Entrance Animation */
+        .section-switch-anim {
+            animation: sectionFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes sectionFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(12px) scale(0.98);
+                filter: blur(4px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        /* General layout blocks for categories and topics */
+        .category-group-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            text-align: left;
+        }
+
+        .group-heading {
+            font-size: 1.05em;
+            font-weight: 800;
+            color: var(--text-color);
+            margin: 10px 0 5px 0;
+            letter-spacing: 0.3px;
+        }
+
+        /* Smooth FAQ-style sliding accordions */
+        .faq-item {
+            background: var(--body-bg);
+            border-radius: 16px;
+            border: none;
+            box-shadow: var(--card-shadow-micro) !important; 
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                        box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                        background-color 0.4s ease;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        html[data-theme="dark"] .faq-item, html[data-dark-text="deep-dark"] .faq-item {
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 18px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 700;
+            color: var(--text-color);
+            transition: color 0.3s ease;
+        }
+
+        .faq-question .icon {
+            font-size: 0.9em;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0.8;
+        }
+
+        /* Buttery Smooth Height-calculated transitions matching FAQs (3).html */
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease-out; 
+        }
+
+        /* Inner Content with outline divider line */
+        .faq-answer-content {
+            margin: 0 18px; 
+            padding: 12px 0 18px 0;
+            border-top: 1px solid var(--divider-color); 
+            color: var(--sub-text-color);
+            font-size: 0.82em;
+            line-height: 1.6;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(-5px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Active Expanded State */
+        .faq-item.active {
+            box-shadow: var(--card-shadow-inset) !important;
+            transform: scale(0.99);
+        }
+
+        .faq-item.active .faq-question {
+            color: var(--text-color);
+        }
+
+        .faq-item.active .faq-question .icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-item.active .faq-answer-content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom Popup Box Overlay */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.45) !important;
+            backdrop-filter: blur(16px) !important; 
+            -webkit-backdrop-filter: blur(16px) !important;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 20000;
+        }
+
+        .custom-modal {
+            background: var(--body-bg);
+            border-radius: 24px;
+            padding: 24px;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            width: 90%;
+            max-width: 420px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: none !important;
+        }
+
+        /* Shimmer Loading Skeletons rules */
+        .skeleton-loading {
+            background: var(--body-bg) !important;
+            border-color: transparent !important;
+            box-shadow: var(--settings-shadow-inset-sharp) !important;
+            color: transparent !important;
+            pointer-events: none !important;
+            position: relative !important;
+            overflow: hidden !important;
+            min-height: 50px;
+            border-radius: 14px;
+        }
+
+        .skeleton-loading * {
+            visibility: hidden !important;
+        }
+
+        .skeleton-loading::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -150%;
+            width: 150%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+            animation: skeleton-shimmer-animation 1.5s infinite;
+        }
+        body[data-theme="dark"] .skeleton-loading::after {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+        }
+        @keyframes skeleton-shimmer-animation {
+            0% { left: -150%; }
+            100% { left: 150%; }
+        }
+
+        html[data-dark-text="deep-dark"] .skeleton-loading {
+            background: #08080a !important;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                justify-content: center;
+                align-items: center;
+                padding-bottom: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Target Root Mounting Division for React App -->
+    <div id="root" style="width: 100%;"></div>
+
+    <!-- Live Execution Module Scripts -->
+    <script type="text/babel">
+        // Sound FX System matching exact Tools.html implementation
+        (function initDashboardSoundFX(){
+            const LS_MASTER = 'touchSoundsEnabled';
+            const LS_GROUPS = 'touchSoundsGroupState';
+
+            const CLICK_SOUND_URLS = [
+                "Click1.ogg", "Click2.ogg", "Click3.ogg", "Click4.ogg", "Click5.ogg",
+                "Click6.ogg", "Click7.ogg", "Click8.ogg", "Click9.ogg", "Click10.ogg",
+                "Click11.ogg", "Click12.ogg", "Click13.ogg", "Click14.ogg"
+            ];
+
+            const GROUP_TO_CLICKS = {
+                'buttons'   : [1, 2, 3, 7, 8, 9, 14],
+                'navigation': [5],
+                'inputs'    : [4, 6],
+                'reserved'  : [10, 11, 12, 13]
+            };
+
+            const CLICK_TO_GROUP = {};
+            Object.keys(GROUP_TO_CLICKS).forEach(g => {
+                GROUP_TO_CLICKS[g].forEach(n => { CLICK_TO_GROUP[n] = g; });
+            });
+
+            const audioCache = {};
+            let _ac = null;
+            let _masterGain = null;
+
+            function getAC(){
+                if (_ac) return _ac;
+                try {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (Ctx) {
+                        _ac = new Ctx();
+                        const comp = _ac.createDynamicsCompressor();
+                        comp.threshold.value = -10;
+                        comp.knee.value = 6;
+                        comp.ratio.value = 12;
+                        comp.attack.value = 0.001;
+                        comp.release.value = 0.05;
+                        _masterGain = _ac.createGain();
+                        _masterGain.gain.value = 1.0;
+                        comp.connect(_masterGain).connect(_ac.destination);
+                        _ac._busIn = comp;
+                    }
+                } catch(e){}
+                return _ac;
+            }
+
+            function synthClick(n){
+                const ac = getAC();
+                if (!ac) return;
+                if (ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                const SYNTH = {
+                    1:  { f: 880,  d: 0.05, w: 'triangle', g: 0.18 },
+                    2:  { f: 520,  d: 0.07, w: 'sine',     g: 0.22 },
+                    3:  { f: 660,  d: 0.08, w: 'square',   g: 0.16 },
+                    4:  { f: 1200, d: 0.03, w: 'sine',     g: 0.12 },
+                    5:  { f: 740,  d: 0.05, w: 'triangle', g: 0.18 },
+                    6:  { f: 1000, d: 0.025,w: 'sine',     g: 0.10 },
+                    7:  { f: 600,  d: 0.05, w: 'square',   g: 0.16 },
+                    8:  { f: 820,  d: 0.05, w: 'triangle', g: 0.18 },
+                    9:  { f: 420,  d: 0.06, w: 'sine',     g: 0.18 },
+                    10: { f: 480,  d: 0.05, w: 'triangle', g: 0.16 },
+                    11: { f: 560,  d: 0.05, w: 'triangle', g: 0.16 },
+                    12: { f: 640,  d: 0.05, w: 'triangle', g: 0.16 },
+                    13: { f: 720,  d: 0.05, w: 'triangle', g: 0.16 },
+                    14: { f: 440,  d: 0.08, w: 'sine',     g: 0.60 }
+                };
+                const r = SYNTH[n] || SYNTH[7];
+                const t0 = ac.currentTime;
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                osc.type = r.w;
+                osc.frequency.setValueAtTime(r.f, t0);
+                osc.frequency.exponentialRampToValueAtTime(Math.max(80, r.f * 0.6), t0 + r.d);
+                gain.gain.setValueAtTime(0.0001, t0);
+                gain.gain.exponentialRampToValueAtTime(r.g, t0 + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + r.d);
+                osc.connect(gain).connect(ac._busIn || ac.destination);
+                osc.start(t0);
+                osc.stop(t0 + r.d + 0.02);
+            }
+
+            function playClick(n, opts){
+                opts = opts || {};
+                const isMasterOn = localStorage.getItem(LS_MASTER) === '1' || localStorage.getItem(LS_MASTER) === null;
+                if (!opts.force && !isMasterOn) return;
+
+                let groupState = {};
+                try { groupState = JSON.parse(LS_GROUPS) || {}; } catch(e){}
+                const groupId = CLICK_TO_GROUP[n];
+                if (!opts.force && groupId && groupState[groupId] === false) return;
+
+                const url = CLICK_SOUND_URLS[n - 1];
+                try {
+                    if (n === 14) {
+                        const a = new Audio(url);
+                        a.volume = 1.0;
+                        a.play().catch(() => synthClick(14));
+                        return;
+                    }
+                    if (!audioCache[n]) {
+                        const a = new Audio(url);
+                        a.volume = 0.5;
+                        a.preload = 'auto';
+                        audioCache[n] = a;
+                    }
+                    const a = audioCache[n];
+                    a.currentTime = 0;
+                    const p = a.play();
+                    if (p && p.catch) p.catch(() => synthClick(n));
+                    return;
+                } catch(e) {
+                    synthClick(n);
+                }
+            }
+
+            window.playTouchSound = playClick;
+
+            ['pointerdown','touchstart','keydown','click'].forEach(ev => {
+                document.addEventListener(ev, () => {
+                    const ac = getAC();
+                    if (ac && ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                }, { capture: true, passive: true });
+            });
+        })();
+
+        // Hardcoded, detailed science syllabus structured under three categories
+        const hardcodedScienceTopics = {
+            physics: [
+                {
+                    group: "Mechanics & Kinetics",
+                    topics: [
+                        {
+                            title: "1. Newton's Laws of Motion",
+                            explanation: "Governs the physics of motion across all macroscopic entities. The First Law (Inertia) states that an object resists state changes unless forced by an external net force. The Second Law defines force quantitatively as the product of mass and acceleration (F = ma), showing how velocity changes proportionally to net forces. The Third Law establishes that all actions trigger equal, opposite reactions, conserving net momentum across boundaries.",
+                            examples: ["A spacecraft gliding endlessly through a cosmic vacuum.", "Recoil felt on your shoulder after firing a high-velocity projectile.", "A passenger shifting forward when a bus decelerates rapidly."]
+                        },
+                        {
+                            title: "2. Work, Energy, and Power",
+                            explanation: "Work is executed when a force causes mechanical displacement along the vector line (W = F * d * cos θ). Kinetic Energy represents moving energy (0.5 * m * v²), while Potential Energy represents stored capacity based on position (m * g * h). Power defines the speed of work execution.",
+                            examples: ["A crane hoisting heavy structural beams to the top of a skyscraper.", "A compressed mechanical spring storing potential energy.", "An elevator motor lifting passengers upward."]
+                        },
+                        {
+                            title: "3. Momentum and Impulse",
+                            explanation: "Momentum is the product of an object's mass and velocity (p = mv), representing its quantity of motion. Impulse is the change in momentum caused by a force acting over a period of time (J = F * Δt). In closed systems, total momentum remains conserved during collisions.",
+                            examples: ["A billiard ball striking another, transferring its speed.", "Airbags expanding to prolong crash duration and decrease impact forces.", "A baseball player swinging through the ball to maximize contact time."]
+                        }
+                    ]
+                },
+                {
+                    group: "Thermodynamics & Heat",
+                    topics: [
+                        {
+                            title: "4. Laws of Thermodynamics",
+                            explanation: "The First Law establishes energy conservation (ΔU = Q - W). The Second Law mandates that total entropy (disorder) in isolated boundaries always increases, showing that heat cannot spontaneously flow from cold to hot. The Third Law states that entropy approaches a constant minimum as temperature approaches absolute zero.",
+                            examples: ["Heat engines converting thermal energy into mechanical work.", "Ice melting spontaneously at room temperature as entropy increases.", "A refrigerator consuming electricity to pump heat out of its interior."]
+                        },
+                        {
+                            title: "5. Heat Transfer Mechanics",
+                            explanation: "Conduction transfers heat through molecular collisions in solids. Convection transfers heat through density currents in fluids. Radiation transfers thermal energy via electromagnetic waves without requiring a physical medium.",
+                            examples: ["A metal spoon warming up while resting in a hot soup bowl.", "Boiling water circulating in a pot via convection currents.", "The Earth absorbing thermal radiation from the Sun through the vacuum of space."]
+                        }
+                    ]
+                },
+                {
+                    group: "Waves and Optics",
+                    topics: [
+                        {
+                            title: "6. Wave Properties & Propagation",
+                            explanation: "Waves propagate energy through a medium (mechanical waves) or vacuum (electromagnetic waves). Transverse waves oscillate perpendicular to the travel direction, whereas longitudinal waves oscillate parallel to it.",
+                            examples: ["Sound waves traveling through air as compression waves.", "Ripples spreading across a pond when a stone is dropped.", "Radio signals propagating through the atmosphere."]
+                        },
+                        {
+                            title: "7. Light Reflection and Mirrors",
+                            explanation: "Reflection occurs when light bounces off a boundary. The Law of Reflection states that the angle of incidence equals the angle of reflection. Mirrors utilize this principle to form virtual or real images.",
+                            examples: ["Viewing a symmetrical reflection in a flat glass mirror.", "Concave make-up mirrors magnifying facial features.", "Convex side-view mirrors on cars providing a wider field of view."]
+                        },
+                        {
+                            title: "8. Refraction, Snell's Law and Lenses",
+                            explanation: "Refraction is the bending of light as it transitions between media with different refractive indices. Lenses utilize refraction to focus (convex) or disperse (concave) light rays.",
+                            examples: ["A straw looking bent when placed in a half-filled glass of water.", "Prescription eyeglasses correcting near-sightedness.", "Camera lenses focusing light onto digital sensors."]
+                        }
+                    ]
+                },
+                {
+                    group: "Electricity & Electromagnetism",
+                    topics: [
+                        {
+                            title: "9. Electric Charge and Coulomb's Law",
+                            explanation: "Electric charges create electromagnetic fields. Coulomb's Law dictates that the electrostatic force between two charges is directly proportional to the product of their charges and inversely proportional to the square of the distance between them.",
+                            examples: ["Static electricity attracting paper bits to a rubbed plastic comb.", "Lightning striking a lightning rod on top of a building.", "An atom keeping its electrons in orbit around the positively charged nucleus."]
+                        },
+                        {
+                            title: "10. Electric Circuits and Ohm's Law",
+                            explanation: "An electric circuit provides a closed loop for current to flow. Ohm's Law (V = IR) defines the relationship between voltage, current, and electrical resistance. Circuits can be arranged in series or parallel.",
+                            examples: ["A simple flashlight powered by batteries in series.", "Household appliances wired in parallel so they can operate independently.", "A dimmer switch varying resistance to adjust light bulb brightness."]
+                        },
+                        {
+                            title: "11. Electromagnetism and Faraday's Law",
+                            explanation: "Electromagnetism is the interaction between electrical currents and magnetic fields. Faraday's Law states that a changing magnetic field induces an electromotive force (EMF) in a closed circuit loop.",
+                            examples: ["An electric motor spinning when current flows through its coils.", "A generator producing current when its copper coils spin near magnets.", "Induction stovetops heating iron cookware using changing magnetic fields."]
+                        }
+                    ]
+                }
+            ],
+            chemistry: [
+                {
+                    group: "Atomic Structure and Bonding",
+                    topics: [
+                        {
+                            title: "12. Atomic Structure",
+                            explanation: "Atoms are the building blocks of chemistry. They contain positive protons and neutral neutrons inside a dense central nucleus, surrounded by negative electrons orbiting in quantum probability clouds.",
+                            examples: ["A hydrogen atom containing one proton and one electron.", "Carbon-14 isotopes being used for archaeological dating.", "Electrons jumping energy levels and releasing photons (light)."]
+                        },
+                        {
+                            title: "13. The Periodic Table",
+                            explanation: "The periodic table organizes all chemical elements by increasing atomic number. Elements are arranged in vertical columns (groups) with similar valence electron configurations and horizontal rows (periods).",
+                            examples: ["Sodium and potassium reacting vigorously with water because they are in Group 1.", "Helium and neon remaining highly stable and non-reactive as noble gases in Group 18.", "Halogens in Group 17 readily accepting electrons from alkali metals."]
+                        },
+                        {
+                            title: "14. Chemical Bonding",
+                            explanation: "Atoms form chemical bonds to achieve a stable valence shell. Ionic bonds occur through electron transfer (metal to non-metal). Covalent bonds form by sharing electron pairs (non-metals).",
+                            examples: ["Sodium transferring an electron to chlorine, forming table salt.", "Two hydrogen atoms sharing electrons with oxygen to form water molecules.", "Delocalized electrons flowing through a copper wire (metallic bonding)."]
+                        }
+                    ]
+                },
+                {
+                    group: "Chemical Reactions",
+                    topics: [
+                        {
+                            title: "15. Types of Chemical Reactions",
+                            explanation: "Synthesis reactions combine substances into complex products. Decomposition reactions break compounds down. Replacement reactions swap ionic partners based on reactivity. Combustion occurs when fuel reacts rapidly with oxygen.",
+                            examples: ["Iron rusting under atmospheric oxygen exposure.", "Acid-base neutralization creating neutral salt water solutions.", "Natural gas burning to release carbon dioxide, water, and heat."]
+                        },
+                        {
+                            title: "16. Balancing Equations & Conservation of Mass",
+                            explanation: "The Law of Conservation of Mass dictates that mass cannot be created or destroyed. In a chemical equation, the total number of atoms for each element must be equal on both sides.",
+                            examples: ["Balancing hydrogen and oxygen to show the synthesis of water (2H₂ + O₂ -> 2H₂O).", "Reactants always weighing exactly the same as products in a sealed container.", "Using stoichiometric coefficients to determine exact reaction proportions."]
+                        },
+                        {
+                            title: "17. Stoichiometry & The Mole Concept",
+                            explanation: "A mole represents Avogadro's number (6.022 x 10²³) of particles. Stoichiometry uses the balanced equation coefficients to calculate quantitative ratios of reactants and products.",
+                            examples: ["One mole of carbon atoms weighing exactly 12 grams.", "Calculating how much oxygen is required to completely burn a gallon of fuel.", "Determining the theoretical yield of an industrial pharmaceutical reaction."]
+                        }
+                    ]
+                },
+                {
+                    group: "Acids, Bases, and Solutions",
+                    topics: [
+                        {
+                            title: "18. Acids, Bases, and pH Scale",
+                            explanation: "Acids are proton (H+) donors with a pH below 7. Bases are proton acceptors with a pH above 7. The pH scale measures the relative concentration of hydronium ions in solution.",
+                            examples: ["Hydrochloric acid in the human stomach assisting digestion.", "Sodium hydroxide (lye) being used in drain cleaners to dissolve organic blocks.", "Neutral pure water maintaining a pH value of exactly 7.0."]
+                        },
+                        {
+                            title: "19. Solutions and Molarity",
+                            explanation: "A solution is a homogeneous mixture where a solute is dissolved in a solvent. Molarity (M) measures concentration as moles of solute per liter of total solution.",
+                            examples: ["Dissolving sugar (solute) in hot water (solvent) to make syrup.", "A standard saline solution maintaining a precise concentration for medical use.", "Diluting concentrated chemical stocks by adding pure distilled water."]
+                        }
+                    ]
+                },
+                {
+                    group: "Organic Chemistry",
+                    topics: [
+                        {
+                            title: "20. Hydrocarbons",
+                            explanation: "Organic compounds composed entirely of carbon and hydrogen atoms. Alkanes feature single bonds (saturated), alkenes contain double bonds, and alkynes have triple bonds (unsaturated).",
+                            examples: ["Propane gas being used as fuel for cooking and heating.", "Ethene gas acting as a natural ripening hormone in fruits.", "Acetylene (ethyne) being burned in high-temperature welding torches."]
+                        },
+                        {
+                            title: "21. Organic Functional Groups",
+                            explanation: "Functional groups are specific clusters of atoms within organic molecules that dictate their chemical reactivity and properties, such as alcohols, carboxylic acids, and esters.",
+                            examples: ["Ethanol containing a hydroxyl group (-OH) used in disinfectants.", "Acetic acid containing a carboxyl group (-COOH) giving vinegar its sour taste.", "Esters providing pleasant, sweet fruity scents in flowers and perfumes."]
+                        }
+                    ]
+                }
+            ],
+            biology: [
+                {
+                    group: "Cellular Biology",
+                    topics: [
+                        {
+                            title: "22. Cell Theory",
+                            explanation: "Cell theory is a foundational biological tenet stating that all living things are composed of one or more cells, the cell is the basic structural unit of life, and all cells arise from pre-existing cells.",
+                            examples: ["A single-celled amoeba executing all life processes independently.", "Skin cells dividing to heal a surface cut.", "Observing plant tissues under a microscope to view individual cell walls."]
+                        },
+                        {
+                            title: "23. Prokaryotic vs Eukaryotic Cells",
+                            explanation: "Prokaryotes are simple, single-celled organisms lacking a membrane-bound nucleus (e.g., bacteria). Eukaryotes are complex, containing defined nuclei and specialized organelles (e.g., animal, plant, and fungal cells).",
+                            examples: ["Escherichia coli bacteria living in human intestines (prokaryotic).", "A human cheek cell containing a clear nucleus (eukaryotic).", "Yeast cells executing fermentation (eukaryotic)."]
+                        },
+                        {
+                            title: "24. Cellular Organelles",
+                            explanation: "Organelles are specialized sub-units within a cell that perform distinct tasks. Mitochondria generate energy (ATP), ribosomes synthesize proteins, and the cell membrane regulates transport.",
+                            examples: ["Chloroplasts in plant leaves absorbing sunlight to make sugar.", "The rough endoplasmic reticulum processing newly made proteins.", "Lysosomes acting as waste disposal units to digest cellular debris."]
+                        }
+                    ]
+                },
+                {
+                    group: "Genetics & Molecular Biology",
+                    topics: [
+                        {
+                            title: "25. DNA, RNA and the Central Dogma",
+                            explanation: "DNA stores genetic information in a double-helix structure. RNA acts as a messenger. The Central Dogma of biology dictates that information flows from DNA to RNA to protein.",
+                            examples: ["DNA replication ensuring identical genetic copies during cell division.", "mRNA translating genetic instructions into biological proteins.", "Retroviruses rewriting host DNA using reverse transcription."]
+                        },
+                        {
+                            title: "26. Mendelian Genetics",
+                            explanation: "Heredity follows rules formulated by Gregor Mendel. Organisms inherit alleles (versions of genes) from each parent. Alleles can be dominant, masking the expression of recessive alleles.",
+                            examples: ["Crossing tall and short pea plants to study phenotypic ratios.", "Inheriting brown eyes (dominant allele) from parents.", "A Punnett square predicting a 25% probability of inheriting a recessive trait."]
+                        },
+                        {
+                            title: "27. Protein Synthesis",
+                            explanation: "The process of creating proteins. Transcription copies DNA into mRNA inside the cell nucleus. Translation reads the mRNA codons in ribosomes to assemble chains of amino acids into proteins.",
+                            examples: ["Ribosomes reading triplet codons to attach specific amino acids.", "tRNA molecules carrying corresponding amino acids to the ribosome.", "RNA polymerase unwinding DNA to synthesize messenger RNA."]
+                        }
+                    ]
+                },
+                {
+                    group: "Ecology & Ecosystems",
+                    topics: [
+                        {
+                            title: "28. Ecosystems & Food Webs",
+                            explanation: "An ecosystem is a community of living organisms interacting with their non-living environment. Food webs map the complex transfer of energy from producers (plants) to multiple levels of consumers.",
+                            examples: ["A forest ecosystem where wolves, deer, trees, and soil bacteria interact.", "Algae producing energy via photosynthesis in a marine food web.", "Decomposers recycling leaf litter into nutrient-rich soil."]
+                        },
+                        {
+                            title: "29. Biogeochemical Cycles",
+                            explanation: "Nutrients circulate continuously through Earth's biosphere, atmosphere, hydrosphere, and geosphere. These pathways include the water, carbon, and nitrogen cycles.",
+                            examples: ["Plants absorbing carbon dioxide from the atmosphere to grow.", "Bacteria in legume roots converting nitrogen gas into usable plant nutrients.", "Water evaporating from oceans, forming clouds, and raining over land."]
+                        },
+                        {
+                            title: "30. Biodiversity and Conservation",
+                            explanation: "Biodiversity is the rich variety of life on Earth. Conservation efforts aim to protect ecosystems and species from threats like habitat loss, climate change, and overexploitation.",
+                            examples: ["Establishing national parks to preserve endangered species.", "Restoring wetland habitats to improve local water quality.", "Reforestation projects absorbing carbon and rebuilding wildlife corridors."]
+                        }
+                    ]
+                },
+                {
+                    group: "Human Physiology",
+                    topics: [
+                        {
+                            title: "31. Circulatory System",
+                            explanation: "The circulatory system is a closed loop of blood vessels powered by the muscular heart. It distributes oxygenated blood and nutrients to body tissues and returns waste products like carbon dioxide to the lungs.",
+                            examples: ["The left ventricle contracting to pump oxygen-rich blood into the aorta.", "Capillaries exchanging oxygen and waste at the cellular level.", "Veins returning deoxygenated blood to the right atrium."]
+                        },
+                        {
+                            title: "32. Respiratory System",
+                            explanation: "Facilitates gas exchange. Air enters the lungs where oxygen is absorbed into the bloodstream through alveoli walls, and carbon dioxide is released from the blood to be exhaled.",
+                            examples: ["The diaphragm contracting to draw air into the lungs.", "Oxygen diffusing into blood capillaries surrounding alveoli sacs.", "Exhaling carbon dioxide produced during cellular metabolism."]
+                        },
+                        {
+                            title: "33. Digestive System",
+                            explanation: "Breaks down food into absorbable nutrients. Mechanical digestion occurs in the mouth and stomach; chemical digestion utilizes enzymes to split nutrients in the small intestine.",
+                            examples: ["Stomach acid and churning liquefying swallowed food.", "The small intestine absorbing amino acids into the bloodstream.", "The large intestine absorbing water and forming solid waste."]
+                        },
+                        {
+                            title: "34. Nervous System",
+                            explanation: "The nervous system coordinates body actions. The central nervous system (brain and spinal cord) processes information, while peripheral nerves transmit electrical signals via neurons.",
+                            examples: ["Pulling your hand back instantly after touching a hot stove (reflex arc).", "Neurotransmitters crossing synaptic gaps to pass signals between brain cells.", "Sensory receptors detecting changes in temperature and sending alerts to the brain."]
+                        },
+                        {
+                            title: "35. Endocrine System",
+                            explanation: "Regulates biological processes by secreting chemical messengers called hormones directly into the bloodstream to act on target organs.",
+                            examples: ["The pancreas releasing insulin to regulate blood glucose levels.", "Adrenal glands secreting adrenaline during a fight-or-flight response.", "Thyroid hormones controlling the rate of cellular metabolism."]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Central React View Component
+        function App() {
+            const [loading, setLoading] = React.useState(true);
+            const [activeTab, setActiveTab] = React.useState("physics"); // 'physics' | 'chemistry' | 'biology'
+            const [expandedTopicId, setExpandedTopicId] = React.useState(null);
+
+            // Shimmer initial skeleton loop timer (1200ms)
+            React.useEffect(() => {
+                const timer = setTimeout(() => {
+                    setLoading(false);
+                }, 1200);
+                return () => clearTimeout(timer);
+            }, []);
+
+            // Play sound FX helper
+            const triggerSound = (id) => {
+                if (window.playTouchSound) {
+                    window.playTouchSound(id);
+                }
+            };
+
+            // Switch active category tab with reset
+            const handleTabChange = (tab) => {
+                triggerSound(5);
+                setActiveTab(tab);
+                setExpandedTopicId(null);
+
+                // Reset accordion panel heights
+                const allAnswers = document.querySelectorAll('.faq-answer');
+                allAnswers.forEach(ans => {
+                    ans.style.maxHeight = null;
+                });
+            };
+
+            // Exact slide-toggle accordion logic matching FAQs (3).html
+            const handleAccordionToggle = (e, id) => {
+                triggerSound(5);
+                const currentItem = e.currentTarget.closest('.faq-item');
+                if (!currentItem) return;
+
+                const answerWrapper = currentItem.querySelector('.faq-answer');
+                const isActive = currentItem.classList.contains('active');
+
+                // Collapse all open entries smoothly
+                const faqItems = document.querySelectorAll('.faq-item');
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== currentItem) {
+                        otherItem.classList.remove('active');
+                        const otherAnswer = otherItem.querySelector('.faq-answer');
+                        if (otherAnswer) {
+                            otherAnswer.style.maxHeight = null;
+                        }
+                    }
+                });
+
+                if (isActive) {
+                    currentItem.classList.remove('active');
+                    if (answerWrapper) answerWrapper.style.maxHeight = null;
+                    setExpandedTopicId(null);
+                } else {
+                    currentItem.classList.add('active');
+                    if (answerWrapper) {
+                        answerWrapper.style.maxHeight = answerWrapper.scrollHeight + "px";
+                    }
+                    setExpandedTopicId(id);
+                }
+            };
+
+            // Get groups for current active tab
+            const currentGroups = hardcodedScienceTopics[activeTab] || [];
+
+            return (
+                <div className="app-container">
+                    <div className="app-card">
+                        
+                        {/* Section Pills with Active Gradient Outline Style */}
+                        <div className="categories-filter-wrapper">
+                            <div 
+                                className={`category-pill ${activeTab === "physics" ? "active" : ""}`}
+                                onClick={() => handleTabChange("physics")}
+                            >
+                                Physics
+                            </div>
+                            <div 
+                                className={`category-pill ${activeTab === "chemistry" ? "active" : ""}`}
+                                onClick={() => handleTabChange("chemistry")}
+                            >
+                                Chemistry
+                            </div>
+                            <div 
+                                className={`category-pill ${activeTab === "biology" ? "active" : ""}`}
+                                onClick={() => handleTabChange("biology")}
+                            >
+                                Biology
+                            </div>
+                        </div>
+
+                        {/* Science Topics Viewport with Smooth Section Switching Entry Animation */}
+                        <div className="category-group-wrapper section-switch-anim" key={activeTab}>
+                            {loading ? (
+                                Array(4).fill(0).map((_, idx) => (
+                                    <div key={idx} className="skeleton-loading" style={{ height: "50px" }}></div>
+                                ))
+                            ) : currentGroups.length > 0 ? (
+                                currentGroups.map((group, gIdx) => (
+                                    <div key={gIdx} style={{ width: "100%" }}>
+                                        <h3 className="group-heading">{group.group}</h3>
+                                        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                                            {group.topics.map((topic, tIdx) => {
+                                                const uniqueId = `${activeTab}_${gIdx}_${tIdx}`;
+                                                return (
+                                                    <div key={uniqueId} className="faq-item">
+                                                        <div 
+                                                            className="faq-question"
+                                                            onClick={(e) => handleAccordionToggle(e, uniqueId)}
+                                                        >
+                                                            <span>{topic.title}</span>
+                                                            <i className="fas fa-chevron-down icon"></i>
+                                                        </div>
+                                                        <div className="faq-answer">
+                                                            <div className="faq-answer-content">
+                                                                <p style={{ marginBottom: "8px" }}>{topic.explanation}</p>
+                                                                {topic.examples && (
+                                                                    <div style={{ background: "rgba(255,255,255,0.05)", padding: "10px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.1)" }}>
+                                                                        <strong style={{ fontSize: "0.92em", color: "var(--blue)" }}>Examples:</strong>
+                                                                        <ul style={{ paddingLeft: "15px", marginTop: "5px" }}>
+                                                                            {topic.examples.map((ex, eIdx) => (
+                                                                                <li key={eIdx} style={{ fontSize: "0.95em", fontStyle: "italic" }}>{ex}</li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div style={{ textAlign: "center", padding: "30px", color: "var(--sub-text-color)" }}>
+                                    No syllabus modules available under this scientific category.
+                                </div>
+                            )}
+                        </div>
+
+                    </div>
+                </div>
+            );
+        }
+
+        // Render application instance
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+    </script>
+</body>
+</html>

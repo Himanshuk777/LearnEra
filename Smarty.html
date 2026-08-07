@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smarty - AI Chatbot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons & GSAP scripts -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <!-- Early theme bootstrap -->
+    <script>
+        (function () {
+            try {
+                const savedTheme = localStorage.getItem('appThemeMode') || 'system';
+                const isDark = savedTheme === 'dark' ||
+                    (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const darkStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.documentElement.setAttribute('data-dark-text', darkStyle);
+                } else {
+                    document.documentElement.removeAttribute('data-dark-text');
+                }
+                const topSp = localStorage.getItem('appTopSpace') || '5';
+                document.documentElement.style.setProperty('--top-space', topSp + 'vh');
+            } catch (e) {
+                document.documentElement.style.setProperty('--top-space', '5vh');
+            }
+            
+            const savedLang = localStorage.getItem('appLanguageSelection') || 'en';
+            document.documentElement.setAttribute('data-lang', savedLang);
+        })();
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        :root {
+            --body-bg: #e6edf7; 
+            --neu-shadow-light: #ffffff;
+            --neu-shadow-dark: #c8d3e4;
+            
+            --text-color: #6b7280; /* grey */ 
+            --sub-text-color: #7a8b9e;
+            
+            --pink: #FF69B4;
+            --pink-strong: #FF1493;
+            --blue: #1E90FF;
+            --purple: #808080;
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+            
+            --inner-highlight: inset 1px 1px 2px rgba(255,255,255,0.7);
+            --border-soft: 1px solid rgba(255,255,255,0.35);
+            
+            --primary: #ff5569;
+            --top-space: 5vh;
+            --transition-theme: background-color 0.8s ease, color 0.8s ease, box-shadow 0.8s ease, border-color 0.8s ease;
+        }
+
+        html[data-theme="dark"] {
+            --body-bg: #1e1e24; 
+            --neu-shadow-dark: #101014; 
+            --neu-shadow-light: rgba(255, 255, 255, 0.05);
+            
+            --text-color: #ffffff; 
+            --sub-text-color: #88888c; 
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+        }
+
+        html[data-dark-text="deep-dark"] {
+            --body-bg: #0c0c0f; 
+            --neu-shadow-dark: #050506;
+            --neu-shadow-light: rgba(255, 255, 255, 0.02);
+            
+            --text-color: rgba(255, 255, 255, 0.35);
+            --sub-text-color: rgba(255, 255, 255, 0.25);
+
+            --pink: rgba(255, 255, 255, 0.35);
+            --pink-strong: rgba(255, 255, 255, 0.35);
+            --blue: rgba(255, 255, 255, 0.35);
+            --purple: rgba(255, 255, 255, 0.35);
+            --primary: rgba(255, 255, 255, 0.35);
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.01);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.01);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.01);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.01);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.02);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -2px -2px 4px rgba(255, 255, 255, 0.02);
+        }
+
+        /* Language Overrides */
+        html[data-lang="hi"] *, html[data-lang="ch"] *, html[data-lang="bh"] * {
+            font-family: 'Tiro Devanagari Hindi', serif !important;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            overflow-x: hidden;
+            overscroll-behavior: none;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            font-size: 13px; 
+            transition: var(--transition-theme);
+        }
+
+        /* Responsive Layout Container (Removed top padding starting gap) */
+        .about-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0px 15px 15px 15px; 
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Chat Messages viewport config (Adjusted padding to allocate suggestions bar) */
+        .chat-messages {
+            flex: 1;
+            padding: 10px 5px 115px 5px; 
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            scroll-behavior: smooth;
+            -ms-overflow-style: none;  
+            scrollbar-width: none;  
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Neumorphic message bubble designs */
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 20px;
+            color: var(--text-color);
+            word-wrap: break-word;
+            animation: messageFadeIn 0.3s ease-out;
+            background: var(--body-bg);
+            box-sizing: border-box;
+            font-size: 0.99em;
+            line-height: 1.55;
+            font-family: 'Nunito', 'Poppins', sans-serif !important;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            animation: bounceInRight 0.5s ease-out;
+            border: 1.5px solid rgba(255,255,255,0.4);
+            box-shadow: var(--card-shadow-micro);
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            animation: bounceInLeft 0.5s ease-out;
+            border: 1.5px solid rgba(255,255,255,0.4);
+            box-shadow: var(--card-shadow-inset);
+        }
+
+        @keyframes messageFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounceInRight {
+            0% { transform: translateX(50px); opacity: 0; }
+            60% { transform: translateX(-10px); opacity: 1; }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes bounceInLeft {
+            0% { transform: translateX(-50px); opacity: 0; }
+            60% { transform: translateX(10px); opacity: 1; }
+            100% { transform: translateX(0); }
+        }
+
+        /* Suggestions Container above bottom textbox */
+        .suggestions-container {
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 5px 0;
+            margin-bottom: 5px;
+            width: calc(100% - 30px);
+            box-sizing: border-box;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            position: absolute;
+            bottom: 72px; 
+            left: 15px;
+            right: 15px;
+            z-index: 9;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .suggestions-container::-webkit-scrollbar {
+            display: none;
+        }
+        .suggestion-card {
+            background: var(--body-bg);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 12px;
+            padding: 6px 14px;
+            font-size: 0.78em;
+            font-weight: 600;
+            color: var(--text-color);
+            box-shadow: var(--card-shadow-micro), var(--inner-highlight);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        html[data-theme="dark"] .suggestion-card {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: var(--card-shadow-micro);
+        }
+        html[data-dark-text="deep-dark"] .suggestion-card {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: none;
+        }
+        .suggestion-card:active {
+            transform: scale(0.96);
+            box-shadow: var(--card-shadow-inset) !important;
+        }
+
+        /* Horizontal floating input control card */
+        .chat-input-area {
+            position: absolute; 
+            bottom: 15px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            flex-direction: row; 
+            align-items: center;
+            gap: 4px;
+            padding: 2px; 
+            background: var(--body-bg);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow), inset 1px 1px 2px rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.35);
+            box-sizing: border-box;
+            z-index: 10;
+        }
+        body[data-theme="dark"] .chat-input-area {
+            box-shadow: var(--card-shadow);
+        }
+
+        .chat-input-area input[type="text"] {
+            flex: 1;
+            height: 48px !important; 
+            padding: 12px 16px;
+            border: none;
+            border-radius: 14px;
+            background: var(--body-bg);
+            color: var(--text-color);
+            font-size: 0.95em;
+            outline: none;
+            box-shadow: var(--settings-shadow-inset-sharp);
+            transition: all 0.3s ease;
+        }
+
+        .chat-input-area input[type="text"]::placeholder {
+            color: var(--sub-text-color);
+            opacity: 0.6;
+        }
+
+        .chat-input-area input[type="text"]:focus {
+            box-shadow: var(--settings-shadow-inset-sharp), 0 0 0 2px rgba(107, 114, 128, 0.45);
+        }
+
+        /* Pure Neumorphic Button Style */ 
+        .button {
+          --radius: 14px;
+          cursor: pointer;
+          border-radius: var(--radius);
+          text-shadow: none;
+          border: 1px solid rgba(255, 255, 255, 0.35) !important; 
+          background: var(--body-bg);
+          box-shadow: var(--card-shadow-micro), var(--inner-highlight) !important;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          width: 95px; 
+          min-width: 95px;
+          height: 48px !important; 
+          font-family: inherit;
+          font-style: normal;
+          font-size: 14px;
+          font-weight: 700;
+          outline: none; 
+          touch-action: manipulation !important;
+          -webkit-user-select: none !important;
+          user-select: none !important;
+          -webkit-touch-callout: none !important;
+        }
+        html[data-theme="dark"] .button {
+          border: 1px solid rgba(255, 255, 255, 0.08) !important;
+          box-shadow: var(--card-shadow-micro) !important;
+        }
+        html[data-dark-text="deep-dark"] .button {
+          border: 1px solid rgba(255, 255, 255, 0.05) !important;
+          box-shadow: none !important;
+        }
+        .button:hover {
+          transform: scale(1.02);
+          box-shadow: var(--card-shadow-sm) !important;
+        }
+        .button:active {
+          transform: scale(0.98);
+          box-shadow: var(--card-shadow-inset) !important; 
+        }
+        /* Muted styling for the disabled button state */
+        .button:disabled {
+          opacity: 0.55 !important;
+          cursor: not-allowed !important;
+          pointer-events: none !important;
+          transform: none !important;
+          box-shadow: var(--card-shadow-micro) !important;
+        }
+        .button::before, .button::after, .outline {
+          display: none !important; 
+        }
+
+        .state p {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0;
+        }
+        .state .icon {
+          position: absolute;
+          left: -8px; 
+          top: 0;
+          bottom: 0;
+          margin: auto;
+          transform: scale(1.15);
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .state .icon svg {
+          overflow: visible;
+        }
+
+        /* Letters wave */
+        .state p span {
+          display: block;
+          opacity: 0;
+          animation: slideDown 0.8s ease forwards calc(var(--i) * 0.03s);
+        }
+        .button:hover p span {
+          opacity: 1;
+          animation: wave 0.5s ease forwards calc(var(--i) * 0.02s);
+        }
+        .button:focus p span {
+          opacity: 1;
+          animation: disapear 0.6s ease forwards calc(var(--i) * 0.03s);
+        }
+        @keyframes wave {
+          30% { opacity: 1; transform: translateY(4px) translateX(0) rotate(0); }
+          50% { opacity: 1; transform: translateY(-3px) translateX(0) rotate(0); color: var(--pink-strong); }
+          100% { opacity: 1; transform: translateY(0) translateX(0) rotate(0); }
+        }
+        @keyframes slideDown {
+          0% {
+            opacity: 0;
+            transform: translateY(-20px) translateX(5px) rotate(-90deg);
+            color: var(--pink);
+            filter: blur(5px);
+          }
+          30% { opacity: 1; transform: translateY(4px) translateX(0) rotate(0); filter: blur(0); }
+          50% { opacity: 1; transform: translateY(-3px) translateX(0) rotate(0); }
+          100% { opacity: 1; transform: translateY(0) translateX(0) rotate(0); }
+        }
+        @keyframes disapear {
+          from { opacity: 1; }
+          to {
+            opacity: 0;
+            transform: translateX(5px) translateY(20px);
+            color: var(--pink);
+            filter: blur(5px);
+          }
+        }
+
+        /* Plane take-off and land */
+        .state--default .icon svg {
+          animation: land 0.6s ease forwards;
+        }
+        .button:hover .state--default .icon {
+          transform: rotate(45deg) scale(1.15);
+        }
+        .button:focus .state--default svg {
+          animation: takeOff 0.8s linear forwards;
+        }
+        .button:focus .state--default .icon {
+          transform: rotate(0) scale(1.15);
+        }
+        @keyframes takeOff {
+          0% { opacity: 1; }
+          60% { opacity: 1; transform: translateX(70px) rotate(45deg) scale(2); }
+          100% { opacity: 0; transform: translateX(160px) rotate(45deg) scale(0); }
+        }
+        @keyframes land {
+          0% {
+            transform: translateX(-60px) translateY(30px) rotate(-50deg) scale(2);
+            opacity: 0;
+            filter: blur(3px);
+          }
+          100% {
+            transform: translateX(0) translateY(0) rotate(0);
+            opacity: 1;
+            filter: blur(0);
+          }
+        }
+
+        /* Contrail */
+        .state--default .icon:before {
+          content: "";
+          position: absolute;
+          top: 50%;
+          height: 2px;
+          width: 0;
+          left: -5px;
+          background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.5));
+        }
+        .button:focus .state--default .icon:before {
+          animation: contrail 0.8s linear forwards;
+        }
+        @keyframes contrail {
+          0% { width: 0; opacity: 1; }
+          8% { width: 15px; }
+          60% { opacity: 0.7; width: 80px; }
+          100% { opacity: 0; width: 160px; }
+        }
+
+        /* States positioning and definitions */
+        .state {
+          padding-left: 20px; 
+          z-index: 2;
+          display: flex;
+          position: relative;
+        }
+        .state--default span:nth-child(4) {
+          margin-right: 0;
+        }
+        
+        .state--waiting {
+          display: none;
+          padding-left: 0 !important; 
+          margin: 0 !important;
+          width: 100%;
+          justify-content: center;
+          align-items: center;
+        }
+
+        /* Continuous Pulse Animation loop on 'Wait...' text slowed down to 3s */
+        @keyframes wait-pulse {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        .waiting-text {
+            animation: wait-pulse 3s ease-in-out infinite; 
+            color: var(--text-color) !important;
+            font-family: inherit;
+            font-weight: 700;
+            margin: 0 !important;
+            padding: 0 !important;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Programmatic CSS override rules for AJAX cycles */
+        .button.is-loading .state--default svg {
+          animation: takeOff 0.8s linear forwards;
+        }
+        .button.is-loading .state--default .icon {
+          transform: rotate(0) scale(1.15);
+        }
+
+        /* Loading class hides wait text */
+        .button.is-loading .state--waiting {
+          display: none !important;
+        }
+
+        /* Waiting state programmatic overrides (Bypasses parent card border/padding alignments) */
+        .button.is-waiting .state--default {
+          display: none !important;
+          position: absolute;
+        }
+        .button.is-waiting .state--waiting {
+          display: flex !important;
+          justify-content: center;
+          align-items: center;
+          position: absolute;
+          inset: 0; 
+          padding: 0 !important;
+          margin: 0 !important;
+          width: 100%;
+          height: 100%;
+        }
+
+        /* Deep Dark Mode Monochrome overrides */
+        html[data-dark-text="deep-dark"] .message,
+        html[data-dark-text="deep-dark"] .button,
+        html[data-dark-text="deep-dark"] .button *,
+        html[data-dark-text="deep-dark"] .waiting-text,
+        html[data-dark-text="deep-dark"] .suggestion-card {
+            color: rgba(255, 255, 255, 0.35) !important;
+            fill: rgba(255, 255, 255, 0.35) !important;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.35) !important;
+            border-color: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        /* Brighter (whiter) Send button text/icon on Dark Colorful mode */
+        html[data-theme="dark"]:not([data-dark-text="deep-dark"]) .button,
+        html[data-theme="dark"]:not([data-dark-text="deep-dark"]) .button * {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        /* Send button text/icon changed to grey in Light Mode, plus 1px grey outline */
+        html:not([data-theme="dark"]) .button,
+        html:not([data-theme="dark"]) .button * {
+            color: #6b7280 !important;
+            fill: #6b7280 !important;
+            -webkit-text-fill-color: #6b7280 !important;
+        }
+        html:not([data-theme="dark"]) .button {
+            outline: 1px solid #6b7280 !important;
+        }
+
+        /* 1px white outline on Send button in Dark Colorful + Deep Dark modes */
+        html[data-theme="dark"] .button {
+            outline: 1px solid #ffffff !important;
+        }
+
+        /* "Smarty is Thinking" text turns white ONLY in Dark Colorful mode */
+        html[data-theme="dark"]:not([data-dark-text="deep-dark"]) .loader-wrapper,
+        html[data-theme="dark"]:not([data-dark-text="deep-dark"]) .loader-letter {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        /* Skeleton Loading System */
+        .skeleton-bubble {
+            position: relative !important;
+            overflow: hidden !important;
+            background: var(--body-bg) !important;
+            border-color: transparent !important;
+            box-shadow: var(--card-shadow-micro) !important;
+        }
+        .skeleton-bubble::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -150%;
+            width: 150%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            animation: skeleton-shimmer-animation 1.5s infinite;
+            z-index: 5;
+        }
+        body[data-theme="dark"] .skeleton-bubble::after {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+        }
+        @keyframes skeleton-shimmer-animation {
+            0% { left: -150%; }
+            100% { left: 150%; }
+        }
+
+        /* ============================================================
+           SMARTY THINKING LOADER (Ring Text Loader — same as DotsLoading)
+           ============================================================ */
+        .smarty-thinking {
+            --l1-loader-speed: 2s;
+            --l1-letters-speed: 2s;
+            --l1-text-color: #311e80;
+            --l1-c1-1: #ffffff;
+            --l1-c1-2: #ad5fff;
+            --l1-c1-3: #471eec;
+            --l1-c2-1: #ffffff;
+            --l1-c2-2: #d60a47;
+            --l1-c2-3: #311e80;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+
+        .loader-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 180px;
+            height: 180px;
+            font-size: 1.2em;
+            font-weight: 300;
+            color: var(--l1-text-color);
+            border-radius: 50%;
+            background-color: transparent;
+            user-select: none;
+        }
+
+        .loader-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 50%;
+            background-color: transparent;
+            animation: loader-rotate var(--l1-loader-speed) linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes loader-rotate {
+            0% {
+                transform: rotate(90deg);
+                box-shadow:
+                    0 10px 20px 0 var(--l1-c1-1) inset,
+                    0 20px 30px 0 var(--l1-c1-2) inset,
+                    0 60px 60px 0 var(--l1-c1-3) inset;
+            }
+            50% {
+                transform: rotate(270deg);
+                box-shadow:
+                    0 10px 20px 0 var(--l1-c2-1) inset,
+                    0 20px 10px 0 var(--l1-c2-2) inset,
+                    0 40px 60px 0 var(--l1-c2-3) inset;
+            }
+            100% {
+                transform: rotate(450deg);
+                box-shadow:
+                    0 10px 20px 0 var(--l1-c1-1) inset,
+                    0 20px 30px 0 var(--l1-c1-2) inset,
+                    0 60px 60px 0 var(--l1-c1-3) inset;
+            }
+        }
+
+        .loader-letter {
+            display: inline-block;
+            opacity: 0.4;
+            transform: translateY(0);
+            animation: loader-letter-anim var(--l1-letters-speed) infinite;
+            z-index: 1;
+            border-radius: 50ch;
+            border: none;
+        }
+
+        .loader-letter:nth-child(1) { animation-delay: 0s; }
+        .loader-letter:nth-child(2) { animation-delay: 0.1s; }
+        .loader-letter:nth-child(3) { animation-delay: 0.2s; }
+        .loader-letter:nth-child(4) { animation-delay: 0.3s; }
+        .loader-letter:nth-child(5) { animation-delay: 0.4s; }
+        .loader-letter:nth-child(6) { animation-delay: 0.5s; }
+        .loader-letter:nth-child(7) { animation-delay: 0.6s; }
+        .loader-letter:nth-child(8) { animation-delay: 0.7s; }
+        .loader-letter:nth-child(9) { animation-delay: 0.8s; }
+        .loader-letter:nth-child(10) { animation-delay: 0.9s; }
+        .loader-letter:nth-child(11) { animation-delay: 1s; }
+        .loader-letter:nth-child(12) { animation-delay: 1.1s; }
+        .loader-letter:nth-child(13) { animation-delay: 1.2s; }
+        .loader-letter:nth-child(14) { animation-delay: 1.3s; }
+        .loader-letter:nth-child(15) { animation-delay: 1.4s; }
+        .loader-letter:nth-child(16) { animation-delay: 1.5s; }
+        .loader-letter:nth-child(17) { animation-delay: 1.6s; }
+        .loader-letter:nth-child(18) { animation-delay: 1.7s; }
+
+        @keyframes loader-letter-anim {
+            0%, 100% { opacity: 0.4; transform: translateY(0); }
+            20% { opacity: 1; transform: scale(1.15); }
+            40% { opacity: 0.7; transform: translateY(0); }
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="about-container">
+        
+        <div class="chat-messages" id="chat-messages">
+            <!-- Startup Skeleton Loading: exactly one left-aligned bot bubble representing Smarty -->
+            <div class="message bot skeleton-bubble" style="width: 75%; height: 50px; border-radius: 18px;"></div>
+        </div>
+
+        <!-- 5 Shuffled Suggestion Cards -->
+        <div class="suggestions-container" id="suggestions-container"></div>
+
+        <div class="chat-input-area">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            
+            <!-- Send Button strictly styled under Neumorphism parameters [disabled by default] -->
+            <button class="button" id="submitFormBtn" disabled>
+              <div class="state state--default">
+                <div class="icon">
+                  <svg
+                    width="1em"
+                    height="1em"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g style="filter: url(#shadow)">
+                      <path
+                        d="M14.2199 21.63C13.0399 21.63 11.3699 20.8 10.0499 16.83L9.32988 14.67L7.16988 13.95C3.20988 12.63 2.37988 10.96 2.37988 9.78001C2.37988 8.61001 3.20988 6.93001 7.16988 5.60001L15.6599 2.77001C17.7799 2.06001 19.5499 2.27001 20.6399 3.35001C21.7299 4.43001 21.9399 6.21001 21.2299 8.33001L18.3999 16.82C17.0699 20.8 15.3999 21.63 14.2199 21.63ZM7.63988 7.03001C4.85988 7.96001 3.86988 9.06001 3.86988 9.78001C3.86988 10.5 4.85988 11.6 7.63988 12.52L10.1599 13.36C10.3799 13.43 10.5599 13.61 10.6299 13.83L11.4699 16.35C12.3899 20.12 13.4999 20.12 14.2199 20.12C14.9399 20.12 16.0399 19.13 16.9699 16.35L19.7999 7.86001C20.3099 6.32001 20.2199 5.06001 19.5699 4.41001C18.9199 3.76001 17.6599 3.68001 16.1299 4.19001L7.63988 7.03001Z"
+                        fill="currentColor"
+                      ></path>
+                      <path
+                        d="M10.11 14.4C9.92005 14.4 9.73005 14.33 9.58005 14.18C9.29005 13.89 9.29005 13.41 9.58005 13.12L13.16 9.53C13.45 9.24 13.93 9.24 14.22 9.53C14.51 9.82 14.51 10.3 14.22 10.59L10.64 14.18C10.5 14.33 10.3 14.4 10.11 14.4Z"
+                        fill="currentColor"
+                      ></path>
+                    </g>
+                    <defs>
+                      <filter id="shadow">
+                        <fedropshadow
+                          dx="0"
+                          dy="1"
+                          stdDeviation="0.6"
+                          flood-opacity="0.5"
+                        ></fedropshadow>
+                      </filter>
+                    </defs>
+                  </svg>
+                </div>
+                <p>
+                  <span style="--i:0">S</span>
+                  <span style="--i:1">e</span>
+                  <span style="--i:2">n</span>
+                  <span style="--i:3">d</span>
+                </p>
+              </div>
+              
+              <!-- Success waiting card -->
+              <div class="state state--waiting" id="stateWaiting">
+                <p class="waiting-text">Wait...</p>
+              </div>
+            </button>
+        </div>
+
+    </div>
+
+    <script type="module">
+        // Web app's Firebase credentials [COPY THIS EXACTLY FROM PROFILE PAGE]
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWOdk2_NJntQ4Pob7_tN6kb1W5rMy-tcw",
+            authDomain: "learnera-d6309.firebaseapp.com",
+            projectId: "learnera-d6309",
+            messagingSenderId: "752970675909",
+            appId: "1:752970675909:web:9c4513809ca51ea60122ac",
+            databaseURL: "https://learnera-d6309-default-rtdb.firebaseio.com"
+        };
+
+        // Initialize Firebase Compat SDK
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
+
+        // Global Variables for Chatbot Context
+        let currentUID = null;
+        let currentUserData = null; 
+        let currentUserAffiliateData = null; 
+        let currentUserCourseEnrollmentData = null; 
+        
+        // OpenRouter Model configurations
+        let openRouterApiKey = "";
+        let openRouterModel = "";
+        let openRouterRole = "";
+
+        // Session Chat History array
+        let chatHistory = [];
+
+        // Dynamic loaded state gate [1]
+        window.__isFirstMessageLoaded = false;
+
+        // UI Elements
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('submitFormBtn');
+        const suggestionsContainer = document.getElementById('suggestions-container');
+
+        // Pool of top 25 suggestions [3]
+        const SUGGESTIONS_POOL = [
+            "Track my Affiliate Points",
+            "Tell me about programming courses",
+            "I have a doubt on HTML",
+            "I have a doubt on Python",
+            "I have a doubt on Web Dev",
+            "What is Card pricing?",
+            "List all marketing courses",
+            "List all design courses",
+            "What is CartiX?",
+            "Tell me about SAGES Pamgarh",
+            "Is there an open-world coding game?",
+            "How can I earn with LearnEra?",
+            "Explain C++ course",
+            "Is Cyber Security course free?",
+            "Tell me a joke, Smarty",
+            "Explain Affiliate Marketing",
+            "How to manage my study time?",
+            "Ask me anything about LearnEra"
+        ];
+
+        // Shuffle & deploy 5 suggestions horizontally [3]
+        function deploySuggestions() {
+            suggestionsContainer.innerHTML = '';
+            const shuffled = [...SUGGESTIONS_POOL].sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 5);
+
+            selected.forEach(text => {
+                const card = document.createElement('div');
+                card.className = 'suggestion-card';
+                card.textContent = text;
+                card.onclick = () => {
+                    // Prevent suggestion interaction until first message fully renders [1]
+                    if (!window.__isFirstMessageLoaded || window.__isDispatching) return;
+                    userInput.value = text;
+                    sendButton.disabled = false;
+                    sendMessage();
+                };
+                suggestionsContainer.appendChild(card);
+            });
+        }
+
+        // Smoothly fade/slide out suggestion card layout on first dispatch [3]
+        function hideSuggestionsLayout() {
+            if (suggestionsContainer && suggestionsContainer.style.display !== 'none') {
+                suggestionsContainer.style.opacity = '0';
+                suggestionsContainer.style.transform = 'translateY(15px)';
+                setTimeout(() => {
+                    suggestionsContainer.style.display = 'none';
+                    chatMessages.style.paddingBottom = '75px'; // Readjust padding
+                }, 400);
+            }
+        }
+
+        // Fetch AI Model configurations dynamically from Firebase using nodes Smarty -> api, model and role
+        const fetchAIConfigurations = async () => {
+            try {
+                const apiSnapshot = await database.ref('Smarty/api').once('value');
+                openRouterApiKey = apiSnapshot.val() || "";
+
+                const modelSnapshot = await database.ref('Smarty/model').once('value');
+                openRouterModel = modelSnapshot.val() || "google/gemini-2.5-flash"; 
+
+                const roleSnapshot = await database.ref('Smarty/role').once('value');
+                openRouterRole = roleSnapshot.val() || "";
+
+                console.log("Firebase Smarty Model configurations fetched dynamically.");
+            } catch (e) {
+                console.warn("AI configurations fetch failed, deploying default specifications.", e);
+            }
+        };
+
+        // Fetch User profile database contexts
+        const fetchUserDataFromFirebase = async (uid) => {
+            try {
+                const userSnapshot = await database.ref(`users/${uid}`).once('value');
+                if (userSnapshot.exists()) {
+                    currentUserData = userSnapshot.val();
+                }
+
+                const affiliateSnapshot = await database.ref(`affiliate/${uid}`).once('value');
+                if (affiliateSnapshot.exists()) {
+                    currentUserAffiliateData = affiliateSnapshot.val();
+                }
+
+                const enrollmentSnapshot = await database.ref(`courseEnrollments/${uid}`).once('value');
+                if (enrollmentSnapshot.exists()) {
+                    currentUserCourseEnrollmentData = enrollmentSnapshot.val();
+                }
+            } catch (error) {
+                console.error("Error retrieving user context details: ", error);
+            }
+        };
+
+        // Observe Authentication state
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUID = user.uid;
+                await fetchUserDataFromFirebase(currentUID);
+            } else {
+                currentUID = null;
+                currentUserData = null;
+                currentUserAffiliateData = null;
+                currentUserCourseEnrollmentData = null;
+            }
+            await fetchAIConfigurations();
+            
+            // Clean skeleton screens & initialize
+            setTimeout(() => {
+                chatMessages.innerHTML = '';
+                deploySuggestions(); // Renders horizontal cards [3]
+                displayInitialGreeting();
+            }, 800);
+        });
+
+        function displayInitialGreeting() {
+            let greetingMessage = "Hello! I'm Smarty, your AI assistant powered by LearnEra. How can I help you today?";
+            if (currentUserData && currentUserData.firstName) {
+                greetingMessage = `Hello, ${currentUserData.firstName}! I'm Smarty, your AI assistant powered by LearnEra. How can I help you today?`;
+            }
+            appendMessage('bot', greetingMessage, true); // Identifies as initial message [1]
+        }
+
+        // Smooth typewriter/fade writing animation effect 
+        function appendBotMessageWithTypingEffect(messageText, isInitial = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'bot');
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            let index = 0;
+            const speed = 10; 
+
+            function typeWriter() {
+                if (index < messageText.length) {
+                    messageDiv.textContent += messageText.charAt(index);
+                    index++;
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    setTimeout(typeWriter, speed);
+                } else {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    if (isInitial) {
+                        window.__isFirstMessageLoaded = true; // Gate unlocked [1]
+                        sendButton.disabled = (userInput.value.trim() === '');
+                    }
+                }
+            }
+            typeWriter();
+        }
+
+        function appendMessage(sender, messageText, isInitial = false) {
+            if (sender === 'bot') {
+                appendBotMessageWithTypingEffect(messageText, isInitial);
+            } else {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', sender);
+                messageDiv.textContent = messageText;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        /* Show the "Smarty is Thinking" ring-text loader (same style as the
+           "Generating" loader from DotsLoading.html) */
+        function showThinkingLoader() {
+            removeThinkingLoader();
+            const wrap = document.createElement('div');
+            wrap.className = 'message bot smarty-thinking';
+            wrap.id = 'smartyThinkingLoader';
+
+            const inner = document.createElement('div');
+            inner.className = 'loader-wrapper';
+            const label = 'Smarty is Thinking';
+            for (const ch of label) {
+                const span = document.createElement('span');
+                span.className = 'loader-letter';
+                span.textContent = ch === ' ' ? '\u00A0' : ch;
+                inner.appendChild(span);
+            }
+            const ring = document.createElement('div');
+            ring.className = 'loader-ring';
+            inner.appendChild(ring);
+
+            wrap.appendChild(inner);
+            chatMessages.appendChild(wrap);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeThinkingLoader() {
+            const el = document.getElementById('smartyThinkingLoader');
+            if (el && el.parentNode) el.parentNode.removeChild(el);
+        }
+
+
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            // Block transmission unless the first message is fully typed and ready [1]
+            if (message === '' || window.__isDispatching || !window.__isFirstMessageLoaded) return;
+
+            window.__isDispatching = true;
+            appendMessage('user', message);
+            userInput.value = '';
+
+            // Slide out suggestions [3]
+            hideSuggestionsLayout();
+
+            // Put button into loading state and immediately disable input gates 
+            sendButton.disabled = true;
+            sendButton.classList.add('is-loading');
+
+            // Trigger "Wait..." state after exactly 0.5 seconds if response is still pending 
+            let waitingTimeout = setTimeout(() => {
+                if (window.__isDispatching) {
+                    sendButton.classList.remove('is-loading');
+                    sendButton.classList.add('is-waiting');
+                }
+            }, 500);
+
+            // Add the user message to session chat history
+            chatHistory.push({ role: "user", content: message });
+
+            // Create temporary thinking visual block (ring-text loader)
+            showThinkingLoader();
+
+            // Construct user profile context block dynamically
+            let userContext = "";
+            if (currentUserData) {
+                userContext += `The user's first name is ${currentUserData.firstName || 'Unknown'}. `;
+                if (currentUserData.lastName) userContext += `Their last name is ${currentUserData.lastName}. `;
+                if (currentUserData.dob) userContext += `Their DOB is ${currentUserData.dob}. `;
+                if (currentUserData.gender) userContext += `Their gender is ${currentUserData.gender}. `;
+                if (currentUserData.country) userContext += `Their country is ${currentUserData.country}. `;
+                if (currentUserData.email) userContext += `Their email is ${currentUserData.email}. `;
+            }
+
+            if (currentUserAffiliateData) {
+                userContext += `\n\nUser's Affiliate Info: `;
+                if (currentUserAffiliateData.availablePoints !== undefined) userContext += `Points: ${currentUserAffiliateData.availablePoints}. `;
+                if (currentUserAffiliateData.totalEarnings !== undefined) userContext += `Earnings: ${currentUserAffiliateData.totalEarnings}. `;
+            }
+
+            if (currentUserCourseEnrollmentData) {
+                const enrolledCourses = Object.keys(currentUserCourseEnrollmentData).filter(key => currentUserCourseEnrollmentData[key] === true);
+                if (enrolledCourses.length > 0) {
+                    userContext += `\n\nUser is currently enrolled in: ${enrolledCourses.join(', ')}. `;
+                }
+            }
+
+            // Fallback base prompt if Smarty/role is empty
+            const baseSystemPrompt = openRouterRole || `
+You are Smarty — a funny, intelligent, and cheeky AI assistant created by the young mastermind Himanshu Khandekar (nickname: Basu). You're the face of LearnEra, a powerful learning platform with 52 cutting-edge skill-based courses across Programming, Design, Business, Marketing, and Self-Development.
+`;
+
+            const fullSystemPrompt = `
+${baseSystemPrompt}
+
+--- User Context ---
+${userContext}
+`;
+
+            // Setup OpenRouter Completion Request Payload
+            const requestHeaders = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${openRouterApiKey}`,
+                'HTTP-Referer': 'https://learnera.app', 
+                'X-Title': 'LearnEra'
+            };
+
+            // Assemble message payload with system context and historical conversation logs
+            const openRouterMessages = [
+                { role: "system", content: fullSystemPrompt },
+                ...chatHistory
+            ];
+
+            const requestOptions = {
+                method: 'POST',
+                headers: requestHeaders,
+                body: JSON.stringify({
+                    model: openRouterModel,
+                    messages: openRouterMessages
+                })
+            };
+
+            try {
+                // Post request directly to OpenRouter
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", requestOptions);
+
+                if (!response.ok) {
+                    throw new Error(`OpenRouter returned: ${response.status}`);
+                }
+
+                const data = await response.json();
+                let aiResponse = "Sorry, I couldn't get a valid response from the AI. Please try again.";
+
+                if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+                    aiResponse = data.choices[0].message.content;
+                }
+
+                // Add the bot reply to local session history
+                chatHistory.push({ role: "assistant", content: aiResponse });
+
+                // Clear the thinking loader block securely
+                removeThinkingLoader();
+
+                // Type bot reply with typewriter fade animation 
+                appendMessage('bot', aiResponse);
+
+            } catch (error) {
+                console.error('Error fetching dynamic OpenRouter response:', error);
+                removeThinkingLoader();
+                appendMessage('bot', "Oops! I encountered an issue while communicating. Please check your connection and try again.");
+            } finally {
+                // Instantly clear the pending timeout
+                clearTimeout(waitingTimeout);
+
+                // Reset button to default state after exactly 1 second (1000ms) as requested 
+                setTimeout(() => {
+                    sendButton.classList.remove('is-loading', 'is-waiting');
+                    // Retain button disabled unless first greeting loaded completely [1]
+                    sendButton.disabled = (!window.__isFirstMessageLoaded || userInput.value.trim() === '');
+                    window.__isDispatching = false;
+                }, 1000);
+            }
+        }
+
+        // Enable or disable the send button on real-time typing [2]
+        userInput.addEventListener('input', () => {
+            if (window.__isDispatching || !window.__isFirstMessageLoaded) return;
+            sendButton.disabled = (userInput.value.trim() === '');
+        });
+
+        // --- Event Listeners and Audio Systems ---
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Suppress pointerhold contextual menu on the Send button
+        sendButton.addEventListener('contextmenu', (e) => e.preventDefault());
+        sendButton.addEventListener('gesturestart', (e) => e.preventDefault());
+
+        // Sound FX System
+        (function initDashboardSoundFX(){
+            const LS_MASTER = 'touchSoundsEnabled';
+            const LS_GROUPS = 'touchSoundsGroupState';
+
+            const CLICK_SOUND_URLS = [
+                "Click1.ogg", "Click2.ogg", "Click3.ogg", "Click4.ogg", "Click5.ogg",
+                "Click6.ogg", "Click7.ogg", "Click8.ogg", "Click9.ogg", "Click10.ogg",
+                "Click11.ogg", "Click12.ogg", "Click13.ogg", "Click14.ogg"
+            ];
+
+            const GROUP_TO_CLICKS = {
+                'buttons'   : [1, 2, 3, 7, 8, 9, 14],
+                'navigation': [5],
+                'inputs'    : [4, 6],
+                'reserved'  : [10, 11, 12, 13]
+            };
+
+            const CLICK_TO_GROUP = {};
+            Object.keys(GROUP_TO_CLICKS).forEach(g => {
+                GROUP_TO_CLICKS[g].forEach(n => { CLICK_TO_GROUP[n] = g; });
+            });
+
+            const audioCache = {};
+            let _ac = null;
+            let _masterGain = null;
+            let _navBuffer = null;
+
+            function getAC(){
+                if (_ac) return _ac;
+                try {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (Ctx) {
+                        _ac = new Ctx();
+                        const comp = _ac.createDynamicsCompressor();
+                        comp.threshold.value = -10;
+                        comp.knee.value = 6;
+                        comp.ratio.value = 12;
+                        comp.attack.value = 0.001;
+                        comp.release.value = 0.05;
+                        _masterGain = _ac.createGain();
+                        _masterGain.gain.value = 1.0;
+                        comp.connect(_masterGain).connect(_ac.destination);
+                        _ac._busIn = comp;
+                    }
+                } catch(e){}
+                return _ac;
+            }
+
+            function ensureNavBuffer(){
+                const ac = getAC();
+                if (!ac || _navBuffer) return _navBuffer;
+                const sr = ac.sampleRate;
+                const dur = 0.09;
+                const len = Math.floor(sr * dur);
+                const buf = ac.createBuffer(1, len, sr);
+                const data = buf.getChannelData(0);
+                const f0 = 520, f1 = 300;
+                for (let i = 0; i < len; i++) {
+                    const t = i / sr;
+                    const k = i / len;
+                    const f = f0 + (f1 - f0) * k;
+                    const env = Math.min(1, i / (sr * 0.004)) * Math.pow(1 - k, 2.2);
+                    data[i] = Math.sin(2 * Math.PI * f * t) * env * 0.95;
+                }
+                _navBuffer = buf;
+                return buf;
+            }
+
+            function primeAudio(){
+                const ac = getAC();
+                if (ac && ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                ensureNavBuffer();
+            }
+
+            ['pointerdown','touchstart','keydown','click'].forEach(ev => {
+                document.addEventListener(ev, primeAudio, { capture: true, passive: true });
+            });
+
+            const SYNTH = {
+                1:  { f: 880,  d: 0.05, w: 'triangle', g: 0.18 },
+                2:  { f: 520,  d: 0.07, w: 'sine',     g: 0.22 },
+                3:  { f: 660,  d: 0.08, w: 'square',   g: 0.16 },
+                4:  { f: 1200, d: 0.03, w: 'sine',     g: 0.12 },
+                5:  { f: 740,  d: 0.05, w: 'triangle', g: 0.18 },
+                6:  { f: 1000, d: 0.025,w: 'sine',     g: 0.10 },
+                7:  { f: 600,  d: 0.05, w: 'square',   g: 0.16 },
+                8:  { f: 820,  d: 0.05, w: 'triangle', g: 0.18 },
+                9:  { f: 420,  d: 0.06, w: 'sine',     g: 0.18 },
+                10: { f: 480,  d: 0.05, w: 'triangle', g: 0.16 },
+                11: { f: 560,  d: 0.05, w: 'triangle', g: 0.16 },
+                12: { f: 640,  d: 0.05, w: 'triangle', g: 0.16 },
+                13: { f: 720,  d: 0.05, w: 'triangle', g: 0.16 },
+                14: { f: 440,  d: 0.08, w: 'sine',     g: 0.60 }
+            };
+
+            function synthClick(n){
+                const ac = getAC();
+                if (!ac) return;
+                if (ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                const r = SYNTH[n] || SYNTH[7];
+                const t0 = ac.currentTime;
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                osc.type = r.w;
+                osc.frequency.setValueAtTime(r.f, t0);
+                osc.frequency.exponentialRampToValueAtTime(Math.max(80, r.f * 0.6), t0 + r.d);
+                gain.gain.setValueAtTime(0.0001, t0);
+                gain.gain.exponentialRampToValueAtTime(r.g, t0 + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + r.d);
+                osc.connect(gain).connect(ac._busIn || ac.destination);
+                osc.start(t0);
+                osc.stop(t0 + r.d + 0.02);
+            }
+
+            function playClick(n, opts){
+                opts = opts || {};
+                const isMasterOn = localStorage.getItem(LS_MASTER) === '1' || localStorage.getItem(LS_MASTER) === null;
+                if (!opts.force && !isMasterOn) return;
+
+                let groupState = {};
+                try { groupState = JSON.parse(localStorage.getItem(LS_GROUPS) || '{}'); } catch(e){}
+                const groupId = CLICK_TO_GROUP[n];
+                if (!opts.force && groupId && groupState[groupId] === false) return;
+
+                const url = CLICK_SOUND_URLS[n - 1];
+                if (isRealUrl(url)) {
+                    try {
+                        if (n === 14) {
+                            const a = new Audio(url);
+                            a.volume = 1.0;
+                            a.play().catch(() => synthClick(14));
+                            return;
+                        }
+                        if (!audioCache[n]) {
+                            const a = new Audio(url);
+                            a.volume = 0.5;
+                            a.preload = 'auto';
+                            audioCache[n] = a;
+                        }
+                        const a = audioCache[n];
+                        a.currentTime = 0;
+                        const p = a.play();
+                        if (p && p.catch) p.catch(() => synthClick(n));
+                        return;
+                    } catch(e) {}
+                }
+                synthClick(n);
+            }
+
+            window.playTouchSound = playClick;
+
+            // Trigger STX touch sounds on interaction
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('#submitFormBtn')) {
+                    if (window.parent && typeof window.parent.playTouchSound === 'function') {
+                        window.parent.playTouchSound(14); 
+                    } else {
+                        playClick(14);
+                    }
+                }
+            });
+
+            document.addEventListener('focusin', (e) => {
+                if (e.target.tagName === 'INPUT') {
+                    if (window.parent && typeof window.parent.playTouchSound === 'function') {
+                        window.parent.playTouchSound(4); 
+                    } else {
+                        playClick(4);
+                    }
+                }
+            });
+        })();
+
+        function isRealUrl(u){
+            if (!u || typeof u !== 'string') return false;
+            return /^(https?:|data:|blob:|\/|\.\/|\.\.\/)/i.test(u) || /\//.test(u);
+        }
+    </script>
+</body>
+</html>

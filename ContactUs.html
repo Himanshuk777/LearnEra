@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LearnEra - Contact Us</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Lottie & GSAP libraries -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <!-- Early theme bootstrap -->
+    <script>
+        (function () {
+            try {
+                const savedTheme = localStorage.getItem('appThemeMode') || 'system';
+                const isDark = savedTheme === 'dark' ||
+                    (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const darkStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.documentElement.setAttribute('data-dark-text', darkStyle);
+                } else {
+                    document.documentElement.removeAttribute('data-dark-text');
+                }
+                const topSp = localStorage.getItem('appTopSpace') || '5';
+                document.documentElement.style.setProperty('--top-space', topSp + 'vh');
+            } catch (e) {
+                document.documentElement.style.setProperty('--top-space', '5vh');
+            }
+            
+            const savedLang = localStorage.getItem('appLanguageSelection') || 'en';
+            document.documentElement.setAttribute('data-lang', savedLang);
+        })();
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        :root {
+            --body-bg: #e6edf7; 
+            --neu-shadow-light: #ffffff;
+            --neu-shadow-dark: #c8d3e4;
+            
+            --text-color: #2d3748; 
+            --sub-text-color: #718096; 
+            
+            --pink: #FF69B4;
+            --pink-strong: #FF1493;
+            --blue: #1E90FF;
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+            
+            --inner-highlight: inset 1px 1px 2px rgba(255,255,255,0.7);
+            --border-soft: 1px solid rgba(255,255,255,0.35);
+            
+            --top-space: 5vh;
+            --transition-theme: background-color 0.8s ease, color 0.8s ease, box-shadow 0.8s ease, border-color 0.8s ease;
+        }
+
+        html[data-theme="dark"] {
+            --body-bg: #1e1e24; 
+            --neu-shadow-dark: #101014;
+            --neu-shadow-light: rgba(255, 255, 255, 0.05);
+            
+            --text-color: #d1d9e6; 
+            --sub-text-color: #a3b1c6; 
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px rgba(255, 255, 255, 0.02);
+        }
+
+        html[data-dark-text="deep-dark"] {
+            --body-bg: #0c0c0f; 
+            --neu-shadow-dark: #050506;
+            --neu-shadow-light: rgba(255, 255, 255, 0.02);
+            
+            --text-color: rgba(255, 255, 255, 0.35); 
+            --sub-text-color: rgba(255, 255, 255, 0.3); 
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.01);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.01);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.01);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.01);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.02);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -2px -2px 4px rgba(255, 255, 255, 0.02);
+        }
+
+        /* Language Overrides */
+        html[data-lang="hi"] *, html[data-lang="ch"] *, html[data-lang="bh"] * {
+            font-family: 'Tiro Devanagari Hindi', serif !important;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            overflow-x: hidden;
+            overscroll-behavior: none;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 35px;
+            font-size: 13px; 
+            transition: var(--transition-theme);
+        }
+
+        /* Custom top screen toast styling */
+        #customToast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #ff4d4d;
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            z-index: 99999;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif !important;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+            width: 90%;
+            max-width: 400px;
+            justify-content: center;
+        }
+
+        html[data-dark-text="deep-dark"] #customToast {
+            background: #242424 !important;
+            color: rgba(255, 255, 255, 0.35) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+        }
+
+        /* Responsive Layout Container */
+        .contact-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: calc(var(--top-space) + 15px) 15px 35px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .contact-card {
+            background: var(--body-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--card-shadow), inset 1px 1px 2px rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.35);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contact-title {
+            font-size: 1.8em;
+            font-weight: 800;
+            margin-bottom: 12px;
+            text-align: left;
+            color: var(--text-color) !important;
+            background: none !important;
+            -webkit-text-fill-color: initial !important;
+            transition: color 0.4s ease;
+        }
+
+        body[data-theme="dark"] .contact-title {
+            background: none !important;
+            -webkit-text-fill-color: #88888c !important;
+            color: #88888c !important;
+        }
+
+        .contact-card p {
+            font-size: 0.85em;
+            line-height: 1.6;
+            color: var(--sub-text-color);
+            margin-bottom: 22px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Form Styling */
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        input, select, textarea, .input-group input, .input-group textarea, #editFirstName, #editEmail, #editPhone, #editSubject, #editSubcategory, #editMessage {
+            font-family: 'Poppins', sans-serif !important;
+        }
+
+        .input-group {
+            position: relative;
+            margin: 10px 0;
+        }
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 14px;
+            background: var(--body-bg);
+            color: var(--text-color);
+            font-size: .95em;
+            font-weight: 500;
+            box-shadow: var(--settings-shadow-inset-sharp);
+            outline: none;
+            transition: box-shadow .3s ease;
+        }
+        .input-group input::placeholder,
+        .input-group textarea::placeholder { color: var(--sub-text-color); opacity: .6; }
+        .input-group input:focus,
+        .input-group textarea:focus {
+            box-shadow: var(--settings-shadow-inset-sharp), 0 0 0 2px rgba(138, 43, 226, 0.18);
+        }
+        .input-group label {
+            position: absolute;
+            left: 14px; top: -8px;
+            background: var(--body-bg);
+            padding: 0 6px;
+            font-size: .75em; font-weight: 600;
+            color: var(--sub-text-color);
+            letter-spacing: .5px;
+            border-radius: 4px;
+        }
+        
+        /* Message box height decreased + resize disabled entirely to remove default handle/dot */
+        .input-group textarea#editMessage {
+            min-height: 120px !important;
+            height: 120px !important;
+            resize: none !important;
+            overflow-y: auto;
+        }
+
+        /* Send Message Button (decreased height and optimized spacing) */
+        .button {
+          --radius: 14px;
+          cursor: pointer;
+          border-radius: var(--radius);
+          border: 3px solid var(--body-bg) !important; 
+          background: var(--body-bg);
+          box-shadow: var(--card-shadow-sm), var(--inner-highlight) !important;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 600ms cubic-bezier(0.16, 1, 0.3, 1);
+          width: 100%;
+          padding: 12px 20px; 
+          height: 54px; 
+          font-family: inherit;
+          font-style: normal;
+          font-size: 16px;
+          font-weight: 600;
+          outline: none; 
+          z-index: 10;
+          touch-action: manipulation !important;
+          -webkit-user-select: none !important;
+          user-select: none !important;
+          -webkit-touch-callout: none !important;
+        }
+        body[data-theme="dark"] .button {
+          --neutral-1: #1e1e24;
+          --neutral-2: #101014;
+        }
+        body[data-theme="dark"][data-dark-text="deep-dark"] .button {
+          --neutral-1: #0c0c0f;
+          --neutral-2: #050506;
+          box-shadow: none !important;
+        }
+        
+        .button.button--hovered,
+        .button:hover {
+          transform: scale(1.02) !important;
+          box-shadow: var(--card-shadow) !important;
+        }
+        .button:active, .button:focus {
+          transform: scale(0.98);
+          box-shadow: var(--pressed-shadow) !important; 
+        }
+
+        .state p {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0;
+        }
+        .state .icon {
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          margin: auto;
+          transform: scale(1.25);
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .state .icon svg {
+          overflow: visible;
+        }
+
+        .state--default .icon,
+        .state--processing .icon {
+            color: #64748b !important; 
+        }
+        body[data-theme="dark"] .state--default .icon,
+        body[data-theme="dark"] .state--processing .icon {
+            color: #d1d9e6 !important; 
+        }
+
+        .state p span {
+          display: block;
+          opacity: 1; 
+          color: var(--text-color);
+        }
+        .button:hover p span {
+          animation: wave 0.5s ease forwards calc(var(--i) * 0.02s);
+        }
+        .button:focus p span {
+          animation: disapear 0.6s ease forwards calc(var(--i) * 0.03s);
+        }
+        @keyframes wave {
+          30% { transform: translateY(4px) translateX(0) rotate(0); }
+          50% { transform: translateY(-3px) translateX(0) rotate(0); color: var(--pink-strong); }
+          100% { transform: translateY(0) translateX(0) rotate(0); }
+        }
+        @keyframes slideDown {
+          0% {
+            opacity: 0;
+            transform: translateY(-20px) translateX(5px) rotate(-90deg);
+            filter: blur(5px);
+          }
+          30% { opacity: 1; transform: translateY(4px) translateX(0) rotate(0); filter: blur(0); }
+          50% { opacity: 1; transform: translateY(-3px) translateX(0) rotate(0); }
+          100% { opacity: 1; transform: translateY(0) translateX(0) rotate(0); }
+        }
+        @keyframes disapear {
+          from { opacity: 1; }
+          to {
+            opacity: 0;
+            transform: translateX(5px) translateY(20px);
+            filter: blur(5px);
+          }
+        }
+
+        /* Plane take-off */
+        .state--default .icon svg,
+        .state--processing .icon svg {
+          animation: land 0.6s ease forwards;
+        }
+        .button:hover .state--default .icon,
+        .button:hover .state--processing .icon {
+          transform: rotate(45deg) scale(1.25);
+        }
+        .button:focus .state--default svg,
+        .button:focus .state--processing svg {
+          animation: takeOff 0.8s linear forwards;
+        }
+        .button:focus .state--default .icon,
+        .button:focus .state--processing .icon {
+          transform: rotate(0) scale(1.25);
+        }
+
+        @keyframes takeOff {
+          0% { opacity: 1; }
+          60% { opacity: 1; transform: translateX(70px) rotate(45deg) scale(2); }
+          100% { opacity: 0; transform: translateX(160px) rotate(45deg) scale(0); }
+        }
+        @keyframes land {
+          0% {
+            transform: translateX(-60px) translateY(30px) rotate(-50deg) scale(2);
+            opacity: 0;
+            filter: blur(3px);
+          }
+          100% {
+            transform: translateX(0) translateY(0) rotate(0);
+            opacity: 1;
+            filter: blur(0);
+          }
+        }
+
+        .state--default .icon:before,
+        .state--processing .icon:before {
+          content: "";
+          position: absolute;
+          top: 50%;
+          height: 2px;
+          width: 0;
+          left: -5px;
+          background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.5));
+        }
+        .button:focus .state--default .icon:before,
+        .button:focus .state--processing .icon:before {
+          animation: contrail 0.8s linear forwards;
+        }
+        @keyframes contrail {
+          0% { width: 0; opacity: 1; }
+          8% { width: 15px; }
+          60% { opacity: 0.7; width: 80px; }
+          100% { opacity: 0; width: 160px; }
+        }
+
+        /* Continuous subtle paper plane hover during submission processing state */
+        @keyframes gentle-fly {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-4px) rotate(4deg); }
+        }
+        .state--processing .icon svg {
+            animation: gentle-fly 0.8s ease-in-out infinite;
+        }
+
+        /* States */
+        .state {
+          padding-left: 29px;
+          z-index: 2;
+          display: flex;
+          position: relative;
+        }
+        .state--default span:nth-child(4) {
+          margin-right: 5px;
+        }
+        .state--sent, .state--processing, .state--failed {
+          display: none;
+        }
+        .state--sent svg {
+          transform: scale(1.25);
+          margin-right: 8px;
+        }
+        .button:focus .state--default,
+        .button:focus .state--processing {
+          position: absolute;
+        }
+        .button:focus .state--sent {
+          display: flex;
+        }
+        .button:focus .state--sent span {
+          opacity: 0;
+          animation: slideDown 0.8s ease forwards calc(var(--i) * 0.2s);
+        }
+        .button:focus .state--sent .icon svg {
+          opacity: 0;
+          animation: appear 1.2s ease forwards 0.8s;
+        }
+        @keyframes appear {
+          0% {
+            opacity: 0;
+            transform: scale(4) rotate(-40deg);
+            filter: blur(4px);
+          }
+          30% { opacity: 1; transform: scale(0.6); filter: blur(1px); }
+          50% { opacity: 1; transform: scale(1.2); filter: blur(0); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+
+        .state--processing p span {
+            color: var(--text-color) !important;
+            -webkit-text-fill-color: var(--text-color) !important;
+            opacity: 1 !important;
+        }
+
+        /* Custom outcome alerts modal */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.5) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 20000;
+        }
+        .custom-modal-overlay.show {
+            display: flex !important;
+        }
+        .custom-modal {
+            background: var(--body-bg);
+            border-radius: 24px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: none !important;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        body[data-theme="dark"] .custom-modal {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .back-pill-button {
+            position: relative;
+            background: var(--body-bg);
+            color: var(--text-color);
+            border: 2px solid var(--body-bg);
+            border-radius: 16px;
+            padding: 10px 14px;
+            cursor: pointer;
+            box-shadow: var(--card-shadow-micro), inset 1px 1px 2px rgba(255,255,255,0.7);
+            z-index: 70;
+            transition: opacity 0.4s ease, transform 0.4s ease, box-shadow 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+        }
+        .back-pill-button:active {
+            transform: scale(0.95);
+            box-shadow: inset 2px 2px 4px var(--neu-shadow-dark) !important;
+        }
+
+        .sharp-inner-item {
+            box-shadow: var(--card-shadow-micro) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            border-radius: 12px !important;
+            background: var(--body-bg) !important;
+            margin-bottom: 8px;
+            padding: 10px 14px;
+            font-size: 0.9em;
+            font-weight: 500;
+            color: var(--text-color);
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            display: block;
+            outline: none;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .sharp-inner-item:active {
+            box-shadow: var(--card-shadow-inset) !important;
+            transform: scale(0.98);
+        }
+
+        /* Deep Dark Mode Monochrome Overrides */
+        body[data-dark-text="deep-dark"] .contact-title,
+        body[data-dark-text="deep-dark"] .btn-submit,
+        body[data-dark-text="deep-dark"] .large-backdrop-icon,
+        body[data-dark-text="deep-dark"] .custom-modal h3,
+        body[data-dark-text="deep-dark"] .custom-modal p,
+        body[data-dark-text="deep-dark"] .back-pill-button,
+        body[data-dark-text="deep-dark"] #paymentResultTitle, 
+        body[data-dark-text="deep-dark"] .sharp-inner-item {
+            color: rgba(255, 255, 255, 0.35) !important;
+            fill: rgba(255, 255, 255, 0.35) !important;
+            background: none !important;
+            background-image: none !important;
+            -webkit-background-clip: initial !important;
+            background-clip: initial !important;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.35) !important;
+        }
+        body[data-dark-text="deep-dark"] lottie-player,
+        html[data-dark-text="deep-dark"] lottie-player {
+            filter: grayscale(100%) opacity(0.35) !important;
+        }
+
+        /* Skeleton Loading System */
+        .skeleton-card {
+            position: relative !important;
+            overflow: hidden !important;
+            border-color: transparent !important;
+            box-shadow: var(--card-shadow-micro) !important; 
+        }
+        .skeleton-card * {
+            visibility: hidden !important;
+        }
+        .skeleton-card::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -150%;
+            width: 150%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            animation: skeleton-shimmer-animation 1.5s infinite;
+            z-index: 5;
+        }
+        body[data-theme="dark"] .skeleton-card::after {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+        }
+        @keyframes skeleton-shimmer-animation {
+            0% { left: -150%; }
+            100% { left: 150%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Custom Toast Notification Element -->
+    <div id="customToast">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span id="customToastText">Please fill out this field.</span>
+    </div>
+
+    <!-- Dynamic Outcome alerts modal -->
+    <div id="paymentResultModal" class="custom-modal-overlay">
+        <div class="custom-modal" style="width: 90%; max-width: 340px;">
+            <div id="paymentLottieContainer" style="width: 150px; height: 150px; margin: 0 auto 15px;"></div>
+            <h3 id="paymentResultTitle" style="font-weight: 800; margin-bottom: 5px; font-size: 1.25rem !important;">Message Dispatched</h3>
+            <p id="paymentResultDesc" style="color: var(--sub-text-color); font-size: 0.85em; margin: 10px 0 20px; line-height: 1.4; display: block;"></p>
+            <button class="back-pill-button" onclick="closePaymentResultModal()" style="width: 100%; border-radius: 12px; justify-content: center; display: flex; align-items: center;">Close</button>
+        </div>
+    </div>
+
+    <!-- Main Content Container (Contact Form) -->
+    <div class="contact-container">
+        
+        <div class="contact-card skeleton-card">
+            <div class="about-card-title contact-title">Get in Touch</div>
+            <p>
+                Ready to upgrade your reality? Have a question, a project idea, or just want to tell us how much you love the starlight algorithms? Drop your coordinates below. We read everything.
+            </p>
+
+            <form class="withdrawal-form" id="withdrawalForm" novalidate style="display: flex; flex-direction: column; gap: 14px; margin-top: 15px;">
+                <div class="input-group">
+                  <input type="text" id="editFirstName" placeholder="Enter First Name" required>
+                  <label for="editFirstName">First Name</label>
+                </div>
+                <div class="input-group">
+                  <input type="email" id="editEmail" placeholder="Enter Email Address" required>
+                  <label for="editEmail">Email Address</label>
+                </div>
+                <div class="input-group">
+                  <input type="tel" id="editPhone" placeholder="Enter Mobile Number" maxlength="10">
+                  <label for="editPhone">Mobile Number</label>
+                </div>
+                
+                <div class="input-group">
+                  <input type="text" id="editSubject" placeholder="Select Subject" readonly required>
+                  <label for="editSubject">Subject</label>
+                </div>
+
+                <div class="input-group" id="subcategoryInputGroup">
+                  <input type="text" id="editSubcategory" placeholder="Select Subcategory" readonly required>
+                  <label for="editSubcategory">Subcategory</label>
+                </div>
+
+                <div class="input-group">
+                  <textarea id="editMessage" placeholder="Enter your message" required></textarea> 
+                  <label for="editMessage">Message</label>
+                </div>
+                
+                <!-- Interactive Send Message Button -->
+                <button class="button" id="submitFormBtn" type="submit" style="margin-top: 15px;">
+                  <div class="outline"></div>
+                  
+                  <!-- DEFAULT STATE (Exact same design and paper plane path) -->
+                  <div class="state state--default">
+                    <div class="icon">
+                      <svg
+                        width="1em"
+                        height="1em"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g style="filter: url(#shadow)">
+                          <path
+                            d="M14.2199 21.63C13.0399 21.63 11.3699 20.8 10.0499 16.83L9.32988 14.67L7.16988 13.95C3.20988 12.63 2.37988 10.96 2.37988 9.78001C2.37988 8.61001 3.20988 6.93001 7.16988 5.60001L15.6599 2.77001C17.7799 2.06001 19.5499 2.27001 20.6399 3.35001C21.7299 4.43001 21.9399 6.21001 21.2299 8.33001L18.3999 16.82C17.0699 20.8 15.3999 21.63 14.2199 21.63ZM7.63988 7.03001C4.85988 7.96001 3.86988 9.06001 3.86988 9.78001C3.86988 10.5 4.85988 11.6 7.63988 12.52L10.1599 13.36C10.3799 13.43 10.5599 13.61 10.6299 13.83L11.4699 16.35C12.3899 19.13 13.4999 20.12 14.2199 20.12C14.9399 20.12 16.0399 19.13 16.9699 16.35L19.7999 7.86001C20.3099 6.32001 20.2199 5.06001 19.5699 4.41001C18.9199 3.76001 17.6599 3.68001 16.1299 4.19001L7.63988 7.03001Z"
+                            fill="currentColor"
+                          ></path>
+                          <path
+                            d="M10.11 14.4C9.92005 14.4 9.73005 14.33 9.58005 14.18C9.29005 13.89 9.29005 13.41 9.58005 13.12L13.16 9.53C13.45 9.24 13.93 9.24 14.22 9.53C14.51 9.82 14.51 10.3 14.22 10.59L10.64 14.18C10.5 14.33 10.3 14.4 10.11 14.4Z"
+                            fill="currentColor"
+                          ></path>
+                        </g>
+                        <defs>
+                          <filter id="shadow">
+                            <fedropshadow
+                              dx="0"
+                              dy="1"
+                              stdDeviation="0.6"
+                              flood-opacity="0.5"
+                            ></fedropshadow>
+                          </filter>
+                        </defs>
+                      </svg>
+                    </div>
+                    <p>
+                      <span style="--i:0">S</span>
+                      <span style="--i:1">e</span>
+                      <span style="--i:2">n</span>
+                      <span style="--i:3">d</span>
+                      <span style="--i:4">M</span>
+                      <span style="--i:5">e</span>
+                      <span style="--i:6">s</span>
+                      <span style="--i:7">s</span>
+                      <span style="--i:8">a</span>
+                      <span style="--i:9">g</span>
+                      <span style="--i:10">e</span>
+                    </p>
+                  </div>
+
+                  <!-- PROCESSING STATE (All circles removed, paper plane is used instead) -->
+                  <div class="state state--processing" id="stateProcessing" style="justify-content: center; padding-left: 0; width: 100%;">
+                    <div class="icon" style="position: static; transform: scale(1.25);">
+                      <svg
+                        width="1em"
+                        height="1em"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g style="filter: url(#shadow)">
+                          <path
+                            d="M14.2199 21.63C13.0399 21.63 11.3699 20.8 10.0499 16.83L9.32988 14.67L7.16988 13.95C3.20988 12.63 2.37988 10.96 2.37988 9.78001C2.37988 8.61001 3.20988 6.93001 7.16988 5.60001L15.6599 2.77001C17.7799 2.06001 19.5499 2.27001 20.6399 3.35001C21.7299 4.43001 21.9399 6.21001 21.2299 8.33001L18.3999 16.82C17.0699 20.8 15.3999 21.63 14.2199 21.63ZM7.63988 7.03001C4.85988 7.96001 3.86988 9.06001 3.86988 9.78001C3.86988 10.5 4.85988 11.6 7.63988 12.52L10.1599 13.36C10.3799 13.43 10.5599 13.61 10.6299 13.83L11.4699 16.35C12.3899 19.13 13.4999 20.12 14.2199 20.12C14.9399 20.12 16.0399 19.13 16.9699 16.35L19.7999 7.86001C20.3099 6.32001 20.2199 5.06001 19.5699 4.41001C18.9199 3.76001 17.6599 3.68001 16.1299 4.19001L7.63988 7.03001Z"
+                            fill="currentColor"
+                          ></path>
+                          <path
+                            d="M10.11 14.4C9.92005 14.4 9.73005 14.33 9.58005 14.18C9.29005 13.89 9.29005 13.41 9.58005 13.12L13.16 9.53C13.45 9.24 13.93 9.24 14.22 9.53C14.51 9.82 14.51 10.3 14.22 10.59L10.64 14.18C10.5 14.33 10.3 14.4 10.11 14.4Z"
+                            fill="currentColor"
+                          ></path>
+                        </g>
+                        <defs>
+                          <filter id="shadow">
+                            <fedropshadow
+                              dx="0"
+                              dy="1"
+                              stdDeviation="0.6"
+                              flood-opacity="0.5"
+                            ></fedropshadow>
+                          </filter>
+                        </defs>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <!-- SENT (SUCCESS) STATE (Circle outer border removed completely) -->
+                  <div class="state state--sent" id="stateSent">
+                    <div class="icon">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        height="1.2em"
+                        width="1.2em"
+                        stroke-width="3"
+                        stroke="currentColor"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                    </div>
+                    <p>
+                      <span style="--i:5">S</span>
+                      <span style="--i:6">e</span>
+                      <span style="--i:7">n</span>
+                      <span style="--i:8">t</span>
+                    </p>
+                  </div>
+
+                  <!-- FAILED STATE (Circle outer border removed completely) -->
+                  <div class="state state--failed" id="stateFailed">
+                    <div class="icon">
+                      <svg width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </div>
+                    <p>
+                      <span style="--i:0">F</span>
+                      <span style="--i:1">a</span>
+                      <span style="--i:2">i</span>
+                      <span style="--i:3">l</span>
+                      <span style="--i:4">e</span>
+                      <span style="--i:5">d</span>
+                    </p>
+                  </div>
+
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Custom List Selector Popup Modal -->
+    <div class="custom-modal-overlay" id="customListSelectorModal" style="display: none; z-index: 21000;">
+        <div class="custom-modal no-outer-shadow-modal" style="width: 85%; max-width: 320px; border-radius: 20px; padding: 20px;">
+            <h3 id="listSelectorTitle" style="color: var(--text-color); margin-bottom: 15px; font-size: 1.2em; font-weight: 700; text-align: center;">Select Value</h3>
+            <div id="listSelectorItemsContainer" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto;"></div>
+            <button class="back-pill-button" onclick="window.closeCustomListSelector()" style="width: 100%; margin-top: 15px; border-radius: 12px; padding: 10px; justify-content: center; display: flex; align-items: center;">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // Sound FX System
+        (function initDashboardSoundFX(){
+            const LS_MASTER = 'touchSoundsEnabled';
+            const LS_GROUPS = 'touchSoundsGroupState';
+
+            const CLICK_SOUND_URLS = [
+                "Click1.ogg", "Click2.ogg", "Click3.ogg", "Click4.ogg", "Click5.ogg",
+                "Click6.ogg", "Click7.ogg", "Click8.ogg", "Click9.ogg", "Click10.ogg",
+                "Click11.ogg", "Click12.ogg", "Click13.ogg", "Click14.ogg"
+            ];
+
+            const GROUP_TO_CLICKS = {
+                'buttons'   : [1, 2, 3, 7, 8, 9, 14],
+                'navigation': [5],
+                'inputs'    : [4, 6],
+                'reserved'  : [10, 11, 12, 13]
+            };
+
+            const CLICK_TO_GROUP = {};
+            Object.keys(GROUP_TO_CLICKS).forEach(g => {
+                GROUP_TO_CLICKS[g].forEach(n => { CLICK_TO_GROUP[n] = g; });
+            });
+
+            const audioCache = {};
+            let _ac = null;
+            let _masterGain = null;
+            let _navBuffer = null;
+
+            function getAC(){
+                if (_ac) return _ac;
+                try {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (Ctx) {
+                        _ac = new Ctx();
+                        const comp = _ac.createDynamicsCompressor();
+                        comp.threshold.value = -10;
+                        comp.knee.value = 6;
+                        comp.ratio.value = 12;
+                        comp.attack.value = 0.001;
+                        comp.release.value = 0.05;
+                        _masterGain = _ac.createGain();
+                        _masterGain.gain.value = 1.0;
+                        comp.connect(_masterGain).connect(_ac.destination);
+                        _ac._busIn = comp;
+                    }
+                } catch(e){}
+                return _ac;
+            }
+
+            function ensureNavBuffer(){
+                const ac = getAC();
+                if (!ac || _navBuffer) return _navBuffer;
+                const sr = ac.sampleRate;
+                const dur = 0.09;
+                const len = Math.floor(sr * dur);
+                const buf = ac.createBuffer(1, len, sr);
+                const data = buf.getChannelData(0);
+                const f0 = 520, f1 = 300;
+                for (let i = 0; i < len; i++) {
+                    const t = i / sr;
+                    const k = i / len;
+                    const f = f0 + (f1 - f0) * k;
+                    const env = Math.min(1, i / (sr * 0.004)) * Math.pow(1 - k, 2.2);
+                    data[i] = Math.sin(2 * Math.PI * f * t) * env * 0.95;
+                }
+                _navBuffer = buf;
+                return buf;
+            }
+
+            function primeAudio(){
+                const ac = getAC();
+                if (ac && ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                ensureNavBuffer();
+            }
+
+            ['pointerdown','touchstart','keydown','click'].forEach(ev => {
+                document.addEventListener(ev, primeAudio, { capture: true, passive: true });
+            });
+
+            const SYNTH = {
+                1:  { f: 880,  d: 0.05, w: 'triangle', g: 0.18 },
+                2:  { f: 520,  d: 0.07, w: 'sine',     g: 0.22 },
+                3:  { f: 660,  d: 0.08, w: 'square',   g: 0.16 },
+                4:  { f: 1200, d: 0.03, w: 'sine',     g: 0.12 },
+                5:  { f: 740,  d: 0.05, w: 'triangle', g: 0.18 },
+                6:  { f: 1000, d: 0.025,w: 'sine',     g: 0.10 },
+                7:  { f: 600,  d: 0.05, w: 'square',   g: 0.16 },
+                8:  { f: 820,  d: 0.05, w: 'triangle', g: 0.18 },
+                9:  { f: 420,  d: 0.06, w: 'sine',     g: 0.18 },
+                10: { f: 480,  d: 0.05, w: 'triangle', g: 0.16 },
+                11: { f: 560,  d: 0.05, w: 'triangle', g: 0.16 },
+                12: { f: 640,  d: 0.05, w: 'triangle', g: 0.16 },
+                13: { f: 720,  d: 0.05, w: 'triangle', g: 0.16 },
+                14: { f: 440,  d: 0.08, w: 'sine',     g: 0.60 }
+            };
+
+            function synthClick(n){
+                const ac = getAC();
+                if (!ac) return;
+                if (ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                const r = SYNTH[n] || SYNTH[7];
+                const t0 = ac.currentTime;
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                osc.type = r.w;
+                osc.frequency.setValueAtTime(r.f, t0);
+                osc.frequency.exponentialRampToValueAtTime(Math.max(80, r.f * 0.6), t0 + r.d);
+                gain.gain.setValueAtTime(0.0001, t0);
+                gain.gain.exponentialRampToValueAtTime(r.g, t0 + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + r.d);
+                osc.connect(gain).connect(ac._busIn || ac.destination);
+                osc.start(t0);
+                osc.stop(t0 + r.d + 0.02);
+            }
+
+            function playClick(n, opts){
+                const isMasterOn = localStorage.getItem(LS_MASTER) === '1' || localStorage.getItem(LS_MASTER) === null;
+                if (!opts.force && !isMasterOn) return;
+
+                let groupState = {};
+                try { groupState = JSON.parse(localStorage.getItem(LS_GROUPS) || '{}'); } catch(e){}
+                const groupId = CLICK_TO_GROUP[n];
+                if (!opts.force && groupId && groupState[groupId] === false) return;
+
+                const url = CLICK_SOUND_URLS[n - 1];
+                if (isRealUrl(url)) {
+                    try {
+                        if (n === 14) {
+                            const a = new Audio(url);
+                            a.volume = 1.0;
+                            a.play().catch(() => synthClick(14));
+                            return;
+                        }
+                        if (!audioCache[n]) {
+                            const a = new Audio(url);
+                            a.volume = 0.5;
+                            a.preload = 'auto';
+                            audioCache[n] = a;
+                        }
+                        const a = audioCache[n];
+                        a.currentTime = 0;
+                        const p = a.play();
+                        if (p && p.catch) p.catch(() => synthClick(n));
+                        return;
+                    } catch(e) {}
+                }
+                synthClick(n);
+            }
+
+            window.playTouchSound = playClick;
+
+            // Bind sound clicks to elements
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('#submitFormBtn')) {
+                    if (window.parent && typeof window.parent.playTouchSound === 'function') {
+                        window.parent.playTouchSound(1);
+                    } else {
+                        playClick(1);
+                    }
+                }
+            });
+
+            document.addEventListener('focusin', (e) => {
+                if (e.target.tagName === 'INPUT') {
+                    if (window.parent && typeof window.parent.playTouchSound === 'function') {
+                        window.parent.playTouchSound(4);
+                    } else {
+                        playClick(4);
+                    }
+                }
+            });
+        })();
+
+        function isRealUrl(u){
+            if (!u || typeof u !== 'string') return false;
+            return /^(https?:|data:|blob:|\/|\.\/|\.\.\/)/i.test(u) || /\//.test(u);
+        }
+
+        // Bootstrap on startup
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                document.querySelectorAll('.skeleton-card').forEach(card => {
+                    card.classList.remove('skeleton-card');
+                });
+            }, 800);
+
+            // Initialize Firebase using given LearnEra keys
+            const firebaseConfig = {
+              apiKey: "AIzaSyBWOdk2_NJntQ4Pob7_tN6kb1W5rMy-tcw",
+              authDomain: "learnera-d6309.firebaseapp.com",
+              projectId: "learnera-d6309",
+              messagingSenderId: "752970675909",
+              appId: "1:752970675909:web:9c4513809ca51ea60122ac",
+              databaseURL: "https://learnera-d6309-default-rtdb.firebaseio.com"
+            };
+
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            const database = firebase.database();
+            const auth = firebase.auth();
+
+            const DAILY_SUBMISSION_LIMIT = 3; // Maximum 3 messages per day limit
+
+            function getTodayDate() {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            const contactForm = document.getElementById('withdrawalForm');
+            const sendButton = document.getElementById('submitFormBtn');
+
+            // Suppress touch hold context menus/drag magnification on mobile Webviews
+            sendButton.addEventListener('contextmenu', (e) => e.preventDefault());
+            sendButton.addEventListener('gesturestart', (e) => e.preventDefault());
+
+            // Custom toast controller
+            window.showToast = function(message) {
+                const toast = document.getElementById('customToast');
+                const toastText = document.getElementById('customToastText');
+                if (!toast || !toastText) return;
+                
+                toastText.textContent = message;
+                toast.style.transform = 'translateX(-50%) translateY(0)';
+                
+                if (window.toastTimeout) clearTimeout(window.toastTimeout);
+                window.toastTimeout = setTimeout(() => {
+                    toast.style.transform = 'translateX(-50%) translateY(-100px)';
+                }, 3000);
+            };
+
+            window.closePaymentResultModal = function() {
+                const modal = document.getElementById('paymentResultModal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    modal.style.display = 'none';
+                }
+            };
+
+            function showPaymentOutcome(success, titleMsg, descMsg = "") {
+                const modal = document.getElementById('paymentResultModal');
+                const container = document.getElementById('paymentLottieContainer');
+                const title = document.getElementById('paymentResultTitle');
+                const desc = document.getElementById('paymentResultDesc');
+
+                if (!modal || !container) return;
+
+                container.innerHTML = '';
+                let lottieUrl = "";
+
+                if (success) {
+                    lottieUrl = "https://ik.imagekit.io/lssafvcmr/Others/success.json";
+                } else {
+                    lottieUrl = "https://ik.imagekit.io/lssafvcmr/Others/cancel%20animation.json";
+                }
+
+                title.textContent = titleMsg;
+                desc.textContent = descMsg;
+                desc.style.display = descMsg ? "block" : "none";
+
+                const isDeepDark = document.body.getAttribute('data-dark-text') === 'deep-dark' || document.documentElement.getAttribute('data-dark-text') === 'deep-dark';
+                if (isDeepDark) {
+                    title.style.color = "rgba(255, 255, 255, 0.35)"; 
+                    title.style.setProperty('-webkit-text-fill-color', 'rgba(255, 255, 255, 0.35)', 'important');
+                } else {
+                    title.style.removeProperty('color');
+                    title.style.removeProperty('-webkit-text-fill-color');
+                    if (success) {
+                        title.style.color = "#32CD32"; 
+                    } else {
+                        title.style.color = "#dc143c"; 
+                    }
+                }
+
+                container.innerHTML = `<lottie-player src="${lottieUrl}" background="transparent" speed="1.2" style="width: 150px; height: 150px;" loop autoplay></lottie-player>`;
+                modal.style.display = 'flex';
+                modal.classList.add('show');
+            }
+
+            // Subject Configuration with Suggestion & Complaint added
+            const SUBJECTS_CONFIG = {
+                "Courses & Content": [
+                    "Syllabus Inquiries",
+                    "Course Feedback",
+                    "Episode Streaming Issues",
+                    "Resource Requests"
+                ],
+                "Billing & Accounts": [
+                    "Payment Failure",
+                    "Subscription Options",
+                    "Refund Requests",
+                    "Invoice Copies"
+                ],
+                "Affiliate & Earnings": [
+                    "Referral Link Issues",
+                    "Commission Verification",
+                    "Withdrawal Status",
+                    "Promo Code Errors"
+                ],
+                "Technical Support": [
+                    "Login Problems",
+                    "App Offline Glitches",
+                    "Audio/Video Player Bugs",
+                    "Profile Edit Errors"
+                ],
+                "Suggestion": [
+                    "UI/UX Improvement",
+                    "Feature Request",
+                    "Content Addition",
+                    "General Suggestion"
+                ],
+                "Complaint": [
+                    "App Lag/Crash",
+                    "Payment Issues",
+                    "Content Quality",
+                    "Other Complaints"
+                ],
+                "General & Feedback": [
+                    "Partnership Proposal",
+                    "Feature Request",
+                    "Tony Stark Fan Mail",
+                    "Other Queries",
+                    "Suggestion",
+                    "Complaint"
+                ]
+            };
+
+            window.openCustomListSelector = function(title, options, callback) {
+                document.getElementById('listSelectorTitle').textContent = title;
+                const container = document.getElementById('listSelectorItemsContainer');
+                container.innerHTML = '';
+                
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'sharp-inner-item';
+                    btn.textContent = opt;
+                    btn.onclick = (e) => {
+                        e.preventDefault();
+                        callback(opt);
+                        window.closeCustomListSelector();
+                    };
+                    container.appendChild(btn);
+                });
+                
+                const modal = document.getElementById('customListSelectorModal');
+                modal.style.display = 'flex';
+                modal.classList.add('show');
+            };
+
+            window.closeCustomListSelector = function() {
+                const modal = document.getElementById('customListSelectorModal');
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+            };
+
+            const editSubject = document.getElementById('editSubject');
+            const editPhone = document.getElementById('editPhone');
+            const editFirstName = document.getElementById('editFirstName');
+            const editEmail = document.getElementById('editEmail');
+            const editMessage = document.getElementById('editMessage');
+
+            // Enforce strictly 10 digits character limits on phone input
+            editPhone.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+            });
+
+            editSubject.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.openCustomListSelector("Select Subject", Object.keys(SUBJECTS_CONFIG), (selectedSubject) => {
+                    editSubject.value = selectedSubject;
+                    
+                    const subcategoryInput = document.getElementById('editSubcategory');
+                    if (subcategoryInput) subcategoryInput.value = ''; 
+                });
+            });
+
+            const editSubcategory = document.getElementById('editSubcategory');
+            if (editSubcategory) {
+                editSubcategory.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const activeSubject = editSubject.value;
+                    if (!activeSubject || !SUBJECTS_CONFIG[activeSubject]) {
+                        window.showToast("Please select a Subject first.");
+                        return;
+                    }
+                    window.openCustomListSelector("Select Category", SUBJECTS_CONFIG[activeSubject], (selectedSub) => {
+                        editSubcategory.value = selectedSub;
+                    });
+                });
+            }
+
+            window.__isDispatching = false;
+            window.__isDispatchedSuccess = false;
+
+            function showButtonState(state) {
+                const sDefault = sendButton.querySelector('.state--default');
+                const sProcessing = document.getElementById('stateProcessing');
+                const sSent = document.getElementById('stateSent');
+                const sFailed = document.getElementById('stateFailed');
+
+                if (!sDefault || !sProcessing || !sSent || !sFailed) return;
+
+                sDefault.style.display = 'none';
+                sProcessing.style.display = 'none';
+                sSent.style.display = 'none';
+                sFailed.style.display = 'none';
+
+                if (state === 'default') {
+                    sDefault.style.display = 'flex';
+                } else if (state === 'processing') {
+                    sProcessing.style.display = 'flex';
+                } else if (state === 'sent') {
+                    sSent.style.display = 'flex';
+                } else if (state === 'failed') {
+                    sFailed.style.display = 'flex';
+                }
+            }
+
+            sendButton.addEventListener('mouseenter', () => {
+                if (window.__isDispatchedSuccess || window.__isDispatching) return;
+                showButtonState('default');
+            });
+
+            sendButton.addEventListener('mouseleave', () => {
+                if (window.__isDispatchedSuccess) {
+                    showButtonState('sent');
+                    return;
+                }
+                if (window.__isDispatching) {
+                    showButtonState('processing');
+                    return;
+                }
+                showButtonState('default');
+            });
+
+            sendButton.addEventListener('touchstart', () => {
+                if (window.__isDispatchedSuccess || window.__isDispatching) return;
+                showButtonState('default');
+            }, { passive: true });
+
+            contactForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const name = editFirstName.value.trim();
+                const email = editEmail.value.trim();
+                const mobile = editPhone.value.trim();
+                const subject = editSubject.value.trim();
+                const subcategory = editSubcategory ? editSubcategory.value.trim() : "";
+                const message = editMessage.value.trim();
+
+                // Custom constraints validation logic
+                if (!name) {
+                    window.showToast("First Name is required.");
+                    editFirstName.focus();
+                    return;
+                }
+                if (!email) {
+                    window.showToast("Email Address is required.");
+                    editEmail.focus();
+                    return;
+                }
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(email)) {
+                    window.showToast("Please enter a valid email address.");
+                    editEmail.focus();
+                    return;
+                }
+                if (mobile && !/^[0-9]{10}$/.test(mobile)) {
+                    window.showToast("Please enter a valid 10-digit mobile number.");
+                    editPhone.focus();
+                    return;
+                }
+                if (!subject) {
+                    window.showToast("Please select a Subject.");
+                    return;
+                }
+                if (!subcategory) {
+                    window.showToast("Please select a Subcategory.");
+                    return;
+                }
+                if (!message) {
+                    window.showToast("Please enter a message.");
+                    editMessage.focus();
+                    return;
+                }
+
+                // Resolve UID securely from Auth state or parent frame context
+                let uid = "Guest";
+                if (auth.currentUser) {
+                    uid = auth.currentUser.uid;
+                } else if (window.parent && window.parent.AppAPI && typeof window.parent.AppAPI.getCurrentUID === 'function') {
+                    uid = window.parent.AppAPI.getCurrentUID() || "Guest";
+                }
+
+                window.__isDispatching = true;
+                showButtonState('processing'); 
+                sendButton.classList.add('button--hovered');
+
+                const todayStr = getTodayDate();
+
+                try {
+                    // Fetch existing messages to verify count limit and assign sequential index
+                    const snapshot = await database.ref(`contactUs/${uid}`).once('value');
+                    const existingMessages = snapshot.val();
+                    
+                    let todayCount = 0;
+                    let totalCount = 0;
+
+                    if (existingMessages) {
+                        Object.keys(existingMessages).forEach(key => {
+                            const msg = existingMessages[key];
+                            if (msg && msg.date === todayStr) {
+                                todayCount++;
+                            }
+                            totalCount++;
+                        });
+                    }
+
+                    // Strict limit validation check (maximum of 3 messages daily)
+                    if (todayCount >= DAILY_SUBMISSION_LIMIT) {
+                        showButtonState('failed');
+                        showPaymentOutcome(false, "Limit Exceeded", `You have reached your daily limit of ${DAILY_SUBMISSION_LIMIT} messages. Please try again tomorrow.`);
+                        setTimeout(() => {
+                            window.__isDispatching = false;
+                            showButtonState('default');
+                        }, 2500);
+                        return;
+                    }
+
+                    // Sequentially generate messageNo (e.g. message1, message2, message3)
+                    const messageNo = `message${totalCount + 1}`;
+
+                    // Database payload setup
+                    const messagePayload = {
+                        name: name,
+                        email: email,
+                        mobile: mobile,
+                        subject: `${subject} - ${subcategory}`,
+                        message: message,
+                        date: todayStr,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    };
+
+                    // Persist securely to node path contactUs -> uid -> messageNo
+                    await database.ref(`contactUs/${uid}/${messageNo}`).set(messagePayload);
+
+                    showPaymentOutcome(true, "Message Dispatched", "Your message was securely submitted to our system. We will get back to you shortly.");
+                    
+                    window.__isDispatchedSuccess = true;
+                    showButtonState('sent'); 
+                    contactForm.reset();
+
+                } catch (error) {
+                    console.error("Firebase Database error: ", error);
+                    showButtonState('failed');
+                    showPaymentOutcome(false, "Submission Failed", "An error occurred while saving your message. Please try again later.");
+                    setTimeout(() => {
+                        window.__isDispatching = false;
+                        showButtonState('default');
+                    }, 3000);
+                } finally {
+                    window.__isDispatching = false;
+                    sendButton.classList.remove('button--hovered'); 
+                }
+            });
+        });
+    </script>
+</body>
+</html>

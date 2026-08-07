@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LearnEra - Tools Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Lottie & GSAP libraries -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <!-- Early theme bootstrap -->
+    <script>
+        (function () {
+            try {
+                const savedTheme = localStorage.getItem('appThemeMode') || 'system';
+                const isDark = savedTheme === 'dark' ||
+                    (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const darkStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.documentElement.setAttribute('data-dark-text', darkStyle);
+                } else {
+                    document.documentElement.removeAttribute('data-dark-text');
+                }
+                const topSp = localStorage.getItem('appTopSpace') || '5';
+                document.documentElement.style.setProperty('--top-space', topSp + 'vh');
+            } catch (e) {
+                document.documentElement.style.setProperty('--top-space', '5vh');
+            }
+            
+            const savedLang = localStorage.getItem('appLanguageSelection') || 'en';
+            document.documentElement.setAttribute('data-lang', savedLang);
+        })();
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        :root {
+            --body-bg: #e6edf7; 
+            --neu-shadow-light: #ffffff;
+            --neu-shadow-dark: #c8d3e4;
+            
+            --text-color: #2d3748; 
+            --sub-text-color: #718096; 
+            
+            --pink: #FF69B4;
+            --pink-strong: #FF1493;
+            --blue: #1E90FF;
+            --select-active-color: #1E90FF;
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+            
+            --inner-highlight: inset 1px 1px 2px rgba(255,255,255,0.7);
+            --border-soft: 1px solid rgba(255,255,255,0.35);
+            
+            --top-space: 5vh;
+            --transition-theme: background-color 0.8s ease, color 0.8s ease, box-shadow 0.8s ease, border-color 0.8s ease;
+
+            /* Category colors for Periodic Table */
+            --category-alkali-metal: rgba(255, 165, 0, 0.12); 
+            --category-alkaline-earth-metal: rgba(255, 215, 0, 0.12); 
+            --category-transition-metal: rgba(220, 20, 60, 0.08); 
+            --category-post-transition-metal: rgba(50, 205, 50, 0.12); 
+            --category-metalloid: rgba(138, 43, 226, 0.12); 
+            --category-nonmetal: rgba(30, 144, 255, 0.12); 
+            --category-halogen: rgba(0, 206, 209, 0.12); 
+            --category-noble-gas: rgba(112, 128, 144, 0.12); 
+            --category-lanthanide: rgba(255, 105, 180, 0.12); 
+            --category-actinide: rgba(70, 130, 180, 0.12); 
+            --category-unknown-properties: rgba(128, 128, 128, 0.12);
+
+            --strength-weak: #dc3545; 
+            --strength-medium: #ffc107; 
+            --strength-strong: #28a745; 
+        }
+
+        html[data-theme="dark"] {
+            --body-bg: #1e1e24; 
+            --neu-shadow-dark: #101014;
+            --neu-shadow-light: rgba(255, 255, 255, 0.05);
+            
+            --text-color: #d1d9e6; 
+            --sub-text-color: #a3b1c6; 
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px rgba(255, 255, 255, 0.02);
+        }
+
+        /* deep-dark Mode Specific Styles */
+        html[data-dark-text="deep-dark"] {
+            --body-bg: #0c0c0f; 
+            --neu-shadow-dark: #050506;
+            --neu-shadow-light: rgba(255, 255, 255, 0.02);
+            
+            --text-color: rgba(255, 255, 255, 0.35); 
+            --sub-text-color: rgba(255, 255, 255, 0.3); 
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.01);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.01);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.01);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.01);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.02);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -2px -2px 4px rgba(255, 255, 255, 0.02);
+            
+            --blue: rgba(255, 255, 255, 0.25);
+            --select-active-color: rgba(255, 255, 255, 0.25);
+        }
+
+        html[data-dark-text="deep-dark"] .tool-card i {
+            color: var(--text-color) !important;
+        }
+
+        html[data-dark-text="deep-dark"] .element-box {
+            background: rgba(255, 255, 255, 0.02) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        }
+
+        html[data-dark-text="deep-dark"] .element-box span {
+            color: var(--text-color) !important;
+        }
+
+        html[data-dark-text="deep-dark"] .fa-trash {
+            color: var(--text-color) !important;
+        }
+
+        /* Modified: Scrollbars completely hidden visually across all sections */
+        ::-webkit-scrollbar {
+            display: none !important;
+        }
+        * {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+
+        /* Modified: Enable vertical scroll logic on parent container, not locked */
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            overflow-y: auto; 
+            overscroll-behavior: none;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-items: center;
+            font-size: 13px; 
+            transition: var(--transition-theme);
+        }
+
+        /* Custom top screen toast styling */
+        #customToast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #ff4d4d;
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            z-index: 99999;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif !important;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+            width: 90%;
+            max-width: 400px;
+            justify-content: center;
+        }
+
+        html[data-dark-text="deep-dark"] #customToast {
+            background: #242424 !important;
+            color: rgba(255, 255, 255, 0.35) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+        }
+
+        /* Responsive Layout Container */
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 15px 15px 15px; 
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: flex-start;
+            height: auto;
+            min-height: 100%;
+        }
+
+        .app-card {
+            background: var(--body-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--card-shadow), inset 1px 1px 2px rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.35);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition-theme);
+            margin-top: 15px; 
+            height: auto;
+        }
+
+        /* 2-Column Grid Layout for Tools List */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding-bottom: 4px;
+        }
+
+        /* Modified: Decreased size of tool cards */
+        .tool-card {
+            box-shadow: var(--card-shadow-micro) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            border-radius: 14px !important;
+            background: var(--body-bg) !important;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            aspect-ratio: 1.15 / 1;
+            cursor: pointer;
+            transition: box-shadow 0.15s ease;
+            text-align: center;
+            color: var(--text-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card:active:not(.skeleton-loading) {
+            box-shadow: var(--card-shadow-inset) !important;
+            transform: scale(0.98);
+        }
+
+        /* Modified: Decreased little icons sizes */
+        .tool-card i {
+            font-size: 1.5em;
+            color: var(--blue);
+            margin-bottom: 6px;
+        }
+
+        /* Modified: Decreased tool cards text sizes */
+        .tool-card h2 {
+            font-size: 0.85em;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 2px;
+            line-height: 1.25;
+        }
+
+        .tool-card p {
+            font-size: 0.65em;
+            color: var(--sub-text-color);
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Custom Popup Box Overlay with absolute backdrop blur */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.45) !important;
+            backdrop-filter: blur(16px) !important; 
+            -webkit-backdrop-filter: blur(16px) !important;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 20000;
+        }
+
+        .custom-modal-overlay.show {
+            display: flex !important;
+        }
+
+        /* Modified: Restored Neumorphic shadow to all popup selector modals */
+        .custom-modal {
+            background: var(--body-bg);
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            width: 90%;
+            max-width: 420px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        body[data-theme="dark"] .custom-modal {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Expand Periodic Table overlay structure safely */
+        #periodic-table-modal .custom-modal {
+            max-width: 95vw;
+            width: 95vw;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom dropdown selection trigger elements styled as pills */
+        .custom-select-trigger {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 14px;
+            background: var(--body-bg);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 0.95em;
+            font-weight: 500;
+            box-shadow: var(--card-shadow-micro);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .custom-select-trigger:active {
+            box-shadow: var(--card-shadow-inset) !important;
+            transform: scale(0.98);
+        }
+
+        .custom-select-trigger::after {
+            content: "▼";
+            font-size: 0.7em;
+            color: var(--sub-text-color);
+        }
+
+        /* Interactive close buttons */
+        .back-pill-button {
+            position: relative;
+            background: var(--body-bg);
+            color: var(--text-color);
+            border: 2px solid var(--body-bg);
+            border-radius: 16px;
+            padding: 10px 14px;
+            cursor: pointer;
+            box-shadow: var(--card-shadow-micro), inset 1px 1px 2px rgba(255,255,255,0.7);
+            z-index: 70;
+            transition: transform 0.15s ease, box-shadow 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+            font-weight: 600;
+        }
+
+        .back-pill-button:active {
+            transform: scale(0.95);
+            box-shadow: inset 2px 2px 4px var(--neu-shadow-dark) !important;
+        }
+
+        .modal-heading {
+            font-size: 1.25em;
+            font-weight: 800;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Tool Modal Section Input Configurations */
+        .tool-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .tool-section input {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 14px;
+            background: var(--body-bg);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 0.95em;
+            font-weight: 500;
+            box-shadow: var(--settings-shadow-inset-sharp);
+            outline: none;
+            transition: box-shadow 0.3s ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .tool-section input:focus {
+            box-shadow: var(--settings-shadow-inset-sharp), 0 0 0 2px rgba(30, 144, 255, 0.15);
+        }
+
+        /* Action Outcome Readout box */
+        .tool-section .result {
+            margin-top: 10px;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--text-color);
+            text-align: center;
+            min-height: 1.4em;
+        }
+
+        /* Scientific Calculator grid layouts */
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .calculator-output {
+            width: 100%;
+            background: var(--body-bg);
+            box-shadow: var(--settings-shadow-inset-sharp);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: right;
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            min-height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            word-break: break-all;
+            color: var(--text-color);
+        }
+
+        .calculator-grid button {
+            box-shadow: var(--card-shadow-micro) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            border-radius: 12px !important;
+            background: var(--body-bg) !important;
+            padding: 14px;
+            font-size: 1.05em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            color: var(--text-color);
+            outline: none;
+        }
+
+        .calculator-grid button:active {
+            box-shadow: var(--card-shadow-inset) !important;
+            transform: scale(0.96);
+        }
+
+        .calculator-grid .span-2 {
+            grid-column: span 2;
+        }
+
+        /* Body Metric group configurations */
+        .bmi-input-group, .bodyfat-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .bmi-input-group div, .bodyfat-input-group div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .bmi-input-group input, .bodyfat-input-group input {
+            flex-grow: 1;
+        }
+
+        .bmi-input-group .custom-select-trigger,
+        .bodyfat-input-group .custom-select-trigger {
+            width: 95px;
+            flex-shrink: 0;
+        }
+
+        /* Password strength items styling */
+        .password-input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        #password-input {
+            padding-right: 44px;
+        }
+
+        /* Modified: Absolute safety layering eye icon toggle showing properly */
+        .toggle-password {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--sub-text-color);
+            font-size: 1.1em;
+            z-index: 10; 
+        }
+
+        .strength-bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--body-bg);
+            box-shadow: var(--settings-shadow-inset-sharp);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .strength-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--strength-weak);
+            border-radius: 4px;
+            transition: width 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        }
+
+        .strength-bar.weak { background-color: var(--strength-weak); }
+        .strength-bar.medium { background-color: var(--strength-medium); }
+        .strength-bar.strong { background-color: var(--strength-strong); }
+
+        .strength-suggestions {
+            font-size: 0.82em;
+            color: var(--sub-text-color);
+            text-align: center;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        /* Periodic Table Grid custom overlay */
+        .periodic-table-grid {
+            display: grid;
+            grid-template-columns: repeat(18, minmax(50px, 1fr)); 
+            gap: 3px; 
+            width: 100%;
+            height: 100%;
+            overflow-x: auto; 
+            overflow-y: auto; 
+            padding-bottom: 8px; 
+        }
+
+        /* Modified: Styled Periodic Table element box exactly like its outline-style close button card */
+        .element-box {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.08) !important; /* Outline glass background style */
+            box-shadow: none !important; /* Stripped Neumorphic shadow completely for outline styling consistency */
+            border: 1px solid rgba(255, 255, 255, 0.25) !important; /* Crisp outline style border */
+            border-radius: 8px; 
+            padding: 3px; 
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.15s ease, background-color 0.15s ease;
+            position: relative;
+            min-height: 44px; 
+            box-sizing: border-box; 
+        }
+
+        .element-box:active {
+            transform: scale(0.96);
+            background-color: rgba(255, 255, 255, 0.18) !important;
+        }
+
+        /* Modified: Decreased font sizes of elements title by another 0.2x times (0.8x of prior) */
+        .element-number {
+            font-size: 0.35em; 
+            font-weight: 700;
+            color: var(--sub-text-color);
+            position: absolute;
+            top: 2px;
+            left: 3px;
+        }
+
+        .element-symbol {
+            font-size: 0.6em; 
+            font-weight: 800;
+            color: var(--text-color);
+            line-height: 1;
+        }
+
+        .element-name {
+            font-size: 0.26em; 
+            font-weight: 500;
+            color: var(--sub-text-color);
+            margin-top: 1px;
+            word-break: break-word;
+            padding: 0 1px;
+            overflow: hidden; 
+            white-space: nowrap; 
+            text-overflow: ellipsis; 
+        }
+
+        .empty-cell {
+            visibility: hidden;
+        }
+
+        /* Color category mapping arrays (Modified: Added category borders for outline style) */
+        .category-alkali-metal { background: var(--category-alkali-metal) !important; border-color: rgba(255, 165, 0, 0.4) !important; }
+        .category-alkaline-earth-metal { background: var(--category-alkaline-earth-metal) !important; border-color: rgba(255, 215, 0, 0.4) !important; }
+        .category-transition-metal { background: var(--category-transition-metal) !important; border-color: rgba(220, 20, 60, 0.3) !important; }
+        .category-post-transition-metal { background: var(--category-post-transition-metal) !important; border-color: rgba(50, 205, 50, 0.4) !important; }
+        .category-metalloid { background: var(--category-metalloid) !important; border-color: rgba(138, 43, 226, 0.4) !important; }
+        .category-nonmetal { background: var(--category-nonmetal) !important; border-color: rgba(30, 144, 255, 0.4) !important; }
+        .category-halogen { background: var(--category-halogen) !important; border-color: rgba(0, 206, 209, 0.4) !important; }
+        .category-noble-gas { background: var(--category-noble-gas) !important; border-color: rgba(112, 128, 144, 0.4) !important; }
+        .category-lanthanide { background: var(--category-lanthanide) !important; border-color: rgba(255, 105, 180, 0.4) !important; }
+        .category-actinide { background: var(--category-actinide) !important; border-color: rgba(70, 130, 180, 0.4) !important; }
+        .category-unknown-properties { background: var(--category-unknown-properties) !important; border-color: rgba(128, 128, 128, 0.3) !important; }
+
+        /* Element detailed popup window overlay */
+        #element-details-popup .custom-modal {
+            max-width: 340px;
+            text-align: left;
+        }
+
+        #element-details-popup h3 {
+            font-size: 1.5em;
+            font-weight: 800;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        #element-details-popup p {
+            font-size: 0.9em;
+            margin-bottom: 6px;
+            line-height: 1.45;
+            color: var(--sub-text-color);
+        }
+
+        #element-details-popup strong {
+            color: var(--text-color);
+            font-weight: 700;
+        }
+
+        /* Modified: Styled list selector custom-modal options to match Neumorphism style perfectly */
+        #customListSelectorModal .custom-modal {
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .sharp-inner-item {
+            background: var(--body-bg) !important;
+            color: var(--text-color) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: var(--card-shadow-micro) !important;
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+            font-size: 0.95em !important;
+            font-weight: 500 !important;
+            margin-bottom: 10px !important;
+            transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+        }
+
+        .sharp-inner-item:active {
+            box-shadow: var(--card-shadow-inset) !important;
+            transform: scale(0.98) !important;
+        }
+
+        .sharp-inner-item.selected {
+            box-shadow: var(--pressed-shadow) !important;
+            border-color: var(--select-active-color) !important;
+            font-weight: 700 !important;
+        }
+
+        /* Component-Level Skeleton Shimmer System */
+        .skeleton-loading {
+            background: var(--body-bg) !important;
+            border-color: transparent !important;
+            box-shadow: var(--settings-shadow-inset-sharp) !important;
+            color: transparent !important;
+            pointer-events: none !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        .skeleton-loading i,
+        .skeleton-loading h2,
+        .skeleton-loading p {
+            visibility: hidden !important;
+        }
+
+        .skeleton-loading::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -150%;
+            width: 150%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+            animation: skeleton-shimmer-animation 1.5s infinite;
+        }
+        body[data-theme="dark"] .skeleton-loading::after {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+        }
+        @keyframes skeleton-shimmer-animation {
+            0% { left: -150%; }
+            100% { left: 150%; }
+        }
+
+        /* Enable vertical scroll logic ONLY on compact or low height viewports */
+        @media (max-height: 680px) {
+            html, body {
+                overflow-y: auto; 
+            }
+            body {
+                justify-content: flex-start;
+                padding-top: 15px;
+                padding-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Custom Toast Notification Element -->
+    <div id="customToast">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span id="customToastText">Error! Please review.</span>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="app-container">
+        <div class="app-card" id="appCard">
+            
+            <!-- Dynamic Tool Grid System -->
+            <div class="tools-grid">
+                <!-- Loaded dynamically by JS with starting skeletons -->
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL 1: UNIT CONVERTER -->
+    <div id="unit-converter-modal" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <h3 class="modal-heading">Unit Converter</h3>
+            <div class="tool-section">
+                <!-- Dropdowns replaced with clean Neumorphic List triggers -->
+                <div class="custom-select-trigger" id="unit-type-trigger" data-value="length">Length</div>
+                <input type="number" id="unit-input-value" placeholder="Enter value" step="any">
+                <div class="custom-select-trigger" id="unit-from-trigger" data-value="meter">METER</div>
+                <div class="custom-select-trigger" id="unit-to-trigger" data-value="kilometer">KILOMETER</div>
+                
+                <button class="back-pill-button" onclick="convertUnit()" style="width: 100%;">Convert</button>
+                <div class="result" id="unit-result"></div>
+                <button class="back-pill-button" onclick="closeActiveModal()" style="width: 100%;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CURRENCY CONVERTER & WATCHLIST -->
+    <div id="currency-converter-modal" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <h3 class="modal-heading">Currency Tracker</h3>
+            <div class="tool-section">
+                <input type="number" id="currency-input-value" value="1000" placeholder="Enter amount" step="any">
+                <div class="custom-select-trigger" id="currency-from-trigger" data-value="USD">🇺🇸 USD - US Dollar</div>
+                <div class="custom-select-trigger" id="currency-to-trigger" data-value="INR">🇮🇳 INR - Indian Rupee</div>
+                
+                <button class="back-pill-button" onclick="convertCurrency()" style="width: 100%;">Convert</button>
+                <div class="result" id="currency-result" style="font-size: 1.1em; font-weight: 700; margin: 5px 0;"></div>
+                
+                <hr style="width: 100%; border: 0; border-top: 1px solid rgba(255,255,255,0.15); margin: 10px 0;">
+                
+                <!-- Watchlist desk matching PriceTracker.html style -->
+                <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <span style="font-weight: 700; color: var(--text-color); font-size: 1.05em;">Price Tracker Watchlist</span>
+                    <button class="back-pill-button" id="btn-add-watchlist-tools" style="padding: 4px 10px; font-size: 0.8em; border-radius: 10px; border: none;">+ Add Tracker</button>
+                </div>
+                
+                <div id="watchlist-container-tools" style="width: 100%; display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; padding-right: 4px;">
+                    <!-- Dynamic live tracker metrics -->
+                </div>
+                
+                <button class="back-pill-button" onclick="closeActiveModal()" style="width: 100%; margin-top: 10px;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: SCIENTIFIC CALCULATOR -->
+    <div id="scientific-calculator-modal" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <h3 class="modal-heading">Calculator</h3>
+            <div class="tool-section">
+                <div class="calculator-output" id="calculator-output">0</div>
+                <div class="calculator-grid">
+                    <button onclick="clearCalculator()">C</button>
+                    <button onclick="deleteLast()">DEL</button>
+                    <button onclick="appendOperation('%')">%</button>
+                    <!-- Math triggers mapped with division and multiplication visual symbols -->
+                    <button onclick="appendOperation('/')">÷</button>
+                    <button onclick="appendNumber('7')">7</button>
+                    <button onclick="appendNumber('8')">8</button>
+                    <button onclick="appendNumber('9')">9</button>
+                    <!-- Multiplication button label text modified to multiplication symbol -->
+                    <button onclick="appendOperation('*')">×</button>
+                    <button onclick="appendNumber('4')">4</button>
+                    <button onclick="appendNumber('5')">5</button>
+                    <button onclick="appendNumber('6')">6</button>
+                    <button onclick="appendOperation('-')">-</button>
+                    <button onclick="appendNumber('1')">1</button>
+                    <button onclick="appendNumber('2')">2</button>
+                    <button onclick="appendNumber('3')">3</button>
+                    <button onclick="appendOperation('+')">+</button>
+                    <button onclick="appendNumber('0')">0</button>
+                    <button onclick="appendNumber('.')">.</button>
+                    <button class="span-2" onclick="calculateResult()">=</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: GEOMETRY SHAPE CALCULATOR -->
+    <div id="geometry-calculator-modal" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <h3 class="modal-heading">Geometry Shape Calculator</h3>
+            <div class="tool-section">
+                <div class="custom-select-trigger" id="shape-type-trigger" data-value="circle">Circle - Area</div>
+
+                <div id="circle-inputs" class="shape-input-group" style="width: 100%;">
+                    <input type="number" id="circle-radius" placeholder="Radius">
+                </div>
+                <div id="square-inputs" class="shape-input-group" style="display: none; width: 100%;">
+                    <input type="number" id="square-side" placeholder="Side length">
+                </div>
+                <div id="triangle-inputs" class="shape-input-group" style="display: none; width: 100%;">
+                    <input type="number" id="triangle-base" placeholder="Base" style="margin-bottom: 8px;">
+                    <input type="number" id="triangle-height" placeholder="Height">
+                </div>
+                
+                <button class="back-pill-button" onclick="calculateShapeArea()" style="width: 100%;">Calculate Area</button>
+                <div class="result" id="shape-result"></div>
+                <button class="back-pill-button" onclick="closeActiveModal()" style="width: 100%;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: BMI CALCULATOR -->
+    <div id="bmi-calculator-modal" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <h3 class="modal-heading">BMI Calculator</h3>
+            <div class="tool-section">
+                <div class="bmi-input-group">
+                    <div>
+                        <input type="number" id="bmi-weight" placeholder="Weight" step="0.1">
+                        <!-- Dropdowns replaced with clean Neumorphic List triggers -->
+                        <div class="custom-select-trigger unit-selector" id="bmi-weight-unit-trigger" data-value="kg">KG</div>
+                    </div>
+                    <div>
+                        <input type="number" id="bmi-height" placeholder="Height" step="0.1">
+                        <!-- Dropdowns replaced with clean Neumorphic List triggers -->
+                        <div class="custom-select-trigger unit-selector" id="bmi-height-unit-trigger" data-value="cm">CM</div>
+                    </div>
+                </div>
+                
+                <button class="back-pill-button" onclick="calculateBMI()" style="width: 100%;">Calculate BMI</button>
+                <div class="result" id="bmi-result"></div>
+                <button class="back-pill-button" onclick="closeActiveModal()" style="width: 100%;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: BODY FAT CALCULATOR -->
+    <div id="body-fat-calculator-modal" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <h3 class="modal-heading">Body Fat Calculator</h3>
+            <div class="tool-section">
+                <div class="bodyfat-input-group">
+                    <div>
+                        <!-- Dropdowns replaced with clean Neumorphic List triggers -->
+                        <div class="custom-select-trigger unit-selector" id="bodyfat-gender-trigger" data-value="male" style="width: 100%;">Male</div>
+                    </div>
+                    <div>
+                        <input type="number" id="bodyfat-age" placeholder="Age" min="1" max="120">
+                    </div>
+                    <div>
+                        <input type="number" id="bodyfat-weight" placeholder="Weight" step="0.1">
+                        <!-- Dropdowns replaced with clean Neumorphic List triggers -->
+                        <div class="custom-select-trigger unit-selector" id="bodyfat-weight-unit-trigger" data-value="kg">KG</div>
+                    </div>
+                    <div>
+                        <input type="number" id="bodyfat-height" placeholder="Height" step="0.1">
+                        <!-- Dropdowns replaced with clean Neumorphic List triggers -->
+                        <div class="custom-select-trigger unit-selector" id="bodyfat-height-unit-trigger" data-value="cm">CM</div>
+                    </div>
+                    <input type="number" id="bodyfat-neck" placeholder="Neck">
+                    <input type="number" id="bodyfat-waist" placeholder="Waist">
+                    <input type="number" id="bodyfat-hip" placeholder="Hip (Female Only)" style="display: none;">
+                </div>
+                
+                <button class="back-pill-button" onclick="calculateBodyFat()" style="width: 100%;">Calculate Body Fat</button>
+                <div class="result" id="bodyfat-result"></div>
+                <button class="back-pill-button" onclick="closeActiveModal()" style="width: 100%;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 7: PASSWORD STRENGTH CHECKER -->
+    <div id="password-strength-checker-modal" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <h3 class="modal-heading">Password Checker</h3>
+            <div class="tool-section">
+                <div class="password-input-wrapper">
+                    <!-- Eyeball visual toggler showing properly over z-index layers -->
+                    <input type="password" id="password-input" placeholder="Enter password...">
+                    <i class="fa-solid fa-eye toggle-password" id="toggle-password"></i>
+                </div>
+                <div class="strength-bar-container">
+                    <div id="strength-bar" class="strength-bar"></div>
+                </div>
+                <div class="result" id="strength-text" style="margin-top: 10px; font-weight: 800;"></div>
+                <div class="strength-suggestions" id="strength-suggestions"></div>
+                
+                <button class="back-pill-button" onclick="closeActiveModal()" style="width: 100%; margin-top: 15px;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 8: PERIODIC TABLE VIEWER -->
+    <div id="periodic-table-modal" class="custom-modal-overlay">
+        <div class="custom-modal" style="padding: 15px;">
+            <h3 class="modal-heading" style="margin-bottom: 12px;">Periodic Table</h3>
+            <div class="periodic-table-grid" id="periodic-table-elements">
+                <!-- Grid cells generated dynamically -->
+            </div>
+            <button class="back-pill-button" onclick="hidePeriodicTableModal()" style="width: 100%; margin-top: 12px;">Close</button>
+        </div>
+    </div>
+
+    <!-- ELEMENT DETAILS POPUP SUB-MODAL -->
+    <div id="element-details-popup" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <h3 id="detail-name">Hydrogen</h3>
+            <p><strong>Symbol:</strong> <span id="detail-symbol">H</span></p>
+            <p><strong>Atomic Number:</strong> <span id="detail-number">1</span></p>
+            <p><strong>Atomic Mass:</strong> <span id="detail-mass">1.008</span></p>
+            <p><strong>Category:</strong> <span id="detail-category">Nonmetal</span></p>
+            <p><strong>State:</strong> <span id="detail-phase">Gas</span></p>
+            <p><strong>Density:</strong> <span id="detail-density">N/A</span></p>
+            <p><strong>Melting Point:</strong> <span id="detail-melt">N/A</span></p>
+            <p><strong>Boiling Point:</strong> <span id="detail-boil">N/A</span></p>
+            <p><strong>Discovered By:</strong> <span id="detail-discovered">Henry Cavendish</span></p>
+            <p style="margin-top: 8px;" id="detail-summary"></p>
+            
+            <button class="back-pill-button" onclick="hideElementDetailsPopup()" style="width: 100%; margin-top: 15px;">Close</button>
+        </div>
+    </div>
+
+    <!-- Reusable Custom Popup Overlay for Selection Lists -->
+    <div class="custom-modal-overlay" id="customListSelectorModal" style="z-index: 21000;">
+        <div class="custom-modal" style="width: 85%; max-width: 320px; border-radius: 20px; padding: 20px;">
+            <h3 id="listSelectorTitle" style="color: var(--text-color); margin-bottom: 15px; font-size: 1.2em; font-weight: 700; text-align: center;">Select Value</h3>
+            <div id="listSelectorItemsContainer" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; padding-right: 4px;"></div>
+            <button class="back-pill-button" onclick="window.closeCustomListSelector()" style="width: 100%; margin-top: 15px; border-radius: 12px; padding: 10px; justify-content: center; display: flex; align-items: center;">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // Sound FX System
+        (function initDashboardSoundFX(){
+            const LS_MASTER = 'touchSoundsEnabled';
+            const LS_GROUPS = 'touchSoundsGroupState';
+
+            const CLICK_SOUND_URLS = [
+                "Click1.ogg", "Click2.ogg", "Click3.ogg", "Click4.ogg", "Click5.ogg",
+                "Click6.ogg", "Click7.ogg", "Click8.ogg", "Click9.ogg", "Click10.ogg",
+                "Click11.ogg", "Click12.ogg", "Click13.ogg", "Click14.ogg"
+            ];
+
+            const GROUP_TO_CLICKS = {
+                'buttons'   : [1, 2, 3, 7, 8, 9, 14],
+                'navigation': [5],
+                'inputs'    : [4, 6],
+                'reserved'  : [10, 11, 12, 13]
+            };
+
+            const CLICK_TO_GROUP = {};
+            Object.keys(GROUP_TO_CLICKS).forEach(g => {
+                GROUP_TO_CLICKS[g].forEach(n => { CLICK_TO_GROUP[n] = g; });
+            });
+
+            const audioCache = {};
+            let _ac = null;
+            let _masterGain = null;
+
+            function getAC(){
+                if (_ac) return _ac;
+                try {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (Ctx) {
+                        _ac = new Ctx();
+                        const comp = _ac.createDynamicsCompressor();
+                        comp.threshold.value = -10;
+                        comp.knee.value = 6;
+                        comp.ratio.value = 12;
+                        comp.attack.value = 0.001;
+                        comp.release.value = 0.05;
+                        _masterGain = _ac.createGain();
+                        _masterGain.gain.value = 1.0;
+                        comp.connect(_masterGain).connect(_ac.destination);
+                        _ac._busIn = comp;
+                    }
+                } catch(e){}
+                return _ac;
+            }
+
+            function synthClick(n){
+                const ac = getAC();
+                if (!ac) return;
+                if (ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                const SYNTH = {
+                    1:  { f: 880,  d: 0.05, w: 'triangle', g: 0.18 },
+                    2:  { f: 520,  d: 0.07, w: 'sine',     g: 0.22 },
+                    3:  { f: 660,  d: 0.08, w: 'square',   g: 0.16 },
+                    4:  { f: 1200, d: 0.03, w: 'sine',     g: 0.12 },
+                    5:  { f: 740,  d: 0.05, w: 'triangle', g: 0.18 },
+                    6:  { f: 1000, d: 0.025,w: 'sine',     g: 0.10 },
+                    7:  { f: 600,  d: 0.05, w: 'square',   g: 0.16 },
+                    8:  { f: 820,  d: 0.05, w: 'triangle', g: 0.18 },
+                    9:  { f: 420,  d: 0.06, w: 'sine',     g: 0.18 },
+                    10: { f: 480,  d: 0.05, w: 'triangle', g: 0.16 },
+                    11: { f: 560,  d: 0.05, w: 'triangle', g: 0.16 },
+                    12: { f: 640,  d: 0.05, w: 'triangle', g: 0.16 },
+                    13: { f: 720,  d: 0.05, w: 'triangle', g: 0.16 },
+                    14: { f: 440,  d: 0.08, w: 'sine',     g: 0.60 }
+                };
+                const r = SYNTH[n] || SYNTH[7];
+                const t0 = ac.currentTime;
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                osc.type = r.w;
+                osc.frequency.setValueAtTime(r.f, t0);
+                osc.frequency.exponentialRampToValueAtTime(Math.max(80, r.f * 0.6), t0 + r.d);
+                gain.gain.setValueAtTime(0.0001, t0);
+                gain.gain.exponentialRampToValueAtTime(r.g, t0 + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + r.d);
+                osc.connect(gain).connect(ac._busIn || ac.destination);
+                osc.start(t0);
+                osc.stop(t0 + r.d + 0.02);
+            }
+
+            function playClick(n, opts){
+                opts = opts || {};
+                const isMasterOn = localStorage.getItem(LS_MASTER) === '1' || localStorage.getItem(LS_MASTER) === null;
+                if (!opts.force && !isMasterOn) return;
+
+                let groupState = {};
+                try { groupState = JSON.parse(LS_GROUPS) || {}; } catch(e){}
+                const groupId = CLICK_TO_GROUP[n];
+                if (!opts.force && groupId && groupState[groupId] === false) return;
+
+                const url = CLICK_SOUND_URLS[n - 1];
+                try {
+                    if (n === 14) {
+                        const a = new Audio(url);
+                        a.volume = 1.0;
+                        a.play().catch(() => synthClick(14));
+                        return;
+                    }
+                    if (!audioCache[n]) {
+                        const a = new Audio(url);
+                        a.volume = 0.5;
+                        a.preload = 'auto';
+                        audioCache[n] = a;
+                    }
+                    const a = audioCache[n];
+                    a.currentTime = 0;
+                    const p = a.play();
+                    if (p && p.catch) p.catch(() => synthClick(n));
+                    return;
+                } catch(e) {
+                    synthClick(n);
+                }
+            }
+
+            window.playTouchSound = playClick;
+
+            ['pointerdown','touchstart','keydown','click'].forEach(ev => {
+                document.addEventListener(ev, () => {
+                    const ac = getAC();
+                    if (ac && ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                }, { capture: true, passive: true });
+            });
+        })();
+
+        // Firebase Configuration Setup
+        const firebaseConfig = {
+          apiKey: "AIzaSyBWOdk2_NJntQ4Pob7_tN6kb1W5rMy-tcw",
+          authDomain: "learnera-d6309.firebaseapp.com",
+          projectId: "learnera-d6309",
+          messagingSenderId: "752970675909",
+          appId: "1:752970675909:web:9c4513809ca51ea60122ac",
+          databaseURL: "https://learnera-d6309-default-rtdb.firebaseio.com"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        // Custom Neumorphic Toast Controller
+        window.showToast = function(message) {
+            const toast = document.getElementById('customToast');
+            const toastText = document.getElementById('customToastText');
+            if (!toast || !toastText) return;
+            
+            toastText.textContent = message;
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+            
+            if (window.toastTimeout) clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => {
+                toast.style.transform = 'translateX(-50%) translateY(-100px)';
+            }, 3000);
+        };
+
+        // Complete Periodic Table Dataset mapping (118 elements)
+        // Fix 1: Restored category to "alkali metal" for Rubidium (element 37)
+        const periodicTableData = [
+            { "name": "Hydrogen", "atomic_number": 1, "symbol": "H", "atomic_mass": 1.008, "xpos": 1, "ypos": 1, "category": "nonmetal", "phase": "Gas", "density": 0.08988, "melt": 13.99, "boil": 20.271, "discovered_by": "Henry Cavendish", "summary": "Hydrogen is a chemical element with the symbol H and atomic number 1. With a standard atomic weight of 1.008, hydrogen is the lightest element in the periodic table." },
+            { "name": "Helium", "atomic_number": 2, "symbol": "He", "atomic_mass": 4.002602, "xpos": 18, "ypos": 1, "category": "noble gas", "phase": "Gas", "density": 0.1786, "melt": 0.95, "boil": 4.222, "discovered_by": "Pierre Janssen", "summary": "Helium is a chemical element with symbol He and atomic number 2. It is a colorless, odorless, tasteless, non-toxic, inert, monatomic gas, the first in the noble gas group in the periodic table." },
+            { "name": "Lithium", "atomic_number": 3, "symbol": "Li", "atomic_mass": 6.94, "xpos": 1, "ypos": 2, "category": "alkali metal", "phase": "Solid", "density": 0.534, "melt": 453.65, "boil": 1615, "discovered_by": "Johan August Arfwedson", "summary": "Lithium is a chemical element with the symbol Li and atomic number 3. It is a soft, silvery-white alkali metal. Under standard conditions, it is the lightest metal and the least dense solid element." },
+            { "name": "Beryllium", "atomic_number": 4, "symbol": "Be", "atomic_mass": 9.0121831, "xpos": 2, "ypos": 2, "category": "alkaline earth metal", "phase": "Solid", "density": 1.85, "melt": 1560, "boil": 2742, "discovered_by": "Louis Nicolas Vauquelin", "summary": "Beryllium is a chemical element with the symbol Be and atomic number 4. It is a relatively rare element in the universe, usually occurring as a product of the spallation of larger atomic nuclei that have collided with cosmic rays." },
+            { "name": "Boron", "atomic_number": 5, "symbol": "B", "atomic_mass": 10.81, "xpos": 13, "ypos": 2, "category": "metalloid", "phase": "Solid", "density": 2.08, "melt": 2349, "boil": 4200, "discovered_by": "Joseph Louis Gay-Lussac", "summary": "Boron is a chemical element with symbol B and atomic number 5. Produced entirely by cosmic ray spallation and supernovae and not by stellar nucleosynthesis, it is a low-abundance element in the Solar System and in the Earth's crust." },
+            { "name": "Carbon", "atomic_number": 6, "symbol": "C", "atomic_mass": 12.011, "xpos": 14, "ypos": 2, "category": "nonmetal", "phase": "Solid", "density": 2.267, "melt": 3823, "boil": 4300, "discovered_by": "Ancient Egyptians and Sumerians", "summary": "Carbon is a chemical element with symbol C and atomic number 6. It is nonmetallic and tetravalent—making four electrons available to form covalent chemical bonds. It belongs to group 14 of the periodic table." },
+            { "name": "Nitrogen", "atomic_number": 7, "symbol": "N", "atomic_mass": 14.007, "xpos": 15, "ypos": 2, "category": "nonmetal", "phase": "Gas", "density": 1.251, "melt": 63.15, "boil": 77.355, "discovered_by": "Daniel Rutherford", "summary": "Nitrogen is a chemical element with symbol N and atomic number 7. It is the lightest member of Group 15 of the periodic table, often called the pnictogens. It is a common element in the universe, estimated to be about seventh in total abundance in the Milky Way and the Solar System." },
+            { "name": "Oxygen", "atomic_number": 8, "symbol": "O", "atomic_mass": 15.999, "xpos": 16, "ypos": 2, "category": "nonmetal", "phase": "Gas", "density": 1.429, "melt": 54.36, "boil": 90.188, "discovered_by": "Joseph Priestley", "summary": "Oxygen is a chemical element with symbol O and atomic number 8. It is a member of the chalcogen group on the periodic table, a highly reactive nonmetal, and an oxidizing agent that readily forms oxides with most elements as well as with other compounds." },
+            { "name": "Fluorine", "atomic_number": 9, "symbol": "F", "atomic_mass": 18.998403163, "xpos": 17, "ypos": 2, "category": "halogen", "phase": "Gas", "density": 1.696, "melt": 53.48, "boil": 85.03, "discovered_by": "André-Marie Ampère", "summary": "Fluorine is a chemical element with symbol F and atomic number 9. It is the lightest halogen and exists as a highly toxic pale yellow diatomic gas at standard conditions. As the most electronegative element, it is extremely reactive, as it reacts with all other elements, except for argon, neon, and helium." },
+            { "name": "Neon", "atomic_number": 10, "symbol": "Ne", "atomic_mass": 20.1797, "xpos": 18, "ypos": 2, "category": "noble gas", "phase": "Gas", "density": 0.8999, "melt": 24.56, "boil": 27.07, "discovered_by": "William Ramsay", "summary": "Neon is a chemical element with symbol Ne and atomic number 10. It is in group 18 (noble gases) of the periodic table. Neon is a colorless, odorless, inert monatomic gas under standard conditions, with about two-thirds the density of air." },
+            { "name": "Sodium", "atomic_number": 11, "symbol": "Na", "atomic_mass": 22.98976928, "xpos": 1, "ypos": 3, "category": "alkali metal", "phase": "Solid", "density": 0.968, "melt": 370.944, "boil": 1156, "discovered_by": "Humphry Davy", "summary": "Sodium is a chemical element with symbol Na (from Latin natrium) and atomic number 11. It is a soft, silvery-white, highly reactive metal. In the Periodic table it is in Group 1 (alkali metals) and is a common element." },
+            { "name": "Magnesium", "atomic_number": 12, "symbol": "Mg", "atomic_mass": 24.305, "xpos": 2, "ypos": 3, "category": "alkaline earth metal", "phase": "Solid", "density": 1.738, "melt": 923, "boil": 1363, "discovered_by": "Joseph Black", "summary": "Magnesium is a chemical element with symbol Mg and atomic number 12. It is a shiny gray solid which bears a close physical resemblance to the other five elements in the second column (Group 2, or alkaline earth metals) of the periodic table: all Group 2 elements have the same electron configuration in the outer electron shell and a similar crystal structure." },
+            { "name": "Aluminium", "atomic_number": 13, "symbol": "Al", "atomic_mass": 26.9815385, "xpos": 13, "ypos": 3, "category": "post-transition metal", "phase": "Solid", "density": 2.7, "melt": 933.47, "boil": 2792, "discovered_by": "Hans Christian Ørsted", "summary": "Aluminium is a chemical element with symbol Al and atomic number 13. It is a silvery-white, soft, nonmagnetic, ductile metal in the boron group. By mass, aluminium makes up about 8% of the Earth's crust; it is the third most abundant element after oxygen and silicon and the most abundant metal in the crust, though it is less common in the mantle below." },
+            { "name": "Silicon", "atomic_number": 14, "symbol": "Si", "atomic_mass": 28.085, "xpos": 14, "ypos": 3, "category": "metalloid", "phase": "Solid", "density": 2.3296, "melt": 1687, "boil": 3538, "discovered_by": "Jöns Jacob Berzelius", "summary": "Silicon is a chemical element with symbol Si and atomic number 14. A tetravalent metalloid, it is less reactive than its chemical analog carbon, but more reactive than germanium, the metalloid directly below it in the periodic table." },
+            { "name": "Phosphorus", "atomic_number": 15, "symbol": "P", "atomic_mass": 30.973761998, "xpos": 15, "ypos": 3, "category": "nonmetal", "phase": "Solid", "density": 1.823, "melt": 317.3, "boil": 553.65, "discovered_by": "Hennig Brand", "summary": "Phosphorus is a chemical element with symbol P and atomic number 15. As an element, phosphorus exists in two major forms—white phosphorus and red phosphorus—but because it is highly reactive, phosphorus is never found as a free element on Earth." },
+            { "name": "Sulfur", "atomic_number": 16, "symbol": "S", "atomic_mass": 32.06, "xpos": 16, "ypos": 3, "category": "nonmetal", "phase": "Solid", "density": 2.07, "melt": 388.36, "boil": 717.8, "discovered_by": "Ancient civilizations", "summary": "Sulfur is a chemical element with symbol S and atomic number 16. It is a nonmetallic chemical element which is soft, bright yellow, and odorless. It is essential for all life, and is widely used in biochemical processes." },
+            { "name": "Chlorine", "atomic_number": 17, "symbol": "Cl", "atomic_mass": 35.45, "xpos": 17, "ypos": 3, "category": "halogen", "phase": "Gas", "density": 3.2, "melt": 171.6, "boil": 239.11, "discovered_by": "Carl Wilhelm Scheele", "summary": "Chlorine is a chemical element with symbol Cl and atomic number 17. The second lightest of the halogens, it is a yellowish-green gas at room temperature. It is an extremely reactive element and a strong oxidizing agent: among the elements, it has the highest electron affinity and the third-highest electronegativity on the revised Pauling scale, behind only oxygen and fluorine." },
+            { "name": "Argon", "atomic_number": 18, "symbol": "Ar", "atomic_mass": 39.948, "xpos": 18, "ypos": 3, "category": "noble gas", "phase": "Gas", "density": 3.749, "melt": 83.819, "boil": 87.302, "discovered_by": "Lord Rayleigh", "summary": "Argon is a chemical element with symbol Ar and atomic number 18. It is in Group 18 of the periodic table and is a noble gas. Argon is the third most abundant gas in the Earth's atmosphere, at 0.934% (9,340 ppm), making it more than twice as abundant as the next most common atmospheric gas, water vapor (variable, average about 0.4%), and 23 times as abundant as carbon dioxide (400 ppm), and more than 500 times as abundant as neon (18 ppm)." },
+            { "name": "Potassium", "atomic_number": 19, "symbol": "K", "atomic_mass": 39.0983, "xpos": 1, "ypos": 4, "category": "alkali metal", "phase": "Solid", "density": 0.862, "melt": 336.7, "boil": 1032, "discovered_by": "Humphry Davy", "summary": "Potassium is a chemical element with symbol K (from Latin kalium) and atomic number 19. It is a soft, silvery-white alkali metal that oxidizes rapidly in air and is highly reactive with water, producing sufficient heat to ignite the hydrogen emitted in the reaction." },
+            { "name": "Calcium", "atomic_number": 20, "symbol": "Ca", "atomic_mass": 40.078, "xpos": 2, "ypos": 4, "category": "alkaline earth metal", "phase": "Solid", "density": 1.55, "melt": 1115, "boil": 1757, "discovered_by": "Humphry Davy", "summary": "Calcium is a chemical element with symbol Ca and atomic number 20. Calcium is a soft gray alkaline earth metal, fifth-most-abundant element by mass in the Earth's crust. It is an essential structural component in many organisms, and is the most abundant metal in many animals." },
+            { "name": "Scandium", "atomic_number": 21, "symbol": "Sc", "atomic_mass": 44.955908, "xpos": 3, "ypos": 4, "category": "transition metal", "phase": "Solid", "density": 2.985, "melt": 1814, "boil": 3103, "discovered_by": "Lars Fredrik Nilson", "summary": "Scandium is a chemical element with symbol Sc and atomic number 21. A silvery-white metallic transition metal, it is found in rare earth and uranium compounds, and is sometimes classified as a rare earth element." },
+            { "name": "Titanium", "atomic_number": 22, "symbol": "Ti", "atomic_mass": 47.867, "xpos": 4, "ypos": 4, "category": "transition metal", "phase": "Solid", "density": 4.506, "melt": 1941, "boil": 3560, "discovered_by": "William Gregor", "summary": "Titanium is a chemical element with symbol Ti and atomic number 22. It is a lustrous transition metal with a silver color, low density, and high strength. It is highly resistant to corrosion in sea water, aqua regia, and chlorine." },
+            { "name": "Vanadium", "atomic_number": 23, "symbol": "V", "atomic_mass": 50.9415, "xpos": 5, "ypos": 4, "category": "transition metal", "phase": "Solid", "density": 6.11, "melt": 2183, "boil": 3680, "discovered_by": "Andrés Manuel del Río", "summary": "Vanadium is a chemical element with symbol V and atomic number 23. It is a hard, silvery-grey, ductile transition metal. The elemental metal is rarely found in nature, but once isolated artificially, the formation of an oxide layer (passivation) stabilizes the free metal against oxidation." },
+            { "name": "Chromium", "atomic_number": 24, "symbol": "Cr", "atomic_mass": 51.9961, "xpos": 6, "ypos": 4, "category": "transition metal", "phase": "Solid", "density": 7.19, "melt": 2180, "boil": 2944, "discovered_by": "Louis Nicolas Vauquelin", "summary": "Chromium is a chemical element with symbol Cr and atomic number 24. It is the first element in Group 6. It is a steely-grey, lustrous, hard and brittle metal which takes a high polish, resists tarnishing, and has a high melting point." },
+            { "name": "Manganese", "atomic_number": 25, "symbol": "Mn", "atomic_mass": 54.938044, "xpos": 7, "ypos": 4, "category": "transition metal", "phase": "Solid", "density": 7.21, "melt": 1519, "boil": 2334, "discovered_by": "Carl Wilhelm Scheele", "summary": "Manganese is a chemical element with symbol Mn and atomic number 25. It is not found as a free element in nature; it is often found in minerals in combination with iron, and in many minerals with other elements." },
+            { "name": "Iron", "atomic_number": 26, "symbol": "Fe", "atomic_mass": 55.845, "xpos": 8, "ypos": 4, "category": "transition metal", "phase": "Solid", "density": 7.874, "melt": 1811, "boil": 3134, "discovered_by": "Ancient civilizations", "summary": "Iron is a chemical element with symbol Fe (from Latin ferrum) and atomic number 26. It is a metal in the first transition series. It is the most common element on Earth by mass, forming much of Earth's outer and inner core." },
+            { "name": "Cobalt", "atomic_number": 27, "symbol": "Co", "atomic_mass": 58.933194, "xpos": 9, "ypos": 4, "category": "transition metal", "phase": "Solid", "density": 8.9, "melt": 1768, "boil": 3200, "discovered_by": "Georg Brandt", "summary": "Cobalt is a chemical element with symbol Co and atomic number 27. Like nickel, cobalt is found in the Earth's crust only in chemically combined form, save for small deposits found in alloys of natural metals." },
+            { "name": "Nickel", "atomic_number": 28, "symbol": "Ni", "atomic_mass": 58.6934, "xpos": 10, "ypos": 4, "category": "transition metal", "phase": "Solid", "density": 8.908, "melt": 1728, "boil": 3003, "discovered_by": "Axel Fredrik Cronstedt", "summary": "Nickel is a chemical element with symbol Ni and atomic number 28. It is a silvery-white lustrous metal with a slight golden tinge. Nickel belongs to the transition metals and is hard and ductile." },
+            { "name": "Copper", "atomic_number": 29, "symbol": "Cu", "atomic_mass": 63.546, "xpos": 11, "ypos": 4, "category": "transition metal", "phase": "Solid", "density": 8.96, "melt": 1357.77, "boil": 2835, "discovered_by": "Ancient civilizations", "summary": "Copper is a chemical element with symbol Cu and atomic number 29. It is a soft, malleable, and ductile metal with very high thermal and electrical conductivity. A freshly exposed surface of pure copper has a pinkish-orange colour." },
+            { "name": "Zinc", "atomic_number": 30, "symbol": "Zn", "atomic_mass": 65.38, "xpos": 12, "ypos": 4, "category": "transition metal", "phase": "Solid", "density": 7.14, "melt": 692.68, "boil": 1180, "discovered_by": "Andreas Sigismund Marggraf", "summary": "Zinc is a chemical element with symbol Zn and atomic number 30. It is the first element in Group 12 of the periodic table. In some respects zinc is chemically similar to magnesium." },
+            { "name": "Gallium", "atomic_number": 31, "symbol": "Ga", "atomic_mass": 69.723, "xpos": 13, "ypos": 4, "category": "post-transition metal", "phase": "Solid", "density": 5.904, "melt": 302.9146, "boil": 2673, "discovered_by": "Lecoq de Boisbaudran", "summary": "Gallium is a chemical element with symbol Ga and atomic number 31. Elemental gallium is a soft, silvery-blue metal at standard temperature and pressure." },
+            { "name": "Germanium", "atomic_number": 32, "symbol": "Ge", "atomic_mass": 72.63, "xpos": 14, "ypos": 4, "category": "metalloid", "phase": "Solid", "density": 5.323, "melt": 1211.4, "boil": 3106, "discovered_by": "Clemens Winkler", "summary": "Germanium is a chemical element with symbol Ge and atomic number 32. It is a lustrous, hard, silvery-white metalloid in the carbon group, chemically similar to silicon and tin." },
+            { "name": "Arsenic", "atomic_number": 33, "symbol": "As", "atomic_mass": 74.921595, "xpos": 15, "ypos": 4, "category": "metalloid", "phase": "Solid", "density": 5.727, "melt": 1090, "boil": 887, "discovered_by": "Albertus Magnus", "summary": "Arsenic is a chemical element with symbol As and atomic number 33. Arsenic occurs in many minerals, usually in conjunction with sulfur and metals." },
+            { "name": "Selenium", "atomic_number": 34, "symbol": "Se", "atomic_mass": 78.971, "xpos": 16, "ypos": 4, "category": "nonmetal", "phase": "Solid", "density": 4.28, "melt": 494, "boil": 958, "discovered_by": "Jöns Jacob Berzelius", "summary": "Selenium is a chemical element with symbol Se and atomic number 34. It is a nonmetal with properties that are intermediate between sulfur and tellurium." },
+            { "name": "Bromine", "atomic_number": 35, "symbol": "Br", "atomic_mass": 79.904, "xpos": 17, "ypos": 4, "category": "halogen", "phase": "Liquid", "density": 3.1028, "melt": 265.8, "boil": 332, "discovered_by": "Antoine Jérôme Balard", "summary": "Bromine is a chemical element with symbol Br and atomic number 35. It is a halogen. It is a reddish-brown liquid at room temperature." },
+            { "name": "Krypton", "atomic_number": 36, "symbol": "Kr", "atomic_mass": 83.798, "xpos": 18, "ypos": 4, "category": "noble gas", "phase": "Gas", "density": 3.749, "melt": 115.78, "boil": 119.93, "discovered_by": "William Ramsay", "summary": "Krypton is a chemical element with symbol Kr and atomic number 36. It is a member of group 18 (noble gases) elements. A colorless, odorless, tasteless noble gas." },
+            { "name": "Rubidium", "atomic_number": 37, "symbol": "Rb", "atomic_mass": 85.4678, "xpos": 1, "ypos": 5, "category": "alkali metal", "phase": "Solid", "density": 1.532, "melt": 312.45, "boil": 961, "discovered_by": "Robert Bunsen", "summary": "Rubidium is a chemical element with symbol Rb and atomic number 37. Rubidium is a soft, silvery-white metallic element of the alkali metal group." },
+            { "name": "Strontium", "atomic_number": 38, "symbol": "Sr", "atomic_mass": 87.62, "xpos": 2, "ypos": 5, "category": "alkaline earth metal", "phase": "Solid", "density": 2.64, "melt": 1050, "boil": 1655, "discovered_by": "Adair Crawford", "summary": "Strontium is a chemical element with symbol Sr and atomic number 38. An alkaline earth metal, strontium is a soft silver-white yellowish metallic element." },
+            { "name": "Yttrium", "atomic_number": 39, "symbol": "Y", "atomic_mass": 88.90584, "xpos": 3, "ypos": 5, "category": "transition metal", "phase": "Solid", "density": 4.472, "melt": 1799, "boil": 3609, "discovered_by": "Johan Gadolin", "summary": "Yttrium is a chemical element with symbol Y and atomic number 39. It is a silvery-metallic transition metal chemically similar to the lanthanides." },
+            { "name": "Zirconium", "atomic_number": 40, "symbol": "Zr", "atomic_mass": 91.224, "xpos": 4, "ypos": 5, "category": "transition metal", "phase": "Solid", "density": 6.511, "melt": 2128, "boil": 4650, "discovered_by": "Martin Heinrich Klaproth", "summary": "Zirconium is a chemical element with symbol Zr and atomic number 40. The name zirconium is taken from the mineral zircon. It is a lustrous, grayish-white, strong transition metal." },
+            { "name": "Niobium", "atomic_number": 41, "symbol": "Nb", "atomic_mass": 92.90637, "xpos": 5, "ypos": 5, "category": "transition metal", "phase": "Solid", "density": 8.57, "melt": 2750, "boil": 5017, "discovered_by": "Charles Hatchett", "summary": "Niobium is a chemical element with symbol Nb and atomic number 41. It is a soft, gray, ductile transition metal." },
+            { "name": "Molybdenum", "atomic_number": 42, "symbol": "Mo", "atomic_mass": 95.96, "xpos": 6, "ypos": 5, "category": "transition metal", "phase": "Solid", "density": 10.28, "melt": 2896, "boil": 4912, "discovered_by": "Carl Wilhelm Scheele", "summary": "Molybdenum is a chemical element with symbol Mo and atomic number 42. The name is from Neo-Latin Molybdaenum, meaning lead." },
+            { "name": "Technetium", "atomic_number": 43, "symbol": "Tc", "atomic_mass": 98, "xpos": 7, "ypos": 5, "category": "transition metal", "phase": "Solid", "density": 11, "melt": 2430, "boil": 4538, "discovered_by": "Carlo Perrier", "summary": "Technetium is a chemical element with symbol Tc and atomic number 43. It is the lightest element whose isotopes are all radioactive; no stable isotopes exist." },
+            { "name": "Ruthenium", "atomic_number": 44, "symbol": "Ru", "atomic_mass": 101.07, "xpos": 8, "ypos": 5, "category": "transition metal", "phase": "Solid", "density": 12.45, "melt": 2607, "boil": 4423, "discovered_by": "Karl Ernst Claus", "summary": "Ruthenium is a chemical element with symbol Ru and atomic number 44. It is a rare transition metal of the platinum group of the periodic table." },
+            { "name": "Rhodium", "atomic_number": 45, "symbol": "Rh", "atomic_mass": 102.90550, "xpos": 9, "ypos": 5, "category": "transition metal", "phase": "Solid", "density": 12.41, "melt": 2237, "boil": 3968, "discovered_by": "William Hyde Wollaston", "summary": "Rhodium is a chemical element with symbol Rh and atomic number 45. It is a rare, silvery-white, hard, and chemically inert transition metal." },
+            { "name": "Palladium", "atomic_number": 46, "symbol": "Pd", "atomic_mass": 106.42, "xpos": 10, "ypos": 5, "category": "transition metal", "phase": "Solid", "density": 12.023, "melt": 1828.05, "boil": 3236, "discovered_by": "William Hyde Wollaston", "summary": "Palladium is a chemical element with symbol Pd and atomic number 46. It is a rare and lustrous silvery-white metal. It is a member of the platinum group." },
+            { "name": "Silver", "atomic_number": 47, "symbol": "Ag", "atomic_mass": 107.8682, "xpos": 11, "ypos": 5, "category": "transition metal", "phase": "Solid", "density": 10.49, "melt": 1234.93, "boil": 2435, "discovered_by": "Ancient civilizations", "summary": "Silver is a chemical element with symbol Ag and atomic number 47. A soft, white, lustrous transition metal, it exhibits the highest electrical conductivity of any metal." },
+            { "name": "Cadmium", "atomic_number": 48, "symbol": "Cd", "atomic_mass": 112.414, "xpos": 12, "ypos": 5, "category": "transition metal", "phase": "Solid", "density": 8.65, "melt": 594.22, "boil": 1040, "discovered_by": "Friedrich Stromeyer", "summary": "Cadmium is a chemical element with symbol Cd and atomic number 48. This soft, bluish-white metal is chemically similar to zinc and mercury." },
+            { "name": "Indium", "atomic_number": 49, "symbol": "In", "atomic_mass": 114.818, "xpos": 13, "ypos": 5, "category": "post-transition metal", "phase": "Solid", "density": 7.31, "melt": 429.7485, "boil": 2345, "discovered_by": "Ferdinand Reich", "summary": "Indium is a chemical element with symbol In and atomic number 49. It is a soft, malleable, silvery-white metal with a brilliant luster." },
+            { "name": "Tin", "atomic_number": 50, "symbol": "Sn", "atomic_mass": 118.710, "xpos": 14, "ypos": 5, "category": "post-transition metal", "phase": "Solid", "density": 7.265, "melt": 505.08, "boil": 2875, "discovered_by": "Ancient civilizations", "summary": "Tin is a chemical element with the symbol Sn and atomic number 50. Tin is a silvery-white, malleable post-transition metal." },
+            { "name": "Antimony", "atomic_number": 51, "symbol": "Sb", "atomic_mass": 121.760, "xpos": 15, "ypos": 5, "category": "metalloid", "phase": "Solid", "density": 6.697, "melt": 903.78, "boil": 1860, "discovered_by": "Ancient civilizations", "summary": "Antimony is a chemical element with symbol Sb and atomic number 51. A lustrous gray metalloid, it is found in nature mainly as stibnite." },
+            { "name": "Tellurium", "atomic_number": 52, "symbol": "Te", "atomic_mass": 127.60, "xpos": 16, "ypos": 5, "category": "metalloid", "phase": "Solid", "density": 6.24, "melt": 722.66, "boil": 1261, "discovered_by": "Franz-Joseph Müller von Reichenstein", "summary": "Tellurium is a chemical element with symbol Te and atomic number 52. It is a brittle, mildly toxic, silvery-white metalloid." },
+            { "name": "Iodine", "atomic_number": 53, "symbol": "I", "atomic_mass": 126.90447, "xpos": 17, "ypos": 5, "category": "halogen", "phase": "Solid", "density": 4.933, "melt": 386.85, "boil": 457.4, "discovered_by": "Bernard Courtois", "summary": "Iodine is a chemical element with symbol I and atomic number 53. The name is from Greek ioeides, meaning violet or purple. Iodine is a halogen." },
+            { "name": "Xenon", "atomic_number": 54, "symbol": "Xe", "atomic_mass": 131.293, "xpos": 18, "ypos": 5, "category": "noble gas", "phase": "Gas", "density": 5.894, "melt": 161.3, "boil": 165.03, "discovered_by": "William Ramsay", "summary": "Xenon is a chemical element with symbol Xe and atomic number 54. It is a colorless, odorless, heavy noble gas, that occurs in trace amounts in the atmosphere." },
+            { "name": "Caesium", "atomic_number": 55, "symbol": "Cs", "atomic_mass": 132.90545196, "xpos": 1, "ypos": 6, "category": "alkali metal", "phase": "Solid", "density": 1.93, "melt": 301.7, "boil": 944, "discovered_by": "Robert Bunsen", "summary": "Caesium is a chemical element with symbol Cs and atomic number 55. It is a soft, silvery-gold alkali metal with a melting point of 28.5 °C." },
+            { "name": "Barium", "atomic_number": 56, "symbol": "Ba", "atomic_mass": 137.327, "xpos": 2, "ypos": 6, "category": "alkaline earth metal", "phase": "Solid", "density": 3.51, "melt": 1000, "boil": 2170, "discovered_by": "Carl Wilhelm Scheele", "summary": "Barium is a chemical element with symbol Ba and atomic number 56. It is the fifth element in Group 2 of the periodic table, also known as the alkaline earth metals." },
+            { "name": "Lanthanum", "atomic_number": 57, "symbol": "La", "atomic_mass": 138.90547, "xpos": 3, "ypos": 6, "category": "lanthanide", "phase": "Solid", "density": 6.162, "melt": 1193, "boil": 3737, "discovered_by": "Carl Gustaf Mosander", "summary": "Lanthanum is a soft, ductile, silvery-white metallic chemical element with symbol La and atomic number 57. It is the first element of the lanthanide series." },
+            { "name": "Hafnium", "atomic_number": 72, "symbol": "Hf", "atomic_mass": 178.49, "xpos": 4, "ypos": 6, "category": "transition metal", "phase": "Solid", "density": 13.31, "melt": 2506, "boil": 4876, "discovered_by": "Dirk Coster", "summary": "Hafnium is a chemical element with symbol Hf and atomic number 72. A lustrous, silvery-gray transition metal, hafnium is chemically similar to zirconium." },
+            { "name": "Tantalum", "atomic_number": 73, "symbol": "Ta", "atomic_mass": 180.94788, "xpos": 5, "ypos": 6, "category": "transition metal", "phase": "Solid", "density": 16.69, "melt": 3290, "boil": 5731, "discovered_by": "Anders Gustaf Ekeberg", "summary": "Tantalum is a chemical element with symbol Ta and atomic number 73. It is a rare, hard, blue-gray, lustrous transition metal that is highly corrosion-resistant." },
+            { "name": "Tungsten", "atomic_number": 74, "symbol": "W", "atomic_mass": 183.84, "xpos": 6, "ypos": 6, "category": "transition metal", "phase": "Solid", "density": 19.25, "melt": 3695, "boil": 6203, "discovered_by": "Juan José Elhuyar", "summary": "Tungsten, also known as wolfram, is a chemical element with symbol W and atomic number 74. It is a rare metal found naturally almost exclusively in compounds." },
+            { "name": "Rhenium", "atomic_number": 75, "symbol": "Re", "atomic_mass": 186.207, "xpos": 7, "ypos": 6, "category": "transition metal", "phase": "Solid", "density": 21.02, "melt": 3459, "boil": 5869, "discovered_by": "Masataka Ogawa", "summary": "Rhenium is a chemical element with symbol Re and atomic number 75. It is a silvery-white, heavy transition metal in Group 7 of the periodic table." },
+            { "name": "Osmium", "atomic_number": 76, "symbol": "Os", "atomic_mass": 190.23, "xpos": 8, "ypos": 6, "category": "transition metal", "phase": "Solid", "density": 22.59, "melt": 3306, "boil": 5285, "discovered_by": "Smithson Tennant", "summary": "Osmium is a chemical element with symbol Os and atomic number 76. Osmium is the densest naturally occurring element, with a density of 22.59 g/cm3." },
+            { "name": "Iridium", "atomic_number": 77, "symbol": "Ir", "atomic_mass": 192.217, "xpos": 9, "ypos": 6, "category": "transition metal", "phase": "Solid", "density": 22.56, "melt": 2719, "boil": 4701, "discovered_by": "Smithson Tennant", "summary": "Iridium is a chemical element with symbol Ir and atomic number 77. A very hard, brittle, silvery-white transition metal of the platinum group." },
+            { "name": "Platinum", "atomic_number": 78, "symbol": "Pt", "atomic_mass": 195.084, "xpos": 10, "ypos": 6, "category": "transition metal", "phase": "Solid", "density": 21.45, "melt": 2041.4, "boil": 4098, "discovered_by": "Antonio de Ulloa", "summary": "Platinum is a chemical element with symbol Pt and atomic number 78. It is a dense, malleable, ductile, highly unreactive, silvery-white transition metal." },
+            { "name": "Gold", "atomic_number": 79, "symbol": "Au", "atomic_mass": 196.966570, "xpos": 11, "ypos": 6, "category": "transition metal", "phase": "Solid", "density": 19.3, "melt": 1337.33, "boil": 3129, "discovered_by": "Ancient civilizations", "summary": "Gold is a chemical element with symbol Au and atomic number 79. In its purest form, it is a bright, slightly yellow, dense, soft, malleable, and ductile metal." },
+            { "name": "Mercury", "atomic_number": 80, "symbol": "Hg", "atomic_mass": 200.592, "xpos": 12, "ypos": 6, "category": "transition metal", "phase": "Liquid", "density": 13.534, "melt": 234.321, "boil": 629.88, "discovered_by": "Ancient civilizations", "summary": "Mercury is a chemical element with symbol Hg and atomic number 80. A heavy, silvery d-block element, mercury is the only metal liquid at standard conditions." },
+            { "name": "Thallium", "atomic_number": 81, "symbol": "Tl", "atomic_mass": 204.38, "xpos": 13, "ypos": 6, "category": "post-transition metal", "phase": "Solid", "density": 11.85, "melt": 577, "boil": 1746, "discovered_by": "William Crookes", "summary": "Thallium is a chemical element with symbol Tl and atomic number 81. This soft, gray, malleable post-transition metal is not found free in nature." },
+            { "name": "Lead", "atomic_number": 82, "symbol": "Pb", "atomic_mass": 207.2, "xpos": 14, "ypos": 6, "category": "post-transition metal", "phase": "Solid", "density": 11.34, "melt": 600.61, "boil": 2022, "discovered_by": "Ancient civilizations", "summary": "Lead is a chemical element with symbol Pb and atomic number 82. It is a heavy metal that is denser than most common materials. Lead is soft and malleable." },
+            { "name": "Bismuth", "atomic_number": 83, "symbol": "Bi", "atomic_mass": 208.98040, "xpos": 15, "ypos": 6, "category": "post-transition metal", "phase": "Solid", "density": 9.78, "melt": 544.7, "boil": 1837, "discovered_by": "Claude François Geoffroy", "summary": "Bismuth is a chemical element with symbol Bi and atomic number 83. It is a pentavalent post-transition metal and one of the pnictogens." },
+            { "name": "Polonium", "atomic_number": 84, "symbol": "Po", "atomic_mass": 209, "xpos": 16, "ypos": 6, "category": "metalloid", "phase": "Solid", "density": 9.196, "melt": 527, "boil": 1236, "discovered_by": "Marie Curie", "summary": "Polonium is a chemical element with symbol Po and atomic number 84. A rare and highly radioactive metal with no stable isotopes." },
+            { "name": "Astatine", "atomic_number": 85, "symbol": "At", "atomic_mass": 210, "xpos": 17, "ypos": 6, "category": "halogen", "phase": "Solid", "density": 6.35, "melt": 575, "boil": 610, "discovered_by": "Dale R. Corson", "summary": "Astatine is a chemical element with symbol At and atomic number 85. It is the rarest naturally occurring element in the Earth's crust." },
+            { "name": "Radon", "atomic_number": 86, "symbol": "Rn", "atomic_mass": 222, "xpos": 18, "ypos": 6, "category": "noble gas", "phase": "Gas", "density": 9.73, "melt": 202, "boil": 211.3, "discovered_by": "Friedrich Ernst Dorn", "summary": "Radon is a chemical element with symbol Rn and atomic number 86. It is a radioactive, colorless, odorless, tasteless noble gas." },
+            { "name": "Francium", "atomic_number": 87, "symbol": "Fr", "atomic_mass": 223, "xpos": 1, "ypos": 7, "category": "alkali metal", "phase": "Solid", "density": 1.87, "melt": 300, "boil": 950, "discovered_by": "Marguerite Perey", "summary": "Francium is a chemical element with symbol Fr and atomic number 87. It is a highly radioactive metal, the second-most electropositive element." },
+            { "name": "Radium", "atomic_number": 88, "symbol": "Ra", "atomic_mass": 226, "xpos": 2, "ypos": 7, "category": "alkaline earth metal", "phase": "Solid", "density": 5.5, "melt": 973, "boil": 2010, "discovered_by": "Marie Curie", "summary": "Radium is a chemical element with symbol Ra and atomic number 88. It is the sixth element in Group 2 of the periodic table, also known as alkaline earth metals." },
+            { "name": "Actinium", "atomic_number": 89, "symbol": "Ac", "atomic_mass": 227, "xpos": 3, "ypos": 7, "category": "actinide", "phase": "Solid", "density": 10.07, "melt": 1323, "boil": 3473, "discovered_by": "André-Louis Debierne", "summary": "Actinium is a radioactive chemical element with symbol Ac and atomic number 89. It was the first non-primordial radioactive element to be isolated." },
+            { "name": "Rutherfordium", "atomic_number": 104, "symbol": "Rf", "atomic_mass": 267, "xpos": 4, "ypos": 7, "category": "transition metal", "phase": "Solid", "density": 23.2, "melt": 2400, "boil": 5500, "discovered_by": "Joint Institute for Nuclear Research", "summary": "Rutherfordium is a chemical element with symbol Rf and atomic number 104. It is a synthetic element, meaning it can only be created in a laboratory." },
+            { "name": "Dubnium", "atomic_number": 105, "symbol": "Db", "atomic_mass": 268, "xpos": 5, "ypos": 7, "category": "transition metal", "phase": "Solid", "density": 29.3, "melt": 2700, "boil": 5400, "discovered_by": "Joint Institute for Nuclear Research", "summary": "Dubnium is a chemical element with symbol Db and atomic number 105. It is a synthetic element and is extremely radioactive." },
+            { "name": "Seaborgium", "atomic_number": 106, "symbol": "Sg", "atomic_mass": 271, "xpos": 6, "ypos": 7, "category": "transition metal", "phase": "Solid", "density": 35, "melt": 2800, "boil": 5500, "discovered_by": "Lawrence Berkeley Laboratory", "summary": "Seaborgium is a chemical element with symbol Sg and atomic number 106. It is a synthetic element whose most stable known isotope has a half-life of 2.4 minutes." },
+            { "name": "Bohrium", "atomic_number": 107, "symbol": "Bh", "atomic_mass": 272, "xpos": 7, "ypos": 7, "category": "transition metal", "phase": "Solid", "density": 37.1, "melt": 2900, "boil": 5600, "discovered_by": "Gesellschaft für Schwerionenforschung", "summary": "Bohrium is a chemical element with symbol Bh and atomic number 107. It is a synthetic element and is extremely radioactive." },
+            { "name": "Hassium", "atomic_number": 108, "symbol": "Hs", "atomic_mass": 277, "xpos": 8, "ypos": 7, "category": "transition metal", "phase": "Solid", "density": 40.7, "melt": 3000, "boil": 5700, "discovered_by": "Gesellschaft für Schwerionenforschung", "summary": "Hassium is a chemical element with symbol Hs and atomic number 108. It is a synthetic element and is extremely radioactive." },
+            { "name": "Meitnerium", "atomic_number": 109, "symbol": "Mt", "atomic_mass": 276, "xpos": 9, "ypos": 7, "category": "transition metal", "phase": "Solid", "density": 37.4, "melt": 2700, "boil": 5000, "discovered_by": "Gesellschaft für Schwerionenforschung", "summary": "Meitnerium is a synthetic chemical element with symbol Mt and atomic number 109. It is an extremely radioactive element." },
+            { "name": "Darmstadtium", "atomic_number": 110, "symbol": "Ds", "atomic_mass": 281, "xpos": 10, "ypos": 7, "category": "transition metal", "phase": "Solid", "density": 34.8, "melt": 2800, "boil": 5100, "discovered_by": "Gesellschaft für Schwerionenforschung", "summary": "Darmstadtium is a chemical element with symbol Ds and atomic number 110. It is a synthetic element and is extremely radioactive." },
+            { "name": "Roentgenium", "atomic_number": 111, "symbol": "Rg", "atomic_mass": 280, "xpos": 11, "ypos": 7, "category": "transition metal", "phase": "Solid", "density": 28.7, "melt": 2900, "boil": 5200, "discovered_by": "Gesellschaft für Schwerionenforschung", "summary": "Roentgenium is a chemical element with symbol Rg and atomic number 111. It is a synthetic element and is extremely radioactive." },
+            { "name": "Copernicium", "atomic_number": 112, "symbol": "Cn", "atomic_mass": 285, "xpos": 12, "ypos": 7, "category": "transition metal", "phase": "Gas", "density": 23.7, "melt": 283, "boil": 340, "discovered_by": "Gesellschaft für Schwerionenforschung", "summary": "Copernicium is a chemical element with symbol Cn and atomic number 112. It is an extremely radioactive synthetic element." },
+            { "name": "Nihonium", "atomic_number": 113, "symbol": "Nh", "atomic_mass": 286, "xpos": 13, "ypos": 7, "category": "post-transition metal", "phase": "Solid", "density": 16, "melt": 700, "boil": 1400, "discovered_by": "RIKEN", "summary": "Nihonium is a synthetic chemical element with symbol Nh and atomic number 113. It is an extremely radioactive element." },
+            { "name": "Flerovium", "atomic_number": 114, "symbol": "Fl", "atomic_mass": 289, "xpos": 14, "ypos": 7, "category": "post-transition metal", "phase": "Gas", "density": 14, "melt": 280, "boil": 350, "discovered_by": "Joint Institute for Nuclear Research", "summary": "Flerovium is a synthetic chemical element with symbol Fl and atomic number 114. It is an extremely radioactive element." },
+            { "name": "Moscovium", "atomic_number": 115, "symbol": "Mc", "atomic_mass": 290, "xpos": 15, "ypos": 7, "category": "post-transition metal", "phase": "Solid", "density": 13.5, "melt": 670, "boil": 1400, "discovered_by": "Joint Institute for Nuclear Research", "summary": "Moscovium is a synthetic chemical element with symbol Mc and atomic number 115. It is an extremely radioactive element." },
+            { "name": "Livermorium", "atomic_number": 116, "symbol": "Lv", "atomic_mass": 293, "xpos": 16, "ypos": 7, "category": "post-transition metal", "phase": "Solid", "density": 12.9, "melt": 709, "boil": 1085, "discovered_by": "Joint Institute for Nuclear Research", "summary": "Livermorium is a synthetic chemical element with symbol Lv and atomic number 116. It is an extremely radioactive element." },
+            { "name": "Tennessine", "atomic_number": 117, "symbol": "Ts", "atomic_mass": 294, "xpos": 17, "ypos": 7, "category": "halogen", "phase": "Solid", "density": 7.1, "melt": 723, "boil": 883, "discovered_by": "Joint Institute for Nuclear Research", "summary": "Tennessine is a synthetic chemical element with symbol Ts and atomic number 117. It is an extremely radioactive element." },
+            { "name": "Oganesson", "atomic_number": 118, "symbol": "Og", "atomic_mass": 294, "xpos": 18, "ypos": 7, "category": "noble gas", "phase": "Gas", "density": 5, "melt": 258, "boil": 261, "discovered_by": "Joint Institute for Nuclear Research", "summary": "Oganesson is a synthetic chemical element with symbol Og and atomic number 118. It is an extremely radioactive element." },
+            { "name": "Cerium", "atomic_number": 58, "symbol": "Ce", "atomic_mass": 140.116, "xpos": 4, "ypos": 8, "category": "lanthanide", "phase": "Solid", "density": 6.77, "melt": 1068, "boil": 3716, "discovered_by": "Martin Heinrich Klaproth", "summary": "Cerium is a chemical element with symbol Ce and atomic number 58. It is a soft, ductile, silvery-white metallic chemical element." },
+            { "name": "Praseodymium", "atomic_number": 59, "symbol": "Pr", "atomic_mass": 140.90766, "xpos": 5, "ypos": 8, "category": "lanthanide", "phase": "Solid", "density": 6.77, "melt": 1208, "boil": 3793, "discovered_by": "Carl Auer von Welsbach", "summary": "Praseodymium is a chemical element with symbol Pr and atomic number 59. It is a soft, silvery, malleable, and ductile metal." },
+            { "name": "Neodymium", "atomic_number": 60, "symbol": "Nd", "atomic_mass": 144.242, "xpos": 6, "ypos": 8, "category": "lanthanide", "phase": "Solid", "density": 7.01, "melt": 1297, "boil": 3347, "discovered_by": "Carl Auer von Welsbach", "summary": "Neodymium is a chemical element with symbol Nd and atomic number 60. It is a soft, silvery metal that quickly tarnishes in air." },
+            { "name": "Promethium", "atomic_number": 61, "symbol": "Pm", "atomic_mass": 145, "xpos": 7, "ypos": 8, "category": "lanthanide", "phase": "Solid", "density": 7.26, "melt": 1315, "boil": 3273, "discovered_by": "Charles D. Coryell", "summary": "Promethium is a chemical element with symbol Pm and atomic number 61. All of its isotopes are radioactive." },
+            { "name": "Samarium", "atomic_number": 62, "symbol": "Sm", "atomic_mass": 150.36, "xpos": 8, "ypos": 8, "category": "lanthanide", "phase": "Solid", "density": 7.52, "melt": 1345, "boil": 2067, "discovered_by": "Lecoq de Boisbaudran", "summary": "Samarium is a chemical element with symbol Sm and atomic number 62. It is a silvery-white metal that readily oxidizes in air." },
+            { "name": "Europium", "atomic_number": 63, "symbol": "Eu", "atomic_mass": 151.964, "xpos": 9, "ypos": 8, "category": "lanthanide", "phase": "Solid", "density": 5.244, "melt": 1099, "boil": 1802, "discovered_by": "Eugène-Anatole Demarçay", "summary": "Europium is a chemical element with symbol Eu and atomic number 63. It is the most reactive lanthanide." },
+            { "name": "Gadolinium", "atomic_number": 64, "symbol": "Gd", "atomic_mass": 157.25, "xpos": 10, "ypos": 8, "category": "lanthanide", "phase": "Solid", "density": 7.9, "melt": 1585, "boil": 3546, "discovered_by": "Jean Charles Galissard de Marignac", "summary": "Gadolinium is a chemical element with symbol Gd and atomic number 64. It is a silvery-white, malleable, and ductile rare-earth metal." },
+            { "name": "Terbium", "atomic_number": 65, "symbol": "Tb", "atomic_mass": 158.92535, "xpos": 11, "ypos": 8, "category": "lanthanide", "phase": "Solid", "density": 8.23, "melt": 1629, "boil": 3503, "discovered_by": "Carl Gustaf Mosander", "summary": "Terbium is a chemical element with symbol Tb and atomic number 65. It is a silvery-white, rare-earth metal." },
+            { "name": "Dysprosium", "atomic_number": 66, "symbol": "Dy", "atomic_mass": 162.500, "xpos": 12, "ypos": 8, "category": "lanthanide", "phase": "Solid", "density": 8.55, "melt": 1680, "boil": 2840, "discovered_by": "Lecoq de Boisbaudran", "summary": "Dysprosium is a chemical element with symbol Dy and atomic number 66. It is a rare-earth element with a metallic silvery luster." },
+            { "name": "Holmium", "atomic_number": 67, "symbol": "Ho", "atomic_mass": 164.93033, "xpos": 13, "ypos": 8, "category": "lanthanide", "phase": "Solid", "density": 8.79, "melt": 1734, "boil": 2873, "discovered_by": "Per Teodor Cleve", "summary": "Holmium is a chemical element with symbol Ho and atomic number 67. It is a soft, silvery-white, rare-earth metal." },
+            { "name": "Erbium", "atomic_number": 68, "symbol": "Er", "atomic_mass": 167.259, "xpos": 14, "ypos": 8, "category": "lanthanide", "phase": "Solid", "density": 9.066, "melt": 1802, "boil": 3141, "discovered_by": "Carl Gustaf Mosander", "summary": "Erbium is a chemical element with symbol Er and atomic number 68. It is a soft, malleable, silvery-white metal." },
+            { "name": "Thulium", "atomic_number": 69, "symbol": "Tm", "atomic_mass": 168.93422, "xpos": 15, "ypos": 8, "category": "lanthanide", "phase": "Solid", "density": 9.32, "melt": 1818, "boil": 2223, "discovered_by": "Per Teodor Cleve", "summary": "Thulium is a chemical element with symbol Tm and atomic number 69. It is the second least abundant of the lanthanides." },
+            { "name": "Ytterbium", "atomic_number": 70, "symbol": "Yb", "atomic_mass": 173.045, "xpos": 16, "ypos": 8, "category": "lanthanide", "phase": "Solid", "density": 6.9, "melt": 1097, "boil": 1469, "discovered_by": "Jean Charles Galissard de Marignac", "summary": "Ytterbium is a chemical element with symbol Yb and atomic number 70. It is a soft, malleable, and ductile silvery-white metal." },
+            { "name": "Lutetium", "atomic_number": 71, "symbol": "Lu", "atomic_mass": 174.9668, "xpos": 17, "ypos": 8, "category": "lanthanide", "phase": "Solid", "density": 9.84, "melt": 1925, "boil": 3675, "discovered_by": "Georges Urbain", "summary": "Lutetium is a chemical element with symbol Lu and atomic number 71. It is the last element in the lanthanide series." },
+            { "name": "Thorium", "atomic_number": 90, "symbol": "Th", "atomic_mass": 232.0377, "xpos": 4, "ypos": 9, "category": "actinide", "phase": "Solid", "density": 11.724, "melt": 2023, "boil": 5061, "discovered_by": "Jöns Jacob Berzelius", "summary": "Thorium is a chemical element with symbol Th and atomic number 90. A radioactive actinide metal." },
+            { "name": "Protactinium", "atomic_number": 91, "symbol": "Pa", "atomic_mass": 231.03588, "xpos": 5, "ypos": 9, "category": "actinide", "phase": "Solid", "density": 15.37, "melt": 1845, "boil": 4300, "discovered_by": "Kasimir Fajans", "summary": "Protactinium is a chemical element with symbol Pa and atomic number 91. It is a dense, silvery-gray actinide metal." },
+            { "name": "Uranium", "atomic_number": 92, "symbol": "U", "atomic_mass": 238.02891, "xpos": 6, "ypos": 9, "category": "actinide", "phase": "Solid", "density": 19.1, "melt": 1405.3, "boil": 4404, "discovered_by": "Martin Heinrich Klaproth", "summary": "Uranium is a chemical element with symbol U and atomic number 92. It is a silvery-white metal in the actinide series." },
+            { "name": "Neptunium", "atomic_number": 93, "symbol": "Np", "atomic_mass": 237, "xpos": 7, "ypos": 9, "category": "actinide", "phase": "Solid", "density": 20.45, "melt": 917, "boil": 4273, "discovered_by": "Edwin McMillan", "summary": "Neptunium is a chemical element with symbol Np and atomic number 93. A radioactive actinide metal." },
+            { "name": "Plutonium", "atomic_number": 94, "symbol": "Pu", "atomic_mass": 244, "xpos": 8, "ypos": 9, "category": "actinide", "phase": "Solid", "density": 19.816, "melt": 912.5, "boil": 3505, "discovered_by": "Glenn T. Seaborg", "summary": "Plutonium is a radioactive chemical element with symbol Pu and atomic number 94. It is an actinide metal of silvery-white appearance." },
+            { "name": "Americium", "atomic_number": 95, "symbol": "Am", "atomic_mass": 243, "xpos": 9, "ypos": 9, "category": "actinide", "phase": "Solid", "density": 13.67, "melt": 1267, "boil": 2880, "discovered_by": "Glenn T. Seaborg", "summary": "Americium is a radioactive chemical element with symbol Am and atomic number 95. It is an actinide metal." },
+            { "name": "Curium", "atomic_number": 96, "symbol": "Cm", "atomic_mass": 247, "xpos": 10, "ypos": 9, "category": "actinide", "phase": "Solid", "density": 13.5, "melt": 1613, "boil": 3383, "discovered_by": "Glenn T. Seaborg", "summary": "Curium is a radioactive transuranic chemical element with symbol Cm and atomic number 96. It is an actinide." },
+            { "name": "Berkelium", "atomic_number": 97, "symbol": "Bk", "atomic_mass": 247, "xpos": 11, "ypos": 9, "category": "actinide", "phase": "Solid", "density": 14.78, "melt": 1259, "boil": 2900, "discovered_by": "Glenn T. Seaborg", "summary": "Berkelium is a transuranic radioactive chemical element with symbol Bk and atomic number 97." },
+            { "name": "Californium", "atomic_number": 98, "symbol": "Cf", "atomic_mass": 251, "xpos": 12, "ypos": 9, "category": "actinide", "phase": "Solid", "density": 15.1, "melt": 1173, "boil": 1743, "discovered_by": "Glenn T. Seaborg", "summary": "Californium is a radioactive metallic chemical element with symbol Cf and atomic number 98." },
+            { "name": "Einsteinium", "atomic_number": 99, "symbol": "Es", "atomic_mass": 252, "xpos": 13, "ypos": 9, "category": "actinide", "phase": "Solid", "density": 8.84, "melt": 1133, "boil": 1269, "discovered_by": "Albert Ghiorso", "summary": "Einsteinium is a synthetic element with symbol Es and atomic number 99. It is a member of the actinide series." },
+            { "name": "Fermium", "atomic_number": 100, "symbol": "Fm", "atomic_mass": 257, "xpos": 14, "ypos": 9, "category": "actinide", "phase": "Solid", "density": 9.7, "melt": 1800, "boil": 1800, "discovered_by": "Albert Ghiorso", "summary": "Fermium is a synthetic element with symbol Fm and atomic number 100." },
+            { "name": "Mendelevium", "atomic_number": 101, "symbol": "Md", "atomic_mass": 258, "xpos": 15, "ypos": 9, "category": "actinide", "phase": "Solid", "density": 10.3, "melt": 1100, "boil": 1200, "discovered_by": "Albert Ghiorso", "summary": "Mendelevium is a synthetic element with symbol Md and atomic number 101." },
+            { "name": "Nobelium", "atomic_number": 102, "symbol": "No", "atomic_mass": 259, "xpos": 16, "ypos": 9, "category": "actinide", "phase": "Solid", "density": 9.9, "melt": 1100, "boil": 1200, "discovered_by": "Joint Institute for Nuclear Research", "summary": "Nobelium is a synthetic chemical element with symbol No and atomic number 102." },
+            { "name": "Lawrencium", "atomic_number": 103, "symbol": "Lr", "atomic_mass": 262, "xpos": 17, "ypos": 9, "category": "actinide", "phase": "Solid", "density": 15.6, "melt": 1900, "boil": 1900, "discovered_by": "Albert Ghiorso", "summary": "Lawrencium is a synthetic chemical element with symbol Lr and atomic number 103." }
+        ];
+
+        // System tools metadata definitions
+        const toolsMetadata = [
+            { id: "unit-converter", icon: "fas fa-arrows-alt-h", name: "Unit Converter", desc: "Convert standard metric and imperial units easily." },
+            { id: "currency-converter", icon: "fas fa-coins", name: "Currency Tracker", desc: "Real-time exchange analytics and monitored price corridors." },
+            { id: "scientific-calculator", icon: "fas fa-calculator", name: "Calculator", desc: "Perform standard calculations cleanly." },
+            { id: "geometry-calculator", icon: "fas fa-shapes", name: "Geometry Area", desc: "Calculate basic shape volumes and areas instantly." },
+            { id: "bmi-calculator", icon: "fas fa-weight-scale", name: "BMI Calculator", desc: "Compute body mass index category parameters." },
+            { id: "body-fat-calculator", icon: "fas fa-child", name: "Body Fat", desc: "Estimate body fat percentage using standard formulas." },
+            { id: "password-strength-checker", icon: "fas fa-lock", name: "Password Checker", desc: "Test structural safety metrics on custom passwords." },
+            { id: "periodic-table-modal", icon: "fas fa-table-cells", name: "Periodic Table", desc: "Explore chemical elements and atomic properties." }
+        ];
+
+        // Component Skeleton Loader initialization
+        function applyComponentSkeletons() {
+            const grid = document.querySelector('.tools-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                const dummy = document.createElement('div');
+                dummy.className = 'tool-card skeleton-loading';
+                grid.appendChild(dummy);
+            }
+        }
+
+        // Render tool cards cleanly
+        function renderToolsTray() {
+            const grid = document.querySelector('.tools-grid');
+            grid.innerHTML = '';
+
+            toolsMetadata.forEach(tool => {
+                const card = document.createElement('div');
+                card.className = 'tool-card';
+                card.dataset.tool = tool.id;
+
+                card.innerHTML = `
+                    <i class="${tool.icon}"></i>
+                    <h2>${tool.name}</h2>
+                    <p>${tool.desc}</p>
+                `;
+
+                // Card Click events
+                card.addEventListener('click', () => {
+                    if (window.playTouchSound) window.playTouchSound(1);
+                    openActiveModal(tool.id);
+                });
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Modal routing controls
+        function openActiveModal(modalId) {
+            const targetModal = document.getElementById(modalId) || document.getElementById(`${modalId}-modal`);
+            if (targetModal) {
+                targetModal.classList.add('show');
+                if (modalId === 'periodic-table-modal') {
+                    renderPeriodicTable();
+                } else if (modalId === 'currency-converter' || modalId === 'currency-converter-modal') {
+                    const fromVal = document.getElementById('currency-from-trigger').dataset.value || 'USD';
+                    fetchLiveRatesTools(fromVal).then(() => {
+                        convertCurrency();
+                        renderWatchlistTools();
+                    });
+                }
+            }
+        }
+
+        function closeActiveModal() {
+            if (window.playTouchSound) window.playTouchSound(2);
+            document.querySelectorAll('.custom-modal-overlay').forEach(modal => {
+                modal.classList.remove('show');
+            });
+        }
+
+        // Programmatic close when clicking overlay backdrop
+        // Fix 2: Explicitly call hide helpers on background click
+        document.querySelectorAll('.custom-modal-overlay').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    if (modal.id === 'element-details-popup') {
+                        hideElementDetailsPopup();
+                    } else if (modal.id === 'periodic-table-modal') {
+                        hidePeriodicTableModal();
+                    } else if (modal.id === 'customListSelectorModal') {
+                        window.closeCustomListSelector();
+                    } else {
+                        closeActiveModal();
+                    }
+                }
+            });
+        });
+
+        // Modified: openCustomListSelector and closeCustomListSelector explicitly set display values to prevent CSS clashes
+        window.openCustomListSelector = function(title, options, currentSelected, callback) {
+            document.getElementById('listSelectorTitle').textContent = title;
+            const container = document.getElementById('listSelectorItemsContainer');
+            container.innerHTML = '';
+            
+            options.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = `sharp-inner-item ${item.code === currentSelected ? 'selected' : ''}`;
+                btn.textContent = item.name;
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    if (window.playTouchSound) window.playTouchSound(4);
+                    callback(item);
+                    window.closeCustomListSelector();
+                };
+                container.appendChild(btn);
+            });
+            
+            const modal = document.getElementById('customListSelectorModal');
+            modal.style.display = 'flex'; 
+            modal.classList.add('show');
+        };
+
+        window.closeCustomListSelector = function() {
+            const modal = document.getElementById('customListSelectorModal');
+            modal.classList.remove('show');
+            modal.style.display = 'none'; 
+        };
+
+        // Fix 1: Specific background click handler to close the custom list view select popup
+        document.getElementById('customListSelectorModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('customListSelectorModal')) {
+                window.closeCustomListSelector();
+            }
+        });
+
+        // Reusable List Selector Binder
+        function bindCustomSelect(triggerId, title, options, onSelectCallback) {
+            const trigger = document.getElementById(triggerId);
+            if (!trigger) return;
+            
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (window.playTouchSound) window.playTouchSound(4);
+                const currentVal = trigger.dataset.value;
+                window.openCustomListSelector(title, options, currentVal, (selected) => {
+                    trigger.dataset.value = selected.code;
+                    trigger.textContent = selected.name;
+                    if (onSelectCallback) onSelectCallback(selected.code);
+                });
+            });
+        }
+
+        // UNIT CONVERTER UTILITIES
+        const units = {
+            length: { meter: 1, kilometer: 1000, centimeter: 0.01, inch: 0.0254, foot: 0.3048 },
+            weight: { gram: 1, kilogram: 1000, pound: 453.592, ounce: 28.3495 },
+            temperature: {
+                celsius: { toKelvin: (c) => c + 273.15, fromKelvin: (k) => k - 273.15 },
+                fahrenheit: { toKelvin: (f) => (f - 32) * 5/9 + 273.15, fromKelvin: (k) => (k - 273.15) * 9/5 + 32 },
+                kelvin: { toKelvin: (k) => k, fromKelvin: (k) => k }
+            },
+            volume: { liter: 1, milliliter: 0.001, gallon: 3.78541 },
+            speed: { 'm/s': 1, 'km/h': 0.277778, 'mph': 0.44704 },
+            pressure: { pascal: 1, psi: 6894.76, atm: 101325 },
+            energy: { joule: 1, calorie: 4.184, 'kWh': 3600000 },
+            data_storage: { bit: 1, byte: 8, kilobyte: 8192 }
+        };
+
+        const unitTypes = [
+            { code: "length", name: "Length" },
+            { code: "weight", name: "Weight" },
+            { code: "temperature", name: "Temperature" },
+            { code: "volume", name: "Volume" },
+            { code: "speed", name: "Speed" },
+            { code: "pressure", name: "Pressure" },
+            { code: "energy", name: "Energy" },
+            { code: "data_storage", name: "Data Storage" }
+        ];
+
+        function populateUnitOptions() {
+            const type = document.getElementById('unit-type-trigger').dataset.value;
+            const fromTrigger = document.getElementById('unit-from-trigger');
+            const toTrigger = document.getElementById('unit-to-trigger');
+
+            const optionKeys = Object.keys(units[type]);
+            fromTrigger.dataset.value = optionKeys[0];
+            fromTrigger.textContent = optionKeys[0].toUpperCase();
+
+            toTrigger.dataset.value = optionKeys[1] || optionKeys[0];
+            toTrigger.textContent = (optionKeys[1] || optionKeys[0]).toUpperCase();
+        }
+
+        bindCustomSelect('unit-type-trigger', "Select Type", unitTypes, () => {
+            populateUnitOptions();
+        });
+
+        // Click actions for selecting specific items
+        document.getElementById('unit-from-trigger').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = document.getElementById('unit-type-trigger').dataset.value;
+            const currentSelected = document.getElementById('unit-from-trigger').dataset.value;
+            const options = Object.keys(units[type]).map(k => ({ code: k, name: k.toUpperCase() }));
+
+            window.openCustomListSelector("Convert From", options, currentSelected, (selected) => {
+                document.getElementById('unit-from-trigger').dataset.value = selected.code;
+                document.getElementById('unit-from-trigger').textContent = selected.name;
+            });
+        });
+
+        document.getElementById('unit-to-trigger').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = document.getElementById('unit-type-trigger').dataset.value;
+            const currentSelected = document.getElementById('unit-to-trigger').dataset.value;
+            const options = Object.keys(units[type]).map(k => ({ code: k, name: k.toUpperCase() }));
+
+            window.openCustomListSelector("Convert To", options, currentSelected, (selected) => {
+                document.getElementById('unit-to-trigger').dataset.value = selected.code;
+                document.getElementById('unit-to-trigger').textContent = selected.name;
+            });
+        });
+
+        function convertUnit() {
+            if (window.playTouchSound) window.playTouchSound(1);
+            const val = parseFloat(document.getElementById('unit-input-value').value);
+            const type = document.getElementById('unit-type-trigger').dataset.value;
+            const fromUnit = document.getElementById('unit-from-trigger').dataset.value;
+            const toUnit = document.getElementById('unit-to-trigger').dataset.value;
+            const resBox = document.getElementById('unit-result');
+
+            if (isNaN(val)) {
+                window.showToast("Enter a valid numerical value.");
+                return;
+            }
+
+            let result;
+            if (type === 'temperature') {
+                const kelvin = units.temperature[fromUnit].toKelvin(val);
+                result = units.temperature[toUnit].fromKelvin(kelvin);
+            } else {
+                const baseVal = val * units[type][fromUnit];
+                result = baseVal / units[type][toUnit];
+            }
+
+            resBox.textContent = `Result: ${result.toFixed(4)} ${toUnit.toUpperCase()}`;
+            if (window.playTouchSound) window.playTouchSound(14);
+        }
+
+        // PRICE TRACKER & LIVE EXCHANGE RATES LOGIC (Matching exactly PriceTracker.html)
+        const currencyMapData = {
+            USD: { name: "US Dollar", symbol: "$", flag: "🇺🇸" },
+            EUR: { name: "Euro", symbol: "€", flag: "🇪🇺" },
+            GBP: { name: "British Pound", symbol: "£", flag: "🇬🇧" },
+            JPY: { name: "Japanese Yen", symbol: "¥", flag: "🇯🇵" },
+            AUD: { name: "Australian Dollar", symbol: "A$", flag: "🇦🇺" },
+            CAD: { name: "Canadian Dollar", symbol: "C$", flag: "🇨🇦" },
+            CHF: { name: "Swiss Franc", symbol: "CHF", flag: "🇨🇭" },
+            CNY: { name: "Chinese Yuan", symbol: "¥", flag: "🇨🇳" },
+            HKD: { name: "Hong Kong Dollar", symbol: "HK$", flag: "🇭🇰" },
+            NZD: { name: "New Zealand Dollar", symbol: "NZ$", flag: "🇳🇿" },
+            SEK: { name: "Swedish Krona", symbol: "kr", flag: "🇸🇪" },
+            KRW: { name: "South Korean Won", symbol: "₩", flag: "🇰🇷" },
+            SGD: { name: "Singapore Dollar", symbol: "S$", flag: "🇸🇬" },
+            NOK: { name: "Norwegian Krone", symbol: "kr", flag: "🇳🇴" },
+            MXN: { name: "Mexican Peso", symbol: "$", flag: "🇲🇽" },
+            INR: { name: "Indian Rupee", symbol: "₹", flag: "🇮🇳" },
+            RUB: { name: "Russian Ruble", symbol: "₽", flag: "🇷🇺" },
+            ZAR: { name: "South African Rand", symbol: "R", flag: "🇿🇦" },
+            TRY: { name: "Turkish Lira", symbol: "₺", flag: "🇹🇷" },
+            BRL: { name: "Brazilian Real", symbol: "R$", flag: "🇧🇷" },
+            TWD: { name: "New Taiwan Dollar", symbol: "NT$", flag: "🇹🇼" },
+            DKK: { name: "Danish Krone", symbol: "kr", flag: "🇩🇰" },
+            PLN: { name: "Polish Zloty", symbol: "zł", flag: "🇵🇱" },
+            THB: { name: "Thai Baht", symbol: "฿", flag: "🇹🇭" },
+            IDR: { name: "Indonesian Rupiah", symbol: "Rp", flag: "🇮🇩" },
+            HUF: { name: "Hungarian Forint", symbol: "Ft", flag: "🇭🇺" },
+            CZK: { name: "Czech Koruna", symbol: "Kč", flag: "🇨🇿" },
+            ILS: { name: "Israeli New Shekel", symbol: "₪", flag: "🇮🇱" },
+            CLP: { name: "Chilean Peso", symbol: "$", flag: "🇨🇱" },
+            PHP: { name: "Philippine Peso", symbol: "₱", flag: "🇵🇭" },
+            AED: { name: "UAE Dirham", symbol: "د.إ", flag: "🇦🇪" },
+            COP: { name: "Colombian Peso", symbol: "$", flag: "🇨🇴" },
+            SAR: { name: "Saudi Riyal", symbol: "ر.س", flag: "🇸🇦" },
+            MYR: { name: "Malaysian Ringgit", symbol: "RM", flag: "🇲🇾" },
+            RON: { name: "Romanian Leu", symbol: "lei", flag: "🇷🇴" },
+            ARS: { name: "Argentine Peso", symbol: "$", flag: "🇦🇷" },
+            VND: { name: "Vietnamese Dong", symbol: "₫", flag: "🇻🇳" },
+            EGP: { name: "Egyptian Pound", symbol: "E£", flag: "🇪🇬" },
+            KWD: { name: "Kuwaiti Dinar", symbol: "د.ك", flag: "🇰🇼" },
+            PKR: { name: "Pakistani Rupee", symbol: "₨", flag: "🇵🇰" },
+            CLF: { name: "Unidad de Fomento", symbol: "UF", flag: "🇨🇱" },
+            PEN: { name: "Peruvian Sol", symbol: "S/.", flag: "🇵🇪" },
+            UAH: { name: "Ukrainian Hryvnia", symbol: "₴", flag: "🇺🇦" },
+            QAR: { name: "Qatari Rial", symbol: "ر.ق", flag: "🇶🇦" },
+            KZT: { name: "Kazakhstani Tenge", symbol: "₸", flag: "🇰🇿" },
+            OMR: { name: "Omani Rial", symbol: "ر.ع.", flag: "🇴🇲" },
+            LBP: { name: "Lebanese Pound", symbol: "ل.ل", flag: "🇱🇧" },
+            NGN: { name: "Nigerian Naira", symbol: "₦", flag: "🇳🇬" },
+            DZD: { name: "Algerian Dinar", symbol: "دج", flag: "🇩🇿" },
+            MAD: { name: "Moroccan Dirham", symbol: "د.م.", flag: "🇲🇦" },
+            IQD: { name: "Iraqi Dinar", symbol: "ع.د", flag: "🇮🇶" },
+            HRK: { name: "Croatian Kuna", symbol: "kn", flag: "🇭🇷" }
+        };
+
+        let exchangeRatesTools = {};
+        let currentBaseTools = "USD";
+        let watchlistTools = ["EUR", "GBP", "JPY", "INR"];
+
+        const currencySelectionOptions = Object.keys(currencyMapData).map(k => ({
+            code: k,
+            name: `${currencyMapData[k].flag} ${k} - ${currencyMapData[k].name}`
+        }));
+
+        bindCustomSelect('currency-from-trigger', "Convert From", currencySelectionOptions, async (val) => {
+            await fetchLiveRatesTools(val);
+            convertCurrency();
+            renderWatchlistTools();
+        });
+
+        bindCustomSelect('currency-to-trigger', "Convert To", currencySelectionOptions, () => {
+            convertCurrency();
+        });
+
+        async function fetchLiveRatesTools(baseCurrency) {
+            let data = null;
+            try {
+                const response = await fetch(`https://open.er-api.com/v6/latest/${baseCurrency}`);
+                if (!response.ok) throw new Error("Primary API network error");
+                const json = await response.json();
+                if (json && json.result === "success") {
+                    data = json;
+                }
+            } catch (err) {
+                console.warn("Primary API failed, attempting Frankfurter fallback...", err);
+            }
+
+            if (!data) {
+                try {
+                    const response = await fetch(`https://api.frankfurter.app/latest?from=${baseCurrency}`);
+                    if (!response.ok) throw new Error("Fallback API network error");
+                    const json = await response.json();
+                    if (json && json.rates) {
+                        data = {
+                            base_code: json.base,
+                            rates: { ...json.rates, [json.base]: 1.0 }
+                        };
+                    }
+                } catch (err) {
+                    console.error("All exchange rate sources failed.", err);
+                    window.showToast("Rates offline. Default values used.");
+                    return null;
+                }
+            }
+
+            if (data) {
+                exchangeRatesTools = data.rates;
+                currentBaseTools = data.base_code;
+                return data;
+            }
+        }
+
+        async function convertCurrency() {
+            if (window.playTouchSound) window.playTouchSound(1);
+            const amount = parseFloat(document.getElementById('currency-input-value').value);
+            const from = document.getElementById('currency-from-trigger').dataset.value;
+            const to = document.getElementById('currency-to-trigger').dataset.value;
+            const resBox = document.getElementById('currency-result');
+
+            if (isNaN(amount) || amount <= 0) {
+                window.showToast("Enter a valid positive amount.");
+                return;
+            }
+
+            if (from !== currentBaseTools) {
+                await fetchLiveRatesTools(from);
+            }
+
+            const rate = exchangeRatesTools[to];
+            if (!rate) {
+                resBox.textContent = "Rate unavailable";
+                return;
+            }
+
+            const finalVal = amount * rate;
+            resBox.textContent = `${amount} ${from} = ${finalVal.toFixed(4)} ${to}`;
+            
+            renderWatchlistTools();
+            if (window.playTouchSound) window.playTouchSound(14);
+        }
+
+        function renderWatchlistTools() {
+            const container = document.getElementById('watchlist-container-tools');
+            if (!container) return;
+            container.innerHTML = '';
+
+            watchlistTools.forEach(code => {
+                if (code === currentBaseTools) return;
+                const rate = exchangeRatesTools[code];
+                if (!rate) return;
+
+                const cur = currencyMapData[code] || { name: code, symbol: '', flag: '🏳️' };
+                const row = document.createElement('div');
+                row.style.display = 'flex';
+                row.style.alignItems = 'center';
+                row.style.justifyContent = 'space-between';
+                row.style.background = 'var(--body-bg)';
+                row.style.padding = '8px 12px';
+                row.style.borderRadius = '12px';
+                row.style.boxShadow = 'var(--card-shadow-micro)';
+                row.style.fontSize = '0.9em';
+
+                row.innerHTML = `
+                    <span style="font-weight: 500;">${cur.flag} <strong>${code}</strong></span>
+                    <span style="color: var(--sub-text-color);">${cur.symbol}${rate.toFixed(4)}</span>
+                    <button class="back-pill-button" onclick="removeFromWatchlistTools('${code}')" style="padding: 4px 8px; border-radius: 8px; font-size: 0.8em; box-shadow: var(--card-shadow-micro); border: none;">
+                        <i class="fa-solid fa-trash" style="font-size: 1em; margin: 0;"></i>
+                    </button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        window.removeFromWatchlistTools = function(code) {
+            watchlistTools = watchlistTools.filter(c => c !== code);
+            renderWatchlistTools();
+            window.showToast(`Removed ${code} from watchlist`);
+        };
+
+        document.getElementById('btn-add-watchlist-tools').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (window.playTouchSound) window.playTouchSound(4);
+            
+            const options = Object.keys(currencyMapData)
+                .filter(code => !watchlistTools.includes(code) && code !== currentBaseTools)
+                .map(code => ({ code, name: `${currencyMapData[code].flag} ${code} - ${currencyMapData[code].name}` }));
+
+            window.openCustomListSelector("Add to Watchlist", options, "", (selected) => {
+                watchlistTools.push(selected.code);
+                renderWatchlistTools();
+                window.showToast(`Added ${selected.code} to watchlist`);
+            });
+        });
+
+        // SCIENTIFIC CALCULATOR UTILITIES
+        let calcVal = "0";
+        const calcScreen = document.getElementById('calculator-output');
+
+        // Fix 5: strict limit of 30 characters on Calculator inputs
+        function appendNumber(num) {
+            if (calcVal.replace(/\s/g, '').length >= 30) {
+                window.showToast("Limit of 30 characters reached.");
+                return;
+            }
+            if (window.playTouchSound) window.playTouchSound(4);
+            if (calcVal === "0" && num !== ".") {
+                calcVal = num;
+            } else {
+                calcVal += num;
+            }
+            calcScreen.textContent = calcVal.replace(/\*/g, "×").replace(/\//g, "÷");
+        }
+
+        function appendOperation(op) {
+            if (calcVal.replace(/\s/g, '').length >= 30) {
+                window.showToast("Limit of 30 characters reached.");
+                return;
+            }
+            if (window.playTouchSound) window.playTouchSound(4);
+            calcVal += ` ${op} `;
+            calcScreen.textContent = calcVal.replace(/\*/g, "×").replace(/\//g, "÷");
+        }
+
+        function clearCalculator() {
+            if (window.playTouchSound) window.playTouchSound(6);
+            calcVal = "0";
+            calcScreen.textContent = calcVal;
+        }
+
+        function deleteLast() {
+            if (window.playTouchSound) window.playTouchSound(6);
+            calcVal = calcVal.trim();
+            calcVal = calcVal.slice(0, -1) || "0";
+            calcScreen.textContent = calcVal.replace(/\*/g, "×").replace(/\//g, "÷");
+        }
+
+        function calculateResult() {
+            if (window.playTouchSound) window.playTouchSound(1);
+            try {
+                const sanitized = calcVal.replace(/[^0-9+\-*/%. ]/g, '');
+                const result = eval(sanitized);
+                calcVal = String(result);
+                calcScreen.textContent = calcVal;
+                if (window.playTouchSound) window.playTouchSound(14);
+            } catch (e) {
+                calcScreen.textContent = "Error";
+                calcVal = "0";
+                if (window.playTouchSound) window.playTouchSound(9);
+            }
+        }
+
+        // GEOMETRY AREA UTILITIES
+        const shapeOptions = [
+            { code: "circle", name: "Circle - Area" },
+            { code: "square", name: "Square - Area" },
+            { code: "triangle", name: "Triangle - Area" }
+        ];
+
+        bindCustomSelect('shape-type-trigger', "Select Shape", shapeOptions, () => {
+            showShapeInputs();
+        });
+
+        function showShapeInputs() {
+            document.getElementById('circle-inputs').style.display = 'none';
+            document.getElementById('square-inputs').style.display = 'none';
+            document.getElementById('triangle-inputs').style.display = 'none';
+
+            const val = document.getElementById('shape-type-trigger').dataset.value;
+            if (val === 'circle') document.getElementById('circle-inputs').style.display = 'block';
+            if (val === 'square') document.getElementById('square-inputs').style.display = 'block';
+            if (val === 'triangle') document.getElementById('triangle-inputs').style.display = 'block';
+        }
+
+        function calculateShapeArea() {
+            if (window.playTouchSound) window.playTouchSound(1);
+            const shape = document.getElementById('shape-type-trigger').dataset.value;
+            const resBox = document.getElementById('shape-result');
+            let result = 0;
+
+            if (shape === 'circle') {
+                const r = parseFloat(document.getElementById('circle-radius').value);
+                if (isNaN(r) || r <= 0) return window.showToast("Enter a valid radius.");
+                result = Math.PI * r * r;
+            } else if (shape === 'square') {
+                const s = parseFloat(document.getElementById('square-side').value);
+                if (isNaN(s) || s <= 0) return window.showToast("Enter a valid side length.");
+                result = s * s;
+            } else if (shape === 'triangle') {
+                const b = parseFloat(document.getElementById('triangle-base').value);
+                const h = parseFloat(document.getElementById('triangle-height').value);
+                if (isNaN(b) || isNaN(h) || b <= 0 || h <= 0) return window.showToast("Enter valid metrics.");
+                result = 0.5 * b * h;
+            }
+
+            resBox.textContent = `Area: ${result.toFixed(4)}`;
+            if (window.playTouchSound) window.playTouchSound(14);
+        }
+
+        // BMI UTILITIES
+        const weightUnitsMap = [
+            { code: "kg", name: "KG" },
+            { code: "lbs", name: "LBS" }
+        ];
+
+        const heightUnitsMap = [
+            { code: "cm", name: "CM" },
+            { code: "inches", name: "Inches" }
+        ];
+
+        bindCustomSelect('bmi-weight-unit-trigger', "Select Unit", weightUnitsMap);
+        bindCustomSelect('bmi-height-unit-trigger', "Select Unit", heightUnitsMap);
+
+        function calculateBMI() {
+            if (window.playTouchSound) window.playTouchSound(1);
+            const w = parseFloat(document.getElementById('bmi-weight').value);
+            const h = parseFloat(document.getElementById('bmi-height').value);
+            const wUnit = document.getElementById('bmi-weight-unit-trigger').dataset.value;
+            const hUnit = document.getElementById('bmi-height-unit-trigger').dataset.value;
+            const resBox = document.getElementById('bmi-result');
+
+            if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) return window.showToast("Enter valid metrics.");
+
+            let wKg = wUnit === 'lbs' ? w * 0.453592 : w;
+            let hM = hUnit === 'inches' ? h * 0.0254 : h / 100;
+
+            const bmi = wKg / (hM * hM);
+            let category = "Normal";
+            if (bmi < 18.5) category = "Underweight";
+            else if (bmi >= 25 && bmi < 29.9) category = "Overweight";
+            else if (bmi >= 30) category = "Obese";
+
+            resBox.textContent = `BMI: ${bmi.toFixed(2)} (${category})`;
+            if (window.playTouchSound) window.playTouchSound(14);
+        }
+
+        // BODY FAT UTILITIES
+        const genderMap = [
+            { code: "male", name: "Male" },
+            { code: "female", name: "Female" }
+        ];
+
+        bindCustomSelect('bodyfat-gender-trigger', "Select Gender", genderMap, (val) => {
+            const hipInput = document.getElementById('bodyfat-hip');
+            if (val === 'female') {
+                hipInput.style.display = 'block';
+            } else {
+                hipInput.style.display = 'none';
+                hipInput.value = '';
+            }
+        });
+
+        bindCustomSelect('bodyfat-weight-unit-trigger', "Select Unit", weightUnitsMap);
+        bindCustomSelect('bodyfat-height-unit-trigger', "Select Unit", heightUnitsMap);
+
+        function calculateBodyFat() {
+            if (window.playTouchSound) window.playTouchSound(1);
+            const g = document.getElementById('bodyfat-gender-trigger').dataset.value;
+            const age = parseFloat(document.getElementById('bodyfat-age').value);
+            const w = parseFloat(document.getElementById('bodyfat-weight').value);
+            const h = parseFloat(document.getElementById('bodyfat-height').value);
+            const neck = parseFloat(document.getElementById('bodyfat-neck').value);
+            const waist = parseFloat(document.getElementById('bodyfat-waist').value);
+            const hip = parseFloat(document.getElementById('bodyfat-hip').value) || 0;
+
+            const wUnit = document.getElementById('bodyfat-weight-unit-trigger').dataset.value;
+            const hUnit = document.getElementById('bodyfat-height-unit-trigger').dataset.value;
+            const resBox = document.getElementById('bodyfat-result');
+
+            if (isNaN(age) || isNaN(w) || isNaN(h) || isNaN(neck) || isNaN(waist)) {
+                return window.showToast("Please fill all required inputs.");
+            }
+
+            let hIn = hUnit === 'cm' ? h / 2.54 : h;
+            let neckIn = hUnit === 'cm' ? neck / 2.54 : neck;
+            let waistIn = hUnit === 'cm' ? waist / 2.54 : waist;
+            let hipIn = hUnit === 'cm' ? hip / 2.54 : hip;
+
+            let fat = 0;
+            if (g === 'male') {
+                fat = 86.010 * Math.log10(waistIn - neckIn) - 70.041 * Math.log10(hIn) + 36.76;
+            } else {
+                fat = 163.205 * Math.log10(waistIn + hipIn - neckIn) - 97.684 * Math.log10(hIn) - 78.387;
+            }
+
+            resBox.textContent = isNaN(fat) ? "Error: Invalid inputs" : `Body Fat: ${fat.toFixed(1)}%`;
+            if (window.playTouchSound) window.playTouchSound(14);
+        }
+
+        // PASSWORD STRENGTH CHECKER
+        const pwdInput = document.getElementById('password-input');
+        const strBar = document.getElementById('strength-bar');
+        const strText = document.getElementById('strength-text');
+        const strSuggestions = document.getElementById('strength-suggestions');
+
+        function hasSequentialCharacters(str) {
+            const lower = str.toLowerCase();
+            for (let i = 0; i < lower.length - 3; i++) {
+                const c1 = lower.charCodeAt(i);
+                const c2 = lower.charCodeAt(i + 1);
+                const c3 = lower.charCodeAt(i + 2);
+                const c4 = lower.charCodeAt(i + 3);
+                
+                // Sequential increasing (e.g. 1234, abcd)
+                if (c2 === c1 + 1 && c3 === c2 + 1 && c4 === c3 + 1) {
+                    if ((c1 >= 97 && c4 <= 122) || (c1 >= 48 && c4 <= 57)) return true;
+                }
+                // Sequential decreasing (e.g. 4321, dcba)
+                if (c2 === c1 - 1 && c3 === c2 - 1 && c4 === c3 - 1) {
+                    if ((c4 >= 97 && c1 <= 122) || (c4 >= 48 && c1 <= 57)) return true;
+                }
+            }
+            return false;
+        }
+
+        pwdInput.addEventListener('input', () => {
+            const pwd = pwdInput.value;
+            let suggestions = [];
+
+            if (pwd.length === 0) {
+                strBar.style.width = "0%";
+                strText.textContent = "";
+                strSuggestions.textContent = "";
+                return;
+            }
+
+            const hasMixedCase = /[a-z]/.test(pwd) && /[A-Z]/.test(pwd);
+            const hasNumbers = /\d/.test(pwd);
+            const hasSymbols = /[^A-Za-z0-9]/.test(pwd);
+            const isSequential = hasSequentialCharacters(pwd);
+
+            let score = 0;
+
+            // NIST compliant length multiplier
+            if (pwd.length >= 14) {
+                score += 3; 
+            } else if (pwd.length >= 10) {
+                score += 2;
+            } else if (pwd.length >= 8) {
+                score += 1;
+            } else {
+                suggestions.push("Make it longer (at least 8 characters).");
+            }
+
+            if (hasMixedCase) score += 1; else suggestions.push("Mix case letters.");
+            if (hasNumbers) score += 1; else suggestions.push("Add numbers.");
+            if (hasSymbols) score += 1; else suggestions.push("Add symbols.");
+
+            // Sequence deduction
+            if (isSequential) {
+                score = Math.max(1, score - 2); 
+                suggestions.push("Avoid consecutive letters/digits (e.g. 1234, abcd).");
+            }
+
+            let level = "Weak";
+            let barClass = "strength-bar weak";
+            let barWidth = "33%";
+
+            if (isSequential) {
+                level = "Weak";
+                barClass = "strength-bar weak";
+                barWidth = "20%";
+            } else if (pwd.length >= 12 && score >= 3) {
+                // Highly lenient towards very long normal passwords
+                if (score >= 5) {
+                    level = "Strong";
+                    barClass = "strength-bar strong";
+                    barWidth = "100%";
+                } else {
+                    level = "Medium";
+                    barClass = "strength-bar medium";
+                    barWidth = "75%";
+                }
+            } else {
+                if (score <= 2) {
+                    level = "Weak";
+                    barClass = "strength-bar weak";
+                    barWidth = "33%";
+                } else if (score === 3 || score === 4) {
+                    level = "Medium";
+                    barClass = "strength-bar medium";
+                    barWidth = "66%";
+                } else if (score >= 5) {
+                    level = "Strong";
+                    barClass = "strength-bar strong";
+                    barWidth = "100%";
+                }
+            }
+
+            strBar.className = barClass;
+            strBar.style.width = barWidth;
+            strText.textContent = level;
+
+            if (level === "Weak") strText.style.color = "var(--strength-weak)";
+            else if (level === "Medium") strText.style.color = "var(--strength-medium)";
+            else if (level === "Strong") strText.style.color = "var(--strength-strong)";
+
+            strSuggestions.textContent = suggestions.join(" ");
+        });
+
+        document.getElementById('toggle-password').addEventListener('click', function() {
+            if (window.playTouchSound) window.playTouchSound(6);
+            const type = pwdInput.type === 'password' ? 'text' : 'password';
+            pwdInput.type = type;
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        // PERIODIC TABLE VIEW SYSTEM
+        function renderPeriodicTable() {
+            const container = document.getElementById('periodic-table-elements');
+            container.innerHTML = '';
+
+            const grid = Array(9).fill(null).map(() => Array(18).fill(null));
+
+            periodicTableData.forEach(element => {
+                let x = element.xpos;
+                let y = element.ypos;
+
+                // Shift Lanthanides (57-71) to row 8, columns 3 to 17
+                if (element.category === 'lanthanide' || element.atomic_number === 57) {
+                    y = 8; x = element.atomic_number - 57 + 3;
+                } 
+                // Shift Actinides (89-103) to row 9, columns 3 to 17
+                else if (element.category === 'actinide' || element.atomic_number === 89) {
+                    y = 9; x = element.atomic_number - 89 + 3;
+                }
+
+                grid[y - 1][x - 1] = element;
+            });
+
+            // Placed connector placeholder blocks at Row 6 Col 3 and Row 7 Col 3
+            grid[5][2] = { placeholder: true, symbol: "57-71", name: "Lanthanides", number: "La-Lu" };
+            grid[6][2] = { placeholder: true, symbol: "89-103", name: "Actinides", number: "Ac-Lr" };
+
+            for (let y = 0; y < grid.length; y++) {
+                for (let x = 0; x < grid[y].length; x++) {
+                    const el = grid[y][x];
+                    if (el) {
+                        const cell = document.createElement('div');
+                        if (el.placeholder) {
+                            cell.className = 'element-box';
+                            // Fix 3: Lanthanides and Actinides placeholder cards back to standard grey/black styling
+                            cell.style.background = 'rgba(255, 255, 255, 0.08)'; 
+                            cell.style.borderColor = 'rgba(255, 255, 255, 0.25)'; 
+                            cell.innerHTML = `
+                                <span class="element-number" style="color: var(--sub-text-color);">${el.number}</span>
+                                <span class="element-symbol" style="color: var(--text-color); font-weight: 800;">${el.symbol}</span>
+                                <span class="element-name" style="color: var(--sub-text-color);">${el.name}</span>
+                            `;
+                        } else {
+                            cell.className = `element-box category-${el.category.replace(/\s/g, '-')}`;
+                            
+                            cell.innerHTML = `
+                                <span class="element-number">${el.atomic_number}</span>
+                                <span class="element-symbol">${el.symbol}</span>
+                                <span class="element-name">${el.name}</span>
+                            `;
+                            cell.onclick = () => {
+                                if (window.playTouchSound) window.playTouchSound(4);
+                                showElementDetails(el);
+                            };
+                        }
+                        container.appendChild(cell);
+                    } else {
+                        const empty = document.createElement('div');
+                        empty.className = 'empty-cell';
+                        container.appendChild(empty);
+                    }
+                }
+            }
+        }
+
+        function showElementDetails(el) {
+            document.getElementById('detail-name').textContent = el.name;
+            document.getElementById('detail-symbol').textContent = el.symbol;
+            document.getElementById('detail-number').textContent = el.atomic_number;
+            document.getElementById('detail-mass').textContent = el.atomic_mass;
+            document.getElementById('detail-category').textContent = el.category;
+            document.getElementById('detail-phase').textContent = el.phase;
+            document.getElementById('detail-density').textContent = el.density || "N/A";
+            document.getElementById('detail-melt').textContent = el.melt || "N/A";
+            document.getElementById('detail-boil').textContent = el.boil || "N/A";
+            document.getElementById('detail-discovered').textContent = el.discovered_by;
+            document.getElementById('detail-summary').textContent = el.summary;
+
+            document.getElementById('element-details-popup').classList.add('show');
+            document.getElementById('element-details-popup').style.display = 'flex';
+        }
+
+        function hideElementDetailsPopup() {
+            if (window.playTouchSound) window.playTouchSound(2);
+            document.getElementById('element-details-popup').classList.remove('show');
+            document.getElementById('element-details-popup').style.display = 'none';
+        }
+
+        function hidePeriodicTableModal() {
+            if (window.playTouchSound) window.playTouchSound(2);
+            document.getElementById('periodic-table-modal').classList.remove('show');
+            document.getElementById('periodic-table-modal').style.display = 'none';
+        }
+
+        // Initialize App Tray
+        window.addEventListener('DOMContentLoaded', async () => {
+            applyComponentSkeletons();
+            populateUnitOptions();
+
+            // Fire live base rates sync
+            await fetchLiveRatesTools('USD');
+            renderWatchlistTools();
+
+            setTimeout(() => {
+                renderToolsTray();
+            }, 1200);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LearnEra - Maintenance Screen</title>
+  
+  <!-- Poppins Google Font Integration matching LearnEra exactly -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Lottie Player Integration -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  <!-- GSAP Core for ReactBits Shiny Text Effect -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <!-- Firebase SDK Compat libraries matching LearnEra configuration -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+  <style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: 'Poppins', sans-serif !important;
+  }
+
+  :root {
+      /* Premium LearnEra Neumorphism Default Light Theme styles */
+      --body-bg: #e6edf7; 
+      --neu-shadow-light: #ffffff;
+      --neu-shadow-dark: #c8d3e4;
+      
+      --text-color: #8A2BE2; 
+      --sub-text-color: #7a8b9e;
+      --h1-color-part1: #a158e6;
+      --accent-color: #FF69B4;
+      --btn-grad-start: #8A2BE2;
+      --btn-grad-end: #FF69B4;
+
+      --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+      --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+      --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+      --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+  }
+
+  /* Locked layout wrapper to fix background scrolling */
+  body {
+    background-color: var(--body-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    height: 100dvh;
+    width: 100vw;
+    overflow: hidden; /* Fixes browser bounce and scrolls */
+    padding: 20px;
+    position: relative;
+  }
+
+  /* ReactBits ShinyText Component Styling */
+  .shiny-text {
+      display: inline-block;
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
+      font-weight: 800;
+      cursor: default;
+      text-align: center;
+      line-height: 1.2;
+      margin-bottom: 12px;
+  }
+
+  /* 2x Smaller Logo wrapper sizes */
+  .shining-logo-wrapper {
+      position: relative;
+      overflow: hidden;
+      border-radius: 6px; /* 2x smaller than 12px */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: var(--card-shadow-sm); 
+      padding: 4px; /* 2x smaller than 8px */
+      background: var(--body-bg);
+      width: 24px; /* 2x smaller than 48px */
+      height: 24px; /* 2x smaller than 48px */
+      flex-shrink: 0;
+  }
+
+  .shining-logo-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: inherit; /* Perfect matching curves */
+  }
+
+  /* Main Card Layout with inner scrolling protection */
+  .maintenance-container {
+      width: 100%;
+      max-width: 450px;
+      max-height: 90vh; /* Keeps card safe on smaller screen heights */
+      background: var(--body-bg);
+      box-shadow: var(--card-shadow);
+      border-radius: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 25px;
+      position: relative;
+      overflow-y: auto; /* Internal safe scroll only if content exceeds viewport */
+      scrollbar-width: none; /* Hide standard Firefox scrollbars */
+  }
+
+  .maintenance-container::-webkit-scrollbar {
+      display: none; /* Hide Chrome/Safari scrollbars */
+  }
+
+  /* Fixed Text Width Constraints to prevent card overflow */
+  .maintenance-container * {
+      max-width: 100%;
+      word-wrap: break-word;
+      word-break: break-word;
+      overflow-wrap: break-word;
+  }
+
+  /* Top Left Card Header for Logo and text placement */
+  .card-header-logo {
+      align-self: flex-start;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 6px; /* 2x smaller than 12px */
+  }
+
+  .maintenance-lottie {
+      width: 160px;
+      height: 160px;
+      margin-bottom: 5px;
+      filter: drop-shadow(4px 4px 8px var(--neu-shadow-dark));
+      flex-shrink: 0;
+  }
+
+  .maintenance-subtitle {
+      font-size: 0.95em;
+      font-weight: 600;
+      color: var(--accent-color);
+      margin-bottom: 12px;
+      line-height: 1.4;
+  }
+
+  .maintenance-description {
+      font-size: 0.85em;
+      font-weight: 400;
+      color: var(--sub-text-color);
+      line-height: 1.5;
+      margin-bottom: 20px;
+  }
+
+  /* Neumorphic highlights container */
+  .highlights-container {
+      width: 100%;
+      background: var(--body-bg);
+      border-radius: 20px;
+      padding: 15px 20px;
+      margin-bottom: 25px;
+      box-shadow: var(--card-shadow-inset);
+      border: 1px solid rgba(255,255,255,0.2);
+      text-align: left;
+  }
+
+  .highlights-title {
+      font-size: 0.9em;
+      font-weight: 700;
+      color: var(--text-color);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+  }
+
+  .highlights-list {
+      list-style: none;
+  }
+
+  .highlights-list li {
+      font-size: 0.8em;
+      font-weight: 500;
+      color: var(--sub-text-color);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+  }
+
+  .highlights-list li:last-child {
+      margin-bottom: 0;
+  }
+
+  /* SVG Icons inline colors */
+  .svg-icon {
+      flex-shrink: 0;
+  }
+
+  /* Neumorphic Accent Button */
+  .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 24px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--btn-grad-start), var(--btn-grad-end));
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      box-shadow: 4px 4px 10px var(--neu-shadow-dark), -4px -4px 10px var(--neu-shadow-light);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      text-decoration: none;
+      flex-shrink: 0;
+  }
+
+  .action-btn:active {
+      transform: scale(0.96);
+      box-shadow: var(--card-shadow-inset);
+  }
+
+  .version-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--sub-text-color);
+      margin-top: 18px;
+      opacity: 0.8;
+      flex-shrink: 0;
+  }
+
+  /* Loader Backdrop Overlay (Locked Screen during transition) */
+  .loading-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: var(--body-bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+  }
+  .loading-overlay.hide {
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
+  }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Animation Overlay (Keeps screen fully hidden till ready) -->
+  <div class="loading-overlay" id="loadingOverlay">
+      <lottie-player src="https://ik.imagekit.io/lssafvcmr/Others/Loading.json" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
+  </div>
+
+  <!-- Main Maintenance Card -->
+  <div class="maintenance-container">
+      
+      <!-- Top Left Logo inside card with brand name -->
+      <div class="card-header-logo">
+          <div class="shining-logo-wrapper" style="position: relative;">
+              <img src="https://i.ibb.co/bgWVZn48/LearnEra-Logo.webp" alt="LearnEra Logo">
+              <div id="logoOverlayShine" style="position: absolute; top:0; left:0; width:100%; height:100%; border-radius: inherit; pointer-events:none;"></div>
+          </div>
+          <!-- 2x smaller font size (0.8rem) & exact matching 800 weight font style -->
+          <span id="logoText" class="shiny-text" style="font-size: 0.8rem; margin-bottom: 0; font-weight: 800 !important; font-family: 'Poppins', sans-serif !important;">LearnEra</span>
+      </div>
+      
+      <!-- Maintenance Interactive Lottie Player -->
+      <lottie-player class="maintenance-lottie" 
+                     src="https://assets4.lottiefiles.com/packages/lf20_0yfsb3a1.json" 
+                     background="transparent" 
+                     speed="1" 
+                     loop 
+                     autoplay>
+      </lottie-player>
+
+      <!-- ReactBits ShinyText Title component -->
+      <span id="mTitle" class="shiny-text">Under Maintenance</span>
+
+      <!-- Subtitle Message (subtitle) -->
+      <div id="mSubtitle" class="maintenance-subtitle">Loading status...</div>
+
+      <!-- Detail Paragraph (description) -->
+      <div id="mDesc" class="maintenance-description">
+          Connecting securely to servers...
+      </div>
+
+      <!-- Neumorphic Highlights list of changes (highlights) -->
+      <div class="highlights-container">
+          <div class="highlights-title" id="mListTitle">
+              <!-- Inline SVG replaces FontAwesome for perfect offline/preview execution -->
+              <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-color);"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+              What's coming up:
+          </div>
+          <ul class="highlights-list" id="mList">
+              <!-- Dynamically populated from database highlights node -->
+          </ul>
+      </div>
+
+      <!-- Action Button to download APK (apkLink) -->
+      <a href="#" id="mBtn" class="action-btn" target="_blank">
+          <!-- Inline SVG download icon -->
+          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Get Latest Version
+      </a>
+
+      <!-- Version details tag (versionCode) -->
+      <div class="version-tag" id="mVersion">Version Loading...</div>
+
+  </div>
+
+  <script>
+    // Firebase credentials configuration matching LearnEra setup
+    const firebaseConfig = {
+      apiKey: "AIzaSyBWOdk2_NJntQ4Pob7_tN6kb1W5rMy-tcw",
+      authDomain: "learnera-d6309.firebaseapp.com",
+      projectId: "learnera-d6309",
+      messagingSenderId: "752970675909",
+      appId: "1:752970675909:web:9c4513809ca51ea60122ac",
+      databaseURL: "https://learnera-d6309-default-rtdb.firebaseio.com"
+    };
+
+    // Initialize Firebase Services
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Track state of GSAP timeline animation to avoid memory leaks
+    let shinyTextTimeline = null;
+
+    // ReactBits ShinyText Initializer with a dual-background sweep setup
+    function applyShinyTextEffect(text) {
+        const el = document.getElementById('mTitle');
+        const logoText = document.getElementById('logoText');
+        const logoOverlayShine = document.getElementById('logoOverlayShine');
+        if (!el) return;
+
+        // Reset any existing animations
+        if (shinyTextTimeline) {
+            shinyTextTimeline.kill();
+        }
+
+        el.textContent = text;
+
+        // MULTIPLE BACKGROUNDS STYLE:
+        // Top Layer: Low-opacity white sweep shine (0.50 opacity)
+        // Bottom Layer: Static brand color gradient
+        const layeredGradientStyle = `
+            linear-gradient(120deg, transparent 35%, rgba(255, 255, 255, 0.50) 50%, transparent 65%),
+            linear-gradient(135deg, #8A2BE2 0%, #a158e6 50%, #DA70D6 100%)
+        `;
+
+        // Apply background structure to both 'Under Maintenance' and 'LearnEra' branding texts
+        [el, logoText].forEach(item => {
+            if (item) {
+                item.style.backgroundImage = layeredGradientStyle;
+                item.style.backgroundSize = '200% 100%, 100% 100%';
+                item.style.backgroundRepeat = 'no-repeat, no-repeat';
+                item.style.webkitBackgroundClip = 'text';
+                item.style.backgroundClip = 'text';
+                item.style.webkitTextFillColor = 'transparent';
+            }
+        });
+
+        // Set matching sweep style directly to the logo picture mask overlay
+        if (logoOverlayShine) {
+            logoOverlayShine.style.backgroundImage = `linear-gradient(120deg, transparent 35%, rgba(255, 255, 255, 0.60) 50%, transparent 65%)`;
+            logoOverlayShine.style.backgroundSize = '200% 100%';
+            logoOverlayShine.style.backgroundRepeat = 'no-repeat';
+        }
+
+        // Initialize synchronized GSAP timeline loop
+        shinyTextTimeline = gsap.timeline({ repeat: -1 });
+
+        // Sweep the text shines
+        shinyTextTimeline.fromTo([el, logoText], 
+            { backgroundPosition: '200% center, 0% 0%' },
+            { backgroundPosition: '-200% center, 0% 0%', duration: 3, ease: "power1.inOut" },
+            0
+        );
+
+        // Sweep the logo picture shine simultaneously
+        if (logoOverlayShine) {
+            shinyTextTimeline.fromTo(logoOverlayShine,
+                { backgroundPosition: '200% center' },
+                { backgroundPosition: '-200% center', duration: 3, ease: "power1.inOut" },
+                0
+            );
+        }
+    }
+
+    // Firebase real-time subscription matching maintenance schema
+    function subscribeToMaintenanceData() {
+        const maintenanceRef = database.ref('maintenance');
+        
+        maintenanceRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                // 1. Populate screen title with ReactBits Shiny Text
+                if (data.title) {
+                    applyShinyTextEffect(data.title);
+                }
+
+                // 2. Populate screen subtitle
+                if (data.subtitle) {
+                    document.getElementById('mSubtitle').textContent = data.subtitle;
+                }
+
+                // 3. Populate screen description
+                if (data.description) {
+                    document.getElementById('mDesc').textContent = data.description;
+                }
+
+                // 4. Handle Firebase Highlights array / map representation using inline check SVG
+                const listContainer = document.getElementById('mList');
+                listContainer.innerHTML = '';
+                if (data.highlights) {
+                    const highlightsArray = Array.isArray(data.highlights) 
+                        ? data.highlights 
+                        : Object.values(data.highlights);
+
+                    highlightsArray.forEach(item => {
+                        if (item) {
+                            const li = document.createElement('li');
+                            li.innerHTML = `
+                                <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-color);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                ${item}
+                            `;
+                            listContainer.appendChild(li);
+                        }
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-color);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        Essential performance improvements
+                    `;
+                    listContainer.appendChild(li);
+                }
+
+                // 5. Handle APK Link redirection
+                if (data.apkLink) {
+                    document.getElementById('mBtn').href = data.apkLink;
+                    document.getElementById('mBtn').style.display = 'inline-flex';
+                } else {
+                    document.getElementById('mBtn').style.display = 'none';
+                }
+
+                // 6. Handle Version Code display format
+                if (data.versionCode !== undefined) {
+                    document.getElementById('mVersion').textContent = `Version Code: ${data.versionCode}`;
+                }
+
+                // Safety Delay to let DOM repaint settle cleanly, then fade out loader
+                setTimeout(() => {
+                    document.getElementById('loadingOverlay').classList.add('hide');
+                }, 400);
+            }
+        }, (error) => {
+            console.error("Database connection failed: ", error);
+            document.getElementById('mDesc').textContent = "Connection issue. Please verify your connection status.";
+            document.getElementById('loadingOverlay').classList.add('hide');
+        });
+    }
+
+    // Launch Firebase subscriber loop once ready
+    window.addEventListener('DOMContentLoaded', () => {
+        subscribeToMaintenanceData();
+    });
+  </script>
+</body>
+</html>

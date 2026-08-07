@@ -1,0 +1,3255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LearnEra - SignUp/Login</title>
+    
+    <!-- Google Fonts Preconnect & Imports (Dancing Script added for splash cursive brand) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Poppins:wght@300;400;500;600;700;800&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- Lottie Player CDN for animations -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+    <!-- GSAP + TextPlugin for highlight typewriter effect -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
+
+    <!-- Layout: top-space only -->
+    <script>
+        (function() {
+            try {
+                const topSp = localStorage.getItem('appTopSpace') || '5';
+                document.documentElement.style.setProperty('--top-space', topSp + 'vh');
+            } catch (e) {
+                document.documentElement.style.setProperty('--top-space', '5vh');
+            }
+        })();
+    </script>
+
+    <style>
+        /* Core Variable Definitions mirrored 1:1 from LearnEra.html */
+        :root {
+            --body-bg: #e6edf7; 
+            --neu-shadow-light: #ffffff;
+            --neu-shadow-dark: #c8d3e4;
+            
+            --text-color: #8A2BE2; 
+            --sub-text-color: #7a8b9e;
+            --h1-color-part1: #a158e6;
+            --gradient-btn-bg: var(--body-bg);
+            
+            --card-bg-opacity: var(--body-bg);
+            --pink-card-text: #FF1493;
+            --blue-card-text: #1E90FF;
+            --purple-card-text: #8A2BE2;
+
+            --neon-pink: #ff00ff;
+            --neon-purple: #8a2be2;
+            --neon-blue: #00ffff;
+            --neon-pink-rgb: 255, 0, 255;
+            --neon-purple-rgb: 138, 43, 226;
+            --neon-blue-rgb: 0, 255, 255;
+
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+            --settings-shadow-sharp: 4px 4px 6px var(--neu-shadow-dark), -4px -4px 6px var(--neu-shadow-light);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+            --top-space: 5vh;
+        }
+
+        /* Fully remove blue selection highlighting */
+        *::selection {
+            background: transparent !important;
+            color: inherit;
+        }
+        *::-moz-selection {
+            background: transparent !important;
+            color: inherit;
+        }
+
+        input::selection,
+        textarea::selection,
+        select::selection {
+            background: transparent !important;
+            color: transparent !important;
+        }
+
+        input::-moz-selection,
+        textarea::-moz-selection,
+        select::-moz-selection {
+            background: transparent !important;
+            color: transparent !important;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none; 
+            -ms-user-select: none; 
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            background-color: var(--body-bg);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            overscroll-behavior: none;
+        }
+
+        /* Responsive Desktop Card constraints */
+        .auth-container {
+            width: 100%;
+            max-width: 550px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: calc(var(--top-space) + 15px);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 40px;
+            height: 100%;
+            max-height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            justify-content: flex-start;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Neumorphic Grouping / Card Layout */
+        .settings-group { 
+            background: var(--body-bg); 
+            border-radius: 24px; 
+            padding: 30px 25px; 
+            width: 100%; 
+            margin-bottom: 25px; 
+            box-shadow: var(--settings-shadow-inset-sharp); 
+            border: 1px solid rgba(255,255,255,0.3); 
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); 
+        }
+
+        .settings-group-title { 
+            color: var(--text-color); 
+            font-size: 1.3em; 
+            font-weight: 700; 
+            margin-bottom: 25px; 
+            text-align: center;
+            opacity: 0.95;
+            background: linear-gradient(135deg, #8A2BE2, #a158e6, #DA70D6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        /* Standardized Input Styling with Inset Neumorphic Shadow & Focus State */
+        .input-group {
+            position: relative;
+            margin-bottom: 22px;
+            width: 100%;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--body-bg);
+            border: 1.5px solid transparent;
+            border-radius: 16px;
+            color: var(--text-color);
+            font-size: 0.95em;
+            outline: none;
+            box-shadow: var(--card-shadow-micro);
+            transition: all 0.3s ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        /* Focused input: micro-thin gradient outline */
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            box-shadow: var(--card-shadow-inset);
+        }
+        
+        .input-group::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            padding: 1px;
+            background: linear-gradient(135deg, #FF69B4, #8A2BE2);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+                    mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .input-group:focus-within::after { opacity: 1; }
+
+        .input-group select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238A2BE2'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 20px;
+            padding-right: 45px;
+        }
+
+        /* Custom Inset Items */
+        .sharp-inner-item {
+            box-shadow: var(--card-shadow-micro) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            border-radius: 12px !important;
+            background: var(--body-bg) !important;
+            margin-bottom: 8px;
+            padding: 10px 14px;
+            font-size: 0.9em;
+            font-weight: 500;
+            color: var(--text-color);
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            display: block;
+            outline: none;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .sharp-inner-item:active {
+            box-shadow: var(--card-shadow-inset) !important;
+            transform: scale(0.98);
+        }
+
+        /* Standardized header Back Button */
+        .back-button {
+            position: relative; 
+            background: var(--body-bg); 
+            color: var(--text-color); 
+            border: 2px solid var(--body-bg); 
+            border-radius: 16px; 
+            padding: 10px 14px; 
+            cursor: pointer; 
+            box-shadow: var(--card-shadow-micro), inset 1px 1px 2px rgba(255,255,255,0.7); 
+            z-index: 70; 
+            transition: opacity 0.4s ease, transform 0.4s ease, box-shadow 0.3s ease; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 5px; 
+            margin-left: 0;
+            outline: none;
+            width: auto;
+            height: auto;
+        }
+        .back-button:active {
+            transform: scale(0.95);
+            box-shadow: inset 2px 2px 4px var(--neu-shadow-dark) !important;
+        }
+
+        /* Gradient buttons with glowing hover effect */
+        .glow-on-hover {
+            --border-radius: 16px;
+            background: linear-gradient(135deg, #FF69B4 0%, #8A2BE2 50%, #1E90FF 100%) !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            width: 100%;
+            height: 52px;
+            position: relative;
+            z-index: 0;
+            font-weight: 600;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 6px 6px 14px var(--neu-shadow-dark), -6px -6px 14px var(--neu-shadow-light), inset 1px 1px 2px rgba(255,255,255,0.25) !important;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+
+        .glow-on-hover::before {
+            content: '';
+            background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+            position: absolute;
+            top: -0.75px;
+            left: -0.75px;
+            background-size: 400%;
+            z-index: -1;
+            filter: blur(1.5px);
+            width: calc(100% + 1.5px);
+            height: calc(100% + 1.5px);
+            border-radius: 16px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .glow-on-hover:hover::before {
+            animation: glowing 20s linear infinite;
+            opacity: 1;
+        }
+
+        .glow-on-hover::after {
+            z-index: -1;
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FF69B4 0%, #8A2BE2 100%);
+            left: 0;
+            top: 0;
+            border-radius: 16px;
+            transition: opacity 0.3s ease;
+        }
+
+        .glow-on-hover:hover::after {
+            opacity: 0.9;
+        }
+
+        @keyframes glowing {
+            0% { background-position: 0 0; }
+            50% { background-position: 400% 0; }
+            100% { background-position: 0 0; }
+        }
+
+        .glow-on-hover:active {
+            box-shadow: inset 4px 4px 10px rgba(0,0,0,0.25), inset -3px -3px 8px rgba(255,255,255,0.15) !important;
+            transform: scale(0.98);
+        }
+
+        /* Slide layout for panel view */
+        .form-view-panel {
+            display: none !important;
+            width: 100%;
+        }
+        .form-view-panel.active {
+            display: block !important;
+            animation: panelZoomIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            transform-origin: 50% 50%;
+        }
+        .form-view-panel.active.slide-back {
+            animation: panelZoomIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes panelZoomIn {
+            0%   { transform: scale(0.96); opacity: 0; filter: blur(6px); }
+            100% { transform: scale(1);    opacity: 1; filter: blur(0); }
+        }
+        @keyframes panelSlideIn {
+            0% { transform: translateX(40px); opacity: 0; filter: blur(6px); }
+            100% { transform: translateX(0); opacity: 1; filter: blur(0); }
+        }
+
+        .signup-step-section.step-anim-in {
+            animation: panelSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .auth-container.onb-zoom-in {
+            animation: panelZoomIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        /* Step Progress Indicator Bar */
+        .step-indicator-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 30px;
+            padding: 0 10px;
+            position: relative;
+        }
+        .step-line-progress {
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 4px;
+            background: var(--neu-shadow-dark);
+            z-index: 1;
+            transform: translateY(-50%);
+            border-radius: 2px;
+        }
+        .step-line-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #FF69B4, #8A2BE2);
+            transition: width 0.4s ease;
+            border-radius: inherit;
+        }
+        .step-dot {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--body-bg);
+            background-clip: border-box;
+            background-origin: border-box;
+            border: 2px solid var(--neu-shadow-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--sub-text-color);
+            z-index: 2;
+            box-shadow: var(--card-shadow-micro);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .step-dot.active {
+            border: 2px solid transparent;
+            background-image: linear-gradient(135deg, #FF69B4, #8A2BE2);
+            background-clip: border-box;
+            background-origin: border-box;
+            color: #ffffff;
+            box-shadow: var(--card-shadow-micro), 0 0 10px rgba(138, 43, 226, 0.45);
+        }
+        .step-dot.completed {
+            border: 2px solid transparent;
+            background-image: linear-gradient(135deg, #FF69B4, #8A2BE2);
+            background-clip: border-box;
+            background-origin: border-box;
+            color: #ffffff;
+            box-shadow: var(--card-shadow-micro);
+        }
+
+        /* Choice Avatar Bubble */
+        .avatar-circle-display {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: var(--body-bg);
+            box-shadow: var(--card-shadow-inset);
+            border: 4px solid var(--body-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.3s;
+        }
+        .avatar-circle-display:active {
+            transform: scale(0.95);
+        }
+        .avatar-circle-display img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .avatar-circle-display svg {
+            width: 60%;
+            height: 60%;
+            fill: var(--text-color);
+        }
+
+        /* Checkbox for T&C */
+        .terms-checkbox-custom {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--body-bg);
+            box-shadow: 3px 3px 6px var(--neu-shadow-dark), -3px -3px 6px var(--neu-shadow-light);
+            cursor: pointer;
+            position: relative;
+            outline: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: inline-block;
+            vertical-align: middle;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+        }
+        .terms-checkbox-custom:checked {
+            box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+            background: var(--body-bg);
+        }
+        .terms-checkbox-custom::after {
+            content: "\f00c";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            color: var(--text-color);
+            font-size: 11px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0.85;
+        }
+        .terms-checkbox-custom:checked::after {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Notifier Toast styles */
+        .notifier {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: var(--card-shadow);
+            z-index: 99999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease;
+            width: auto !important;
+            max-width: 96% !important;
+            box-sizing: border-box !important;
+        }
+        .notifier.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(10px);
+        }
+
+        /* Custom Alert modal */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.5) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 25000;
+        }
+        .custom-modal-overlay.show {
+            display: flex !important;
+        }
+        .custom-modal {
+            background: var(--body-bg);
+            border-radius: 24px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: none !important; 
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            width: 90%;
+            max-width: 350px;
+        }
+
+        /* Avatar Popup */
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+            justify-content: center;
+            align-items: center;
+        }
+        .avatar-card-item {
+            cursor: pointer;
+            padding: 6px;
+            aspect-ratio: 1 / 1;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow-micro);
+            background: var(--gradient-btn-bg);
+            border: none;
+            transition: transform 0.3s ease, box-shadow 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            opacity: 0.85;
+        }
+        .avatar-card-item:active {
+            transform: scale(0.95);
+            box-shadow: var(--card-shadow-inset) !important;
+        }
+        .avatar-card-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+            display: block;
+        }
+
+        /* Onboarding */
+        #onboardingContainer {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--body-bg);
+            z-index: 25000;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            overflow: hidden;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        #onboardingContainer.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .onboarding-slider {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+        .onboarding-slide {
+            flex: 0 0 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            position: relative;
+            height: 100vh;
+        }
+        .onboarding-slide h3 {
+            font-size: 1.6em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #FF69B4, #8A2BE2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+        .onboarding-slide p {
+            font-size: 0.85em;
+            line-height: 1.6;
+            max-width: 600px;
+            color: var(--sub-text-color);
+            margin-bottom: 20px;
+        }
+        .illustration-placeholder {
+            width: 96%;
+            max-width: 520px;
+            aspect-ratio: 1 / 1;
+            height: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            overflow: hidden;
+            position: relative;
+            outline: none !important;
+            border: 0 !important;
+            background: transparent !important;
+            -webkit-tap-highlight-color: transparent;
+        }
+        @media (min-width: 768px) {
+            .illustration-placeholder { max-width: 420px; }
+        }
+        .illustration-placeholder video,
+        .illustration-placeholder video:focus,
+        .illustration-placeholder video:focus-visible,
+        .illustration-placeholder video:active,
+        .illustration-placeholder video:hover {
+            outline: none !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+        .illustration-placeholder video::-webkit-media-controls { display: none !important; }
+
+        .onboarding-navigation {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            height: 160px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 20px 24px 20px;
+            background: transparent;
+            box-sizing: border-box;
+        }
+        .onboarding-next-btn {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF69B4, #8A2BE2);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            box-shadow: 0 5px 15px rgba(138,43,226, 0.4), 6px 6px 14px var(--neu-shadow-dark), -6px -6px 14px var(--neu-shadow-light);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: absolute;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%);
+            z-index: 20;
+        }
+        .onboarding-next-btn:active {
+            transform: translateX(-50%) scale(0.9);
+        }
+        .onboarding-next-btn::before {
+            content: "";
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            padding: 3px;
+            background: conic-gradient(from 0deg, transparent 0%, #ffe7ff 25%, transparent 55%, #f4b1fd 80%, transparent 100%);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+                    mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            animation: onbNextSpin 1.2s linear infinite;
+            animation-play-state: paused;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .onboarding-next-btn.is-hover::before {
+            opacity: 1;
+            animation-play-state: running;
+        }
+        .onb-next-arrow {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+        }
+        .onb-next-arrow div {
+            position: relative;
+            width: 22px;
+            height: 3px;
+            border-radius: 2px;
+            background: linear-gradient(to bottom, #ffe7ff, #f4b1fd);
+            box-shadow: -2px 2px 5px rgba(94, 43, 131, 0.6);
+            transform: scale(0.9);
+        }
+        .onb-next-arrow div::before,
+        .onb-next-arrow div::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            width: 12px;
+            height: 3px;
+            border-radius: 15px;
+            transform-origin: center right;
+            transition: transform 0.3s ease;
+        }
+        .onb-next-arrow div::before {
+            top: 0;
+            transform: rotate(44deg);
+            background: linear-gradient(to bottom, #ffe7ff, #f4b1fd);
+            box-shadow: 1px -2px 3px -1px rgba(94, 43, 131, 0.55);
+        }
+        .onb-next-arrow div::after {
+            bottom: 0;
+            transform: rotate(-44deg);
+            background: linear-gradient(200deg, #ffe7ff, #f4b1fd);
+            box-shadow: -2px 2px 3px 0 rgba(94, 43, 131, 0.55);
+        }
+        .onboarding-next-btn.is-hover .onb-next-arrow div {
+            animation: onbSwingArrow 1s ease-in-out infinite;
+        }
+        .onboarding-next-btn.is-hover .onb-next-arrow div::before {
+            animation: onbRotArrow1 1s linear infinite;
+        }
+        .onboarding-next-btn.is-hover .onb-next-arrow div::after {
+            animation: onbRotArrow2 1s linear infinite;
+        }
+        @keyframes onbNextSpin { to { transform: rotate(360deg); } }
+        @keyframes onbSwingArrow { 50% { transform: translateX(5px) scale(0.9); } }
+        @keyframes onbRotArrow1 { 50% { transform: rotate(30deg); } }
+        @keyframes onbRotArrow2 { 50% { transform: rotate(-30deg); } }
+        
+        .onboarding-dots {
+            display: flex;
+            gap: 10px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 100px;
+        }
+        .onboarding-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--neu-shadow-dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .onboarding-dot.active {
+            background: linear-gradient(135deg, #FF69B4, #8A2BE2);
+            transform: scale(1.2);
+        }
+
+        /* App Loading Overlay */
+        #appLoadingOverlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: var(--body-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 30000;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        #appLoadingOverlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Full-screen T&C Arrangement */
+        .full-screen-arrangement {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: var(--body-bg);
+            z-index: 24000;
+            display: none;
+            flex-direction: column;
+        }
+        .full-screen-arrangement .header-bar {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: calc(var(--top-space) + 55px);
+            padding: calc(var(--top-space) + 8px) 18px 8px 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--body-bg);
+            z-index: 5;
+            box-shadow: var(--card-shadow-micro) !important;
+        }
+        .full-screen-arrangement .back-button-container {
+            flex-shrink: 0;
+        }
+        .full-screen-arrangement .header-title-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            padding-right: 50px;
+        }
+        .full-screen-arrangement .header-title {
+            font-size: 1.15em;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(135deg, #8A2BE2, #a158e6, #DA70D6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+        .full-screen-arrangement .theme-content-area {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+        }
+
+        /* Optional Suffix styling */
+        .mobile-optional-wrap,
+        .referral-optional-wrap { position: relative; }
+        .mobile-optional-wrap::before,
+        .referral-optional-wrap::before {
+            content: '(Optional)';
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.75em;
+            font-weight: 600;
+            color: var(--sub-text-color);
+            pointer-events: none;
+            opacity: 0.75;
+            z-index: 12;
+        }
+
+        .input-group input#signupDOB,
+        .input-group input#signupDOB:hover,
+        .input-group input#signupDOB:focus,
+        .input-group input#signupDOB:active {
+            box-shadow: var(--card-shadow-micro) !important;
+            background: var(--body-bg) !important;
+            border: 1.5px solid transparent !important;
+            background-image: none !important;
+        }
+
+        @keyframes onb-fade-blur-in {
+            0%   { opacity: 0; filter: blur(10px); transform: translateY(10px); }
+            100% { opacity: 1; filter: blur(0);    transform: translateY(0);    }
+        }
+        .onboarding-slide.active-slide h3,
+        .onboarding-slide.active-slide .onb-cta {
+            animation: onb-fade-blur-in 0.5s ease-out both;
+        }
+        .onboarding-slide.active-slide h3        { animation-delay: 0.15s; }
+        .onboarding-slide.active-slide .onb-cta  { animation-delay: 0.35s; }
+
+        .onboarding-slide.active-slide .illustration-placeholder {
+            animation: onb-fade-in-only 0.5s ease-out both !important;
+            filter: none !important;
+        }
+        @keyframes onb-fade-in-only {
+            0%   { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .illustration-placeholder,
+        .illustration-placeholder * {
+            outline: none !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+        .illustration-placeholder video {
+            outline: none !important;
+            border: 0 !important;
+            background: transparent !important;
+            filter: none !important;
+        }
+
+        /* Password toggling aesthetics */
+        .password-toggle-wrapper {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-color);
+            z-index: 12;
+            opacity: 0.8;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        .password-toggle-wrapper:active {
+            transform: translateY(-50%) scale(0.85);
+        }
+        .password-toggle-wrapper i {
+            font-size: 18px;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        /* SPLASH SCREEN & EXACT PASTED LOGO STYLING */
+        #learneraSplash {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--body-bg);
+            z-index: 40000;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            opacity: 1;
+            transition: opacity 0.45s ease;
+        }
+        #learneraSplash.splash-hidden { opacity: 0; pointer-events: none; }
+        #learneraSplash .center-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: translateY(-25px);
+        }
+
+        #learneraSplash .logo-box {
+            position: relative;
+            width: 125px;
+            height: 125px;
+            background: var(--body-bg);
+            border-radius: 28px;
+            border: 4px solid var(--body-bg);
+            box-shadow: var(--card-shadow), inset 2px 2px 4px rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0px;
+            overflow: hidden;
+            padding: 5px;
+        }
+
+        #learneraSplash .logo-box.skeleton {
+            background: linear-gradient(90deg, var(--body-bg) 0%, rgba(255, 255, 255, 0.8) 50%, var(--body-bg) 100%);
+            background-size: 200% 100%;
+            animation: logoSkeletonShimmer 1.5s infinite linear;
+        }
+
+        #learneraSplash .logo-box.skeleton img {
+            opacity: 0;
+        }
+
+        #learneraSplash .logo-box:not(.skeleton) img {
+            opacity: 1;
+            transition: opacity 0.4s ease;
+        }
+
+        #learneraSplash .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 18px;
+            z-index: 2;
+        }
+
+        @keyframes logoSkeletonShimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        #learneraSplash .logo-box::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg);
+            z-index: 3;
+            opacity: 0;
+        }
+        #learneraSplash .logo-box.shining::after {
+            opacity: 1;
+            animation: splashShineSweep 4.2s infinite ease-in-out;
+        }
+        @keyframes splashShineSweep {
+            0% { left: -100%; }
+            25% { left: 200%; }
+            100% { left: 200%; }
+        }
+        #learneraSplash .brand-text-cursive {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.8em;
+            font-weight: 700;
+            line-height: 1.1;
+            padding: 0 10px;
+            margin-top: 14px;
+            text-align: center;
+            cursor: default;
+            background: linear-gradient(135deg, #8A2BE2 0%, #a158e6 50%, #FF69B4 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        #learneraSplash .bottom-loader-section {
+            position: absolute;
+            bottom: 45px;
+            width: 100%;
+            padding: 0 35px;
+            display: flex;
+            justify-content: center;
+        }
+        #learneraSplash .neu-loading-bar-container {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            height: 28px;
+            background: var(--body-bg);
+            border-radius: 20px;
+            box-shadow: var(--card-shadow-inset);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 3px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+        #learneraSplash .neu-loading-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(135deg, #FF69B4, #8A2BE2);
+            border-radius: 16px;
+            box-shadow: 2px 2px 6px rgba(138, 43, 226, 0.3);
+            transition: width 0.15s linear;
+        }
+        #learneraSplash .neu-loading-percent {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.82em;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            z-index: 5;
+            pointer-events: none;
+            color: #8A2BE2;
+            background: linear-gradient(135deg, #FF69B4, #8A2BE2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: color 0.2s linear, -webkit-text-fill-color 0.2s linear;
+        }
+        #learneraSplash .neu-loading-percent.reached {
+            background: none !important;
+            -webkit-background-clip: initial !important;
+            background-clip: initial !important;
+            -webkit-text-fill-color: var(--body-bg) !important;
+            color: var(--body-bg) !important;
+        }
+
+        /* TYPING ANIMATION STYLES & NON-SELECTABLE TEXT STYLES */
+        .typing-effect-input {
+            color: transparent !important;
+            caret-color: transparent !important;
+            position: relative;
+            z-index: 2;
+            user-select: none !important;
+            -webkit-user-select: none !important;
+        }
+
+        .typing-effect-input::placeholder {
+            color: var(--sub-text-color);
+            opacity: 0.7;
+        }
+
+        .typing-display-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            z-index: 3;
+            overflow: hidden;
+            font-family: inherit;
+            font-size: 0.95em;
+            color: var(--text-color);
+            user-select: none !important;
+            -webkit-user-select: none !important;
+        }
+
+        .typing-display-text {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+            white-space: pre;
+            overflow: hidden;
+            max-width: 100%;
+            word-break: break-all;
+            user-select: none !important;
+            -webkit-user-select: none !important;
+        }
+
+        @keyframes valSmoothPop {
+            0% { opacity: 0; transform: scale(0.96); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .typing-display-text.smooth-update {
+            animation: valSmoothPop 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        /* Individual character wrapper */
+        .char {
+            display: inline-block;
+            white-space: pre;
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            user-select: none !important;
+            -webkit-user-select: none !important;
+        }
+
+        .animate-in {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+            transform-origin: bottom;
+        }
+
+        .animate-out {
+            animation: popOut 0.2s ease-in forwards;
+            transform-origin: bottom;
+            pointer-events: none;
+        }
+
+        .typing-cursor {
+            display: none;
+            width: 3px;
+            height: 1.25em;
+            background-color: var(--text-color);
+            border-radius: 2px;
+            margin-left: 2px;
+            animation: blink 1s step-end infinite;
+            flex-shrink: 0;
+            vertical-align: middle;
+        }
+
+        .typing-effect-input:focus ~ .typing-display-wrapper .typing-cursor {
+            display: inline-block !important;
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: translateY(15px) scale(0.5); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes popOut {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(12px) scale(0.4); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+<script id="learnera-avatar-list">
+window.LEARNERA_AVATARS = [
+  "https://i.ibb.co/YFnBxqXb/IMG-COM-202607290021325490.webp",
+  "https://i.ibb.co/QjKt0x7W/IMG-COM-202607290021325501.webp",
+  "https://i.ibb.co/Z6VFFjzR/IMG-COM-202607290021325512.webp",
+  "https://i.ibb.co/LhnFcYQK/IMG-COM-202607290021325513.webp",
+  "https://i.ibb.co/d4NP6T0R/IMG-COM-202607290021325514.webp",
+  "https://i.ibb.co/HDTrbzxh/IMG-COM-202607290021325515.webp",
+  "https://i.ibb.co/HcNPvNS/IMG-COM-202607290021325516.webp",
+  "https://i.ibb.co/WN3mz08N/IMG-COM-2026072900213255210.webp",
+  "https://i.ibb.co/8nvzJW0G/IMG-COM-2026072900213255211.webp",
+  "https://i.ibb.co/zhbqsK8c/IMG-COM-2026072900213255212.webp",
+  "https://i.ibb.co/fz4SZbjb/IMG-COM-2026072900213255213.webp",
+  "https://i.ibb.co/qY2p1jFs/IMG-COM-2026072900213255214.webp",
+  "https://i.ibb.co/ycxbKY4n/IMG-COM-2026072900213255215.webp",
+  "https://i.ibb.co/CyrGxnN/IMG-COM-2026072900213255216.webp",
+  "https://i.ibb.co/TM6rpL4t/IMG-COM-202607290021325527.webp",
+  "https://i.ibb.co/gFTHMvbv/IMG-COM-202607290021325528.webp",
+  "https://i.ibb.co/4wkrpG28/IMG-COM-202607290021325529.webp",
+  "https://i.ibb.co/vvx6krmW/IMG-COM-2026072900213255317.webp",
+  "https://i.ibb.co/mC53Wts9/IMG-COM-2026072900213255318.webp",
+  "https://i.ibb.co/gLFHz6x5/IMG-COM-2026072900213255319.webp",
+  "https://i.ibb.co/whczBDpW/IMG-COM-2026072900213255320.webp",
+  "https://i.ibb.co/rKKVH9b7/IMG-COM-2026072900213255321.webp",
+  "https://i.ibb.co/PZMmvqQ8/IMG-COM-2026072900213255322.webp",
+  "https://i.ibb.co/v4ssMtZR/IMG-COM-2026072900213255323.webp",
+  "https://i.ibb.co/21HNVr74/IMG-COM-2026072900213255324.webp",
+  "https://i.ibb.co/jvKvdH4P/IMG-COM-2026072900213255425.webp",
+  "https://i.ibb.co/gCVsKnk/IMG-COM-2026072900213255426.webp",
+  "https://i.ibb.co/JwdTdZYZ/IMG-COM-2026072900213255427.webp",
+  "https://i.ibb.co/VWh98xmF/IMG-COM-2026072900213255428.webp",
+  "https://i.ibb.co/rRXBMNg2/IMG-COM-2026072900213255429.webp",
+  "https://i.ibb.co/W4YqLptM/IMG-COM-2026072900213255430.webp",
+  "https://i.ibb.co/tTQXTM2X/IMG-COM-2026072900213255431.webp",
+  "https://i.ibb.co/NdKqjN3T/IMG-COM-2026072900213255432.webp",
+  "https://i.ibb.co/NdNWR6Pc/IMG-COM-2026072900213255433.webp",
+  "https://i.ibb.co/svm04C76/IMG-COM-2026072900213255534.webp",
+  "https://i.ibb.co/5hThs43n/IMG-COM-2026072900213255535.webp",
+  "https://i.ibb.co/CpTB1FR3/IMG-COM-2026072900213255536.webp",
+  "https://i.ibb.co/FqmH17n0/IMG-COM-2026072900213255537.webp",
+  "https://i.ibb.co/bZjzv15/IMG-COM-2026072900213255538.webp",
+  "https://i.ibb.co/Mx805xFp/IMG-COM-2026072900213255539.webp",
+  "https://i.ibb.co/PvW0CRWk/IMG-COM-2026072900213255540.webp",
+  "https://i.ibb.co/PqsrFPt/IMG-COM-2026072900213255541.webp",
+  "https://i.ibb.co/ZzMMYL4T/IMG-COM-2026072900213255542.webp",
+  "https://i.ibb.co/9HNCVKFS/IMG-COM-2026072900213255543.webp",
+  "https://i.ibb.co/cch07WCP/IMG-COM-2026072900213255644.webp",
+  "https://i.ibb.co/yF7zW7Zd/IMG-COM-2026072900213255645.webp",
+  "https://i.ibb.co/TD3dvfcs/IMG-COM-2026072900213255646.webp",
+  "https://i.ibb.co/MkfYqHjM/IMG-COM-2026072900213255647.webp",
+  "https://i.ibb.co/prk8DwRv/IMG-COM-2026072900213255648.webp",
+  "https://i.ibb.co/4ZVLLS9f/IMG-COM-2026072900213255649.webp",
+  "https://i.ibb.co/DfJs1zt3/IMG-COM-2026072900213255650.webp",
+  "https://i.ibb.co/PvL3xKjV/IMG-COM-2026072900213255651.webp",
+  "https://i.ibb.co/TBpKms8T/IMG-COM-2026072900213255652.webp",
+  "https://i.ibb.co/KxRVV8sg/IMG-COM-2026072900213255753.webp",
+  "https://i.ibb.co/WWMsK3tN/IMG-COM-2026072900213255754.webp",
+];
+window.LEARNERA_DEFAULT_AVATAR = window.LEARNERA_AVATARS[0];
+</script>
+
+
+    <!-- Unified Notifier Notification Toast -->
+    <div id="appNotifier" class="notifier"></div>
+
+    <!-- Custom Onboarding highlights slideshow -->
+    <div id="onboardingContainer" class="hidden">
+        <div class="onboarding-slider" id="onboardingSlider">
+            <div class="onboarding-slide">
+                <div class="illustration-placeholder" id="illustration1">
+                    <video src="https://ik.imagekit.io/lssafvcmr/Others/WelcomeToLearnEra.webm" tabindex="-1" style="width: 100%; height: 100%; outline: none;" autoplay loop muted playsinline></video>
+                </div>
+                <h3>Welcome to LearnEra</h3>
+                <p>Enter the Era of Limitless Learning. One tap. Infinite knowledge. Only on LearnEra.</p>
+            </div>
+            <div class="onboarding-slide">
+                <div class="illustration-placeholder" id="illustration2">
+                    <video src="https://ik.imagekit.io/lssafvcmr/Others/CourseLibraryAnimation.webm" tabindex="-1" style="width: 100%; height: 100%; outline: none;" autoplay loop muted playsinline></video>
+                </div>
+                <h3>Explore 50+ Courses</h3>
+                <p>Don’t just scroll. Upgrade your life. 50+ expert crafted courses waiting for you inside LearnEra.</p>
+            </div>
+            <div class="onboarding-slide">
+                <div class="illustration-placeholder" id="illustration3">
+                    <video src="https://ik.imagekit.io/lssafvcmr/Others/SmartyAnimation.webm" tabindex="-1" style="width: 100%; height: 100%; outline: none;" autoplay loop muted playsinline></video>
+                </div>
+                <h3>Meet Smarty AI</h3>
+                <p>Warning: Smarty AI may cause brain addiction. Too smart to ignore. Too fun to resist.</p>
+            </div>
+            <div class="onboarding-slide">
+                <div class="illustration-placeholder" id="illustration4">
+                    <video src="https://ik.imagekit.io/lssafvcmr/Others/SmartHubAnimation.webm" tabindex="-1" style="width: 100%; height: 100%; outline: none;" autoplay loop muted playsinline></video>
+                </div>
+                <h3>Smart Study Hub</h3>
+                <p>Unlock syllabus-wise content with CBSE, CGBSE, NCERT & PDF books – all in one place, anytime.</p>
+            </div>
+        </div>
+        <div class="onboarding-navigation">
+            <button class="back-button" id="prevOnboardingBtn" style="padding: 8px 16px;">Back</button>
+            <div class="onboarding-dots" id="onboardingDots"></div>
+            <div class="onboarding-next-btn" id="nextOnboardingBtn">
+                <span class="onb-next-arrow"><div></div></span>
+            </div>
+            <button class="back-button" id="skipOnboardingBtn" style="padding: 8px 16px;">Skip</button>
+        </div>
+    </div>
+
+    <!-- Custom Alert Success/Failed Modal -->
+    <div id="customAlertModal" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <div id="alertLottieContainer" style="width: 150px; height: 150px; margin: 0 auto 15px;"></div>
+            <h3 id="alertModalTitle" style="font-weight: 800; margin-bottom: 20px; font-size: 1.05rem !important; color: var(--text-color);">Success</h3>
+            <button class="back-button" onclick="playClickSFX(); closeAlertModal()" style="width: 100%; border-radius: 12px; justify-content: center; height: auto;">Close</button>
+        </div>
+    </div>
+
+    <!-- Custom Password Recovery Modal -->
+    <div id="forgotPasswordModal" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <div style="width: 120px; height: 120px; margin: 0 auto 15px;">
+                <lottie-player src="https://ik.imagekit.io/lssafvcmr/Others/ResetPassword.json" background="transparent" speed="1" style="width: 100%; height: 100%;" loop autoplay></lottie-player>
+            </div>
+            
+            <div class="input-group">
+                <input type="text" id="forgotPasswordEmail" placeholder="Enter your email" required inputmode="email" autocomplete="email">
+            </div>
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <button class="back-button" onclick="playClickSFX(); closeForgotPasswordModal()" style="flex: 1 1 0; width: 0; border-radius: 12px; justify-content: center; margin: 0; height: 46px; padding: 0;">Cancel</button>
+                <button class="glow-on-hover" id="confirmResetBtn" style="flex: 1 1 0; width: 0; border-radius: 12px; justify-content: center; margin: 0; height: 46px;">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Terms Required Popup -->
+    <div id="termsRequiredModal" class="custom-modal-overlay" style="z-index: 28000;">
+        <div class="custom-modal">
+            <div style="width: 150px; height: 150px; margin: 0 auto 10px;">
+                <lottie-player src="https://ik.imagekit.io/lssafvcmr/Others/cancel%20animation.json" background="transparent" speed="1.2" style="width: 100%; height: 100%;" loop autoplay></lottie-player>
+            </div>
+            <h3 style="font-weight: 800; margin-bottom: 8px; font-size: 1.0rem; color: var(--text-color);">Accept Terms &amp; Conditions</h3>
+            <p style="font-size: 0.9em; color: var(--sub-text-color); font-weight: 500; margin-bottom: 20px; line-height: 1.5;">You need to agree to our Terms &amp; Conditions before creating your LearnEra account.</p>
+            <button class="glow-on-hover" onclick="playClickSFX(); closeTermsRequiredPopup()" style="width: 100%; border-radius: 12px; justify-content: center; height: 46px;">Got it</button>
+        </div>
+    </div>
+
+    <!-- Custom List Selector dropdown list popup -->
+    <div id="customListSelectorModal" class="custom-modal-overlay" style="z-index: 27000;">
+        <div class="custom-modal">
+            <h3 id="listSelectorTitle" style="color: var(--text-color); margin-bottom: 15px; font-size: 1.2em; font-weight: 700; text-align: center;">Select Value</h3>
+            <div id="listSelectorItemsContainer" style="display: flex; flex-direction: column; gap: 14px; max-height: 260px; overflow-y: auto; padding: 12px 14px 14px;"></div>
+            <button class="back-button" onclick="window.closeCustomListSelector()" style="width: 100%; margin-top: 15px; border-radius: 12px; padding: 10px; height: auto;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Custom Interactive Calendar popup box -->
+    <div id="customCalendarModal" class="custom-modal-overlay" style="z-index: 25000;">
+        <div class="custom-modal" style="width: 90%; max-width: 340px; border-radius: 24px; padding: 20px;">
+            <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <button class="back-button" id="prevMonthBtn" style="width: 38px; height: 38px;">&lt;</button>
+                <span id="calendarMonthYear" style="font-weight: 700; color: var(--text-color); font-size: 1.1em;"></span>
+                <button class="back-button" id="nextMonthBtn" style="width: 38px; height: 38px;">&gt;</button>
+            </div>
+            <div class="calendar-selects" style="display: flex; gap: 10px; margin-bottom: 15px; width: 100%;">
+                <button id="calendarYearBtn" class="sharp-inner-item" style="flex: 1; text-align: center; margin: 0;"></button>
+                <button id="calendarMonthBtn" class="sharp-inner-item" style="flex: 1; text-align: center; margin: 0;"></button>
+            </div>
+            <div class="calendar-weekdays" style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75em; font-weight: 600; color: var(--sub-text-color); margin-bottom: 10px;">
+                <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+            </div>
+            <div id="calendarDaysGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 0.85em;"></div>
+            <div style="display: flex; gap: 10px; margin-top: 15px; width: 100%;">
+                <button class="back-button" id="closeCalendarBtn" style="flex: 1; text-align: center; margin: 0; border-radius: 12px; padding: 8px 14px;">Cancel</button>
+                <button class="glow-on-hover" id="confirmCalendarBtn" style="flex: 1; text-align: center; margin: 0; border-radius: 12px; padding: 8px 14px; width: auto; height: auto;">Set</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D Avatar Selection Pop-up Modal -->
+    <div id="avatarPopup" class="custom-modal-overlay" style="z-index: 25000;">
+        <div class="custom-modal" style="position: relative; max-width: 450px; width: 90%; max-height: 80vh; overflow-y: auto; border-radius: 25px; padding: 25px; padding-top: 65px;">
+            <button class="back-button" onclick="playClickSFX(); closeAvatarPopup()" style="position: absolute; top: 15px; left: 15px; width: 38px; height: 38px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center;" title="Close">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h3 style="background: linear-gradient(135deg, #8A2BE2, #a158e6, #DA70D6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; margin-bottom: 20px; font-size: 1.5em; text-align: center;">Select 3D Avatar</h3>
+            <div class="avatar-grid" id="avatarGrid"></div>
+        </div>
+    </div>
+
+    <!-- Full screen Terms and Conditions Arrangement -->
+    <div id="genericArrangement" class="full-screen-arrangement">
+        <header class="header-bar">
+            <div class="back-button-container">
+                <button class="back-button" onclick="playClickSFX(); closeGenericSubApp();" title="Go Back">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+            </div>
+            <div class="header-title-container">
+                <h2 class="header-title">Terms & Conditions</h2>
+            </div>
+        </header>
+        <div class="theme-content-area" style="padding: 0;">
+            <iframe id="genericIframe" style="position: absolute; top: calc(var(--top-space) + 55px); left: 0; width: 100%; height: calc(100% - (var(--top-space) + 55px)); border: none; background: transparent; z-index: 1;"></iframe>
+        </div>
+    </div>
+
+    <!-- Full screen LearnEra App View Arrangement (No Header, 100% x 100%) -->
+    <div id="learneraAppArrangement" style="position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 24500; display: none; background: var(--body-bg);">
+        <iframe id="learneraIframe" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent; display: block; z-index: 1;" src="about:blank"></iframe>
+    </div>
+
+    <!-- Full screen Maintenance Screen Arrangement (No Header, 100% x 100%) -->
+    <div id="maintenanceAppArrangement" style="position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 24600; display: none; background: var(--body-bg);">
+        <iframe id="maintenanceIframe" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: transparent; display: block; z-index: 1;" src="about:blank"></iframe>
+    </div>
+
+    <!-- LearnEra Loading Overlay -->
+    <div id="appLoadingOverlay" class="hidden">
+        <lottie-player src="https://ik.imagekit.io/lssafvcmr/Others/Loading.json" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
+    </div>
+
+    <!-- LearnEra Splash Screen -->
+    <div id="learneraSplash" aria-hidden="false">
+        <div class="center-brand">
+            <div class="logo-box skeleton" id="splashLogoBox">
+                <img src="https://i.ibb.co/bgWVZn48/LearnEra-Logo.webp" alt="LearnEra Logo" id="splashLogoImg">
+            </div>
+            <h1 class="brand-text-cursive">LearnEra</h1>
+        </div>
+        <div class="bottom-loader-section">
+            <div class="neu-loading-bar-container">
+                <div class="neu-loading-fill" id="splashLoadingFill"></div>
+                <span class="neu-loading-percent" id="splashLoadingPercent">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-container">
+        
+        <!-- INITIAL MENU FORM SCREEN -->
+        <div class="form-view-panel active" id="initialAuthContainer">
+            <div class="settings-group" style="padding: 35px 25px;">
+                <div style="width: 100%; display: flex; justify-content: center; margin-bottom: 20px;">
+                    <lottie-player src="https://ik.imagekit.io/lssafvcmr/Others/LoginOptions.json" background="transparent" speed="1" style="width: 260px; height: 260px;" loop autoplay></lottie-player>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <button class="glow-on-hover" id="googleSignInBtn" onclick="playClickSFX()">
+                        <img src="GoogleLogo.png" alt="Google" style="height: 28px; margin-right: 12px; z-index: 5; filter: brightness(0) invert(1);">
+                        Continue with Google
+                    </button>
+
+                    <button class="glow-on-hover" id="initialSignupBtn" onclick="playClickSFX(); showSignupStep(1);">
+                        Sign up
+                    </button>
+
+                    <div style="height: 1px; background: rgba(138,43,226,0.15); margin: 10px 0;"></div>
+
+                    <button class="glow-on-hover" id="initialLoginBtn" onclick="playClickSFX(); showLoginView();">
+                        Log in
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOGIN FORM SCREEN -->
+        <div class="form-view-panel" id="loginContainer">
+            <div style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 20px;">
+                <button class="back-button" onclick="playClickSFX(); showInitialView();">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+            </div>
+
+            <div class="settings-group">
+                <div style="display:flex; justify-content:center; margin-bottom:6px;">
+                    <lottie-player src="https://ik.imagekit.io/lssafvcmr/Others/Login.json" background="transparent" speed="1" style="width:130px; height:130px;" loop autoplay></lottie-player>
+                </div>
+                <div class="settings-group-title">Welcome Back!</div>
+                
+                <form id="loginForm" novalidate>
+                    <div class="input-group">
+                        <input type="text" id="loginEmail" placeholder="Email Address" required inputmode="email" autocomplete="email">
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="loginPassword" placeholder="Password" required>
+                        <span class="password-toggle-wrapper" onclick="togglePass('loginPassword', this)">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                    </div>
+                    
+                    <div style="text-align: right; margin-bottom: 20px;">
+                        <a href="#" id="forgotPasswordLink" style="font-size: 0.85em; font-weight: 600; color: var(--text-color); text-decoration: none;">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit" class="glow-on-hover">Login</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MULTI-STEP SIGNUP FORM SCREEN -->
+        <div class="form-view-panel" id="signupContainer">
+            <div style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 20px;">
+                <button class="back-button" id="signupBackBtn" onclick="playClickSFX(); handleSignupBack();">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+            </div>
+
+            <div class="step-indicator-wrapper">
+                <div class="step-line-progress"><div class="step-line-fill" id="stepLineFill"></div></div>
+                <div class="step-dot active" id="stepDot1">1</div>
+                <div class="step-dot" id="stepDot2">2</div>
+                <div class="step-dot" id="stepDot3">3</div>
+            </div>
+
+            <div class="settings-group">
+                <form id="signupForm" novalidate>
+                    
+                    <!-- STEP 1: Personal Details -->
+                    <div id="signupStep1" class="signup-step-section">
+                        <div class="settings-group-title">Personal Details</div>
+                        <div class="input-group">
+                            <input type="text" id="signupFirstName" placeholder="First Name" required maxlength="10">
+                        </div>
+                        <div class="input-group">
+                            <input type="text" id="signupLastName" placeholder="Last Name" required>
+                        </div>
+                        <div class="input-group" onclick="playClickSFX(); triggerGenderPopup();">
+                            <input type="text" id="signupGender" style="cursor: pointer;" placeholder="Select Gender" required readonly>
+                        </div>
+                        <div class="input-group" onclick="playClickSFX(); triggerCalendarPopup();">
+                            <input type="text" id="signupDOB" placeholder="Birth Date" required readonly>
+                        </div>
+                        <button type="button" class="glow-on-hover" onclick="playClickSFX(); validateAndNextStep(2);">Continue</button>
+                    </div>
+
+                    <!-- STEP 2: Account Details -->
+                    <div id="signupStep2" class="signup-step-section" style="display: none;">
+                        <div class="settings-group-title">Contact Information</div>
+                        <div class="input-group">
+                            <input type="text" id="signupEmail" placeholder="Email Address" required inputmode="email" autocomplete="email">
+                        </div>
+                        <div class="input-group">
+                            <input type="text" id="signupCountry" placeholder="Country" required readonly>
+                        </div>
+                        <div class="input-group mobile-optional-wrap">
+                            <input type="tel" id="signupMobile" placeholder="Mobile Number" disabled style="padding-right: 90px;">
+                        </div>
+                        <div class="input-group referral-optional-wrap">
+                            <input type="text" id="signupReferralCode" placeholder="Referral Code" style="padding-right: 90px;">
+                        </div>
+                        <button type="button" class="glow-on-hover" onclick="playClickSFX(); validateAndNextStep(3);">Continue</button>
+                    </div>
+
+                    <!-- STEP 3: Security & Avatar Profile -->
+                    <div id="signupStep3" class="signup-step-section" style="display: none;">
+                        <div class="settings-group-title">Profile Security</div>
+                        
+                        <div class="avatar-circle-display" onclick="playClickSFX(); openAvatarPopup();">
+                            <img id="avatarDisplayImage" src="" alt="Selected Avatar" style="display: none;">
+                            <svg id="avatarDisplayPlaceholder" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        </div>
+                        <div style="text-align: center; margin-bottom: 25px; font-size: 0.85em; font-weight: 600; color: var(--text-color);">Tap to choose 3D Avatar</div>
+
+                        <div class="input-group">
+                            <input type="password" id="signupPassword" placeholder="Create Password" required>
+                            <span class="password-toggle-wrapper" onclick="togglePass('signupPassword', this)">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                        <div class="input-group">
+                            <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" required>
+                            <span class="password-toggle-wrapper" onclick="togglePass('signupConfirmPassword', this)">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+
+                        <!-- Terms & Conditions Alignment Trigger -->
+                        <div style="display: flex; align-items: center; justify-content: center; margin: 15px 0 25px; gap: 12px; width: 100%;">
+                            <input type="checkbox" id="signupAcceptTerms" class="terms-checkbox-custom" required>
+                            <label for="signupAcceptTerms" style="font-size: 0.82em; font-weight: 600; color: var(--sub-text-color); cursor: pointer; line-height: 1.4;">
+                                I agree to the <span onclick="playClickSFX(); openGenericSubApp('Terms & Conditions', 'T&C.html')" style="color: var(--text-color); cursor: pointer; text-decoration: underline;">Terms & Conditions</span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="glow-on-hover">Register</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Global Full-Screen App Launcher Functions -->
+    <script>
+        window.openLearnEraApp = function() {
+            const loadingOverlay = document.getElementById('appLoadingOverlay');
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
+            
+            const arr = document.getElementById('learneraAppArrangement');
+            const iframe = document.getElementById('learneraIframe');
+            if (arr && iframe) {
+                if (iframe.src === 'about:blank' || !iframe.src.includes('LearnEra.html')) {
+                    iframe.src = 'LearnEra.html';
+                }
+                arr.style.display = 'block';
+            }
+        };
+
+        window.openMaintenanceApp = function() {
+            const loadingOverlay = document.getElementById('appLoadingOverlay');
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
+
+            const arr = document.getElementById('maintenanceAppArrangement');
+            const iframe = document.getElementById('maintenanceIframe');
+            if (arr && iframe) {
+                if (iframe.src === 'about:blank' || !iframe.src.includes('Maintenance.html')) {
+                    iframe.src = 'Maintenance.html';
+                }
+                arr.style.display = 'block';
+            }
+        };
+    </script>
+
+    <!-- Firebase SDK Imports Module -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+        import { getDatabase, ref, set, get, update, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWOdk2_NJntQ4Pob7_tN6kb1W5rMy-tcw",
+            authDomain: "learnera-d6309.firebaseapp.com",
+            projectId: "learnera-d6309",
+            storageBucket: "learnera-d6309.firebasestorage.app",
+            messagingSenderId: "752970675909",
+            appId: "1:752970675909:web:9c4513809ca51ea60122ac",
+            databaseURL: "https://learnera-d6309-default-rtdb.firebaseio.com"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        window.db = db;
+        window.auth = auth;
+        window.googleProvider = googleProvider;
+        window.signInWithPopup = signInWithPopup;
+        window.getRef = ref;
+        window.dbGet = get;
+        window.dbUpdate = update;
+        window.dbQuery = query;
+        window.dbOrderBy = orderByChild;
+        window.dbEqualTo = equalTo;
+        window.dbSet = set;
+        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.sendPasswordResetEmail = sendPasswordResetEmail;
+    </script>
+
+    <!-- UI/UX & Main Routing Logics -->
+    <script>
+        const DB_NAME = 'userProfileDB';
+        const STORE_NAME = 'profilePictures';
+        const DB_VERSION = 7;
+        let dbIndexed;
+        let activeSignupStep = 1;
+        let selectedAvatarUrl = '';
+        let hasSeenOnboarding = localStorage.getItem('hasSeenLearnEraOnboarding') === 'true';
+
+        // Web Audio SFX clicks
+        let globalAudioCtx = null;
+        function getGlobalAudioCtx() {
+            if (!globalAudioCtx) {
+                try {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (Ctx) globalAudioCtx = new Ctx();
+                } catch(e) {}
+            }
+            if (globalAudioCtx && globalAudioCtx.state === 'suspended') {
+                globalAudioCtx.resume().catch(() => {});
+            }
+            return globalAudioCtx;
+        }
+
+        window.playClickSFX = function() {
+            try {
+                const ctx = getGlobalAudioCtx();
+                if (!ctx) return;
+                const t = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, t);
+                osc.frequency.exponentialRampToValueAtTime(1200, t + 0.08);
+                
+                gain.gain.setValueAtTime(0.001, t);
+                gain.gain.exponentialRampToValueAtTime(0.15, t + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.start(t);
+                osc.stop(t + 0.08);
+            } catch (e) {}
+        }
+
+        window.playSuccessSFX = function() {
+            try {
+                const ctx = getGlobalAudioCtx();
+                if (!ctx) return;
+                const t0 = ctx.currentTime;
+                const osc1 = ctx.createOscillator();
+                const osc2 = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(523.25, t0); 
+                osc1.frequency.setValueAtTime(659.25, t0 + 0.1); 
+                
+                osc2.type = 'triangle';
+                osc2.frequency.setValueAtTime(1046.50, t0 + 0.1); 
+                
+                gain.gain.setValueAtTime(0.001, t0);
+                gain.gain.exponentialRampToValueAtTime(0.3, t0 + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.5);
+                
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc1.start(t0);
+                osc2.start(t0);
+                osc1.stop(t0 + 0.6);
+                osc2.stop(t0 + 0.6);
+            } catch(e) {}
+        }
+
+        window.playCancelSFX = function() {
+            try {
+                const ctx = getGlobalAudioCtx();
+                if (!ctx) return;
+                const t0 = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220.00, t0); 
+                osc.frequency.exponentialRampToValueAtTime(110.00, t0 + 0.3); 
+                
+                gain.gain.setValueAtTime(0.001, t0);
+                gain.gain.exponentialRampToValueAtTime(0.2, t0 + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.4);
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.start(t0);
+                osc.stop(t0 + 0.5);
+            } catch(e) {}
+        }
+
+        // IndexedDB database functions
+        const openIndexedDB = () => {
+            return new Promise((resolve, reject) => {
+                if (dbIndexed) {
+                    resolve(dbIndexed);
+                    return;
+                }
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    if (!database.objectStoreNames.contains(STORE_NAME)) {
+                        database.createObjectStore(STORE_NAME, { keyPath: 'uid' });
+                    }
+                };
+                request.onsuccess = (event) => {
+                    dbIndexed = event.target.result;
+                    resolve(dbIndexed);
+                };
+                request.onerror = (event) => {
+                    reject(event.target.error);
+                };
+            });
+        };
+
+        const saveImageToIndexedDB = async (uid, imageData) => {
+            if (!dbIndexed) await openIndexedDB();
+            const transaction = dbIndexed.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.put({ uid, imageData });
+            return new Promise((resolve, reject) => {
+                request.onsuccess = () => resolve();
+                request.onerror = (event) => reject(event.target.error);
+            });
+        };
+
+        const COUNTRY_PHONE_RULES = {
+            "India":              { dial: "+91",  len: 10 },
+            "United States":      { dial: "+1",   len: 10 },
+            "United Kingdom":     { dial: "+44",  len: 10 },
+            "Canada":             { dial: "+1",   len: 10 },
+            "Australia":          { dial: "+61",  len: 9 },
+            "Germany":            { dial: "+49",  len: 11 },
+            "France":             { dial: "+33",  len: 9 },
+            "Japan":              { dial: "+81",  len: 10 },
+            "Brazil":             { dial: "+55",  len: 11 }
+        };
+
+        // Form navigation logic
+        function showViewPanel(containerId, direction) {
+            document.querySelectorAll('.form-view-panel').forEach(panel => {
+                panel.classList.remove('active');
+                panel.classList.remove('slide-back');
+            });
+            const target = document.getElementById(containerId);
+            if (direction === 'back') target.classList.add('slide-back');
+            void target.offsetWidth;
+            target.classList.add('active');
+        }
+
+        window.showInitialView = function() {
+            showViewPanel('initialAuthContainer', 'back');
+        };
+
+        window.showLoginView = function() {
+            showViewPanel('loginContainer');
+        };
+
+        window.showSignupStep = function(stepNum) {
+            activeSignupStep = stepNum;
+            const signupContainer = document.getElementById('signupContainer');
+            const alreadyActive = signupContainer.classList.contains('active');
+            if (!alreadyActive) {
+                showViewPanel('signupContainer');
+            }
+
+            document.querySelectorAll('.signup-step-section').forEach(sec => {
+                sec.style.display = 'none';
+                sec.classList.remove('step-anim-in');
+            });
+            const activeSec = document.getElementById(`signupStep${stepNum}`);
+            activeSec.style.display = 'block';
+            if (alreadyActive) {
+                void activeSec.offsetWidth;
+                activeSec.classList.add('step-anim-in');
+            }
+
+            const percent = (stepNum - 1) * 50;
+            document.getElementById('stepLineFill').style.width = `${percent}%`;
+
+            for (let i = 1; i <= 3; i++) {
+                const dot = document.getElementById(`stepDot${i}`);
+                if (i < stepNum) {
+                    dot.className = 'step-dot completed';
+                    dot.innerHTML = '<i class="fas fa-check"></i>';
+                } else if (i === stepNum) {
+                    dot.className = 'step-dot active';
+                    dot.textContent = i;
+                } else {
+                    dot.className = 'step-dot';
+                    dot.textContent = i;
+                }
+            }
+        };
+
+        window.handleSignupBack = function() {
+            if (activeSignupStep === 1) {
+                showInitialView();
+            } else {
+                showSignupStep(activeSignupStep - 1);
+            }
+        };
+
+        window.togglePass = function(id, wrapper) {
+            playClickSFX();
+            const el = document.getElementById(id);
+            const icon = wrapper.querySelector('i');
+            if (el.type === 'password') {
+                el.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                el.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+        };
+
+        // Modal alert popups
+        window.showCustomAlert = function(title, success, details) {
+            playClickSFX();
+            const modal = document.getElementById('customAlertModal');
+            const container = document.getElementById('alertLottieContainer');
+            const titleEl = document.getElementById('alertModalTitle');
+
+            if (!modal || !container) return;
+            container.innerHTML = '';
+            let lottieUrl = "";
+
+            if (success) {
+                lottieUrl = "https://ik.imagekit.io/lssafvcmr/Others/success.json";
+                titleEl.textContent = title || "Success";
+                titleEl.style.color = "#32CD32";
+                playSuccessSFX();
+            } else {
+                lottieUrl = "https://ik.imagekit.io/lssafvcmr/Others/cancel%20animation.json";
+                titleEl.textContent = title || "Failed";
+                titleEl.style.color = "#dc143c";
+                playCancelSFX();
+            }
+
+            container.innerHTML = `<lottie-player src="${lottieUrl}" background="transparent" speed="1.2" style="width: 150px; height: 150px;" loop autoplay></lottie-player>`;
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+        };
+
+        window.closeAlertModal = function() {
+            const modal = document.getElementById('customAlertModal');
+            if (modal) {
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+            }
+        };
+
+        window.showTermsRequiredPopup = function() {
+            playCancelSFX && playCancelSFX();
+            const modal = document.getElementById('termsRequiredModal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+        };
+        window.closeTermsRequiredPopup = function() {
+            const modal = document.getElementById('termsRequiredModal');
+            if (!modal) return;
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+        };
+
+        window.openForgotPasswordModal = function() {
+            playClickSFX();
+            const modal = document.getElementById('forgotPasswordModal');
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+        };
+
+        window.closeForgotPasswordModal = function() {
+            const modal = document.getElementById('forgotPasswordModal');
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+        };
+
+        window.openAvatarPopup = function() {
+            const popup = document.getElementById('avatarPopup');
+            const grid = document.getElementById('avatarGrid');
+            grid.innerHTML = '';
+            grid.style.gridTemplateColumns = 'repeat(5, 1fr)';
+            const popupTitle = popup.querySelector('h3');
+            if (popupTitle) popupTitle.textContent = 'Select 3D Avatar';
+
+            (window.LEARNERA_AVATARS || []).forEach(function(url) {
+                const item = document.createElement('div');
+                item.className = 'avatar-card-item';
+                item.innerHTML = `<img src="${url}" loading="lazy" decoding="async">`;
+                item.onclick = async () => {
+                    playClickSFX();
+                    selectedAvatarUrl = url;
+                    
+                    const imgDisp = document.getElementById('avatarDisplayImage');
+                    const svgPlaceholder = document.getElementById('avatarDisplayPlaceholder');
+                    
+                    imgDisp.src = url;
+                    imgDisp.style.display = 'block';
+                    svgPlaceholder.style.display = 'none';
+
+                    window.closeAvatarPopup();
+                };
+                grid.appendChild(item);
+            });
+            popup.style.display = 'flex';
+            popup.classList.add('show');
+        };
+
+        window.closeAvatarPopup = function() {
+            const popup = document.getElementById('avatarPopup');
+            popup.classList.remove('show');
+            popup.style.display = 'none';
+        };
+
+        window.openGenericSubApp = function(title, fileUrl) {
+            const screen = document.getElementById('genericArrangement');
+            const iframe = document.getElementById('genericIframe');
+            if (screen && iframe) {
+                iframe.src = fileUrl;
+                screen.style.display = 'block';
+            }
+        };
+
+        window.closeGenericSubApp = function() {
+            const screen = document.getElementById('genericArrangement');
+            const iframe = document.getElementById('genericIframe');
+            if (screen && iframe) {
+                iframe.src = 'about:blank';
+                screen.style.display = 'none';
+            }
+        };
+
+        window.validateAndNextStep = function(targetStep) {
+            if (targetStep === 2) {
+                const fn = document.getElementById('signupFirstName').value.trim();
+                const ln = document.getElementById('signupLastName').value.trim();
+                const gen = document.getElementById('signupGender').value;
+                const dob = document.getElementById('signupDOB').value;
+
+                if (!fn || !ln || !gen || !dob) {
+                    showCustomAlert("Please complete all fields!", false);
+                    return;
+                }
+                showSignupStep(2);
+            } else if (targetStep === 3) {
+                const email = document.getElementById('signupEmail').value.trim();
+                const mob = document.getElementById('signupMobile').value.trim();
+                const country = document.getElementById('signupCountry').value.trim();
+
+                if (!email || !country) {
+                    showCustomAlert("Please complete required fields!", false);
+                    return;
+                }
+                showSignupStep(3);
+            }
+        };
+
+        let notifyTimer;
+        window.showNotifier = function(msg, type = 'info', delay = 3000) {
+            const el = document.getElementById('appNotifier');
+            if (!el) return;
+            clearTimeout(notifyTimer);
+            el.className = 'notifier ' + type;
+            el.textContent = msg;
+            el.classList.add('show');
+            notifyTimer = setTimeout(() => { el.classList.remove('show'); }, delay);
+        };
+
+        window.triggerGenderPopup = function() {
+            window.openCustomListSelector("Select Gender", ["Male", "Female", "Other"], (val) => {
+                document.getElementById('signupGender').value = val;
+            });
+        };
+
+        window.openCustomListSelector = function(title, options, callback) {
+            document.getElementById('listSelectorTitle').textContent = title;
+            const container = document.getElementById('listSelectorItemsContainer');
+            container.innerHTML = '';
+            
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'sharp-inner-item';
+                btn.textContent = opt;
+                btn.onclick = () => {
+                    playClickSFX();
+                    if (callback) callback(opt);
+                    window.closeCustomListSelector();
+                };
+                container.appendChild(btn);
+            });
+            
+            const modal = document.getElementById('customListSelectorModal');
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+        };
+
+        window.closeCustomListSelector = function() {
+            const modal = document.getElementById('customListSelectorModal');
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+        };
+
+        let currentCalDate = new Date();
+        let selectedCalDate = new Date();
+
+        window.triggerCalendarPopup = function() {
+            const initialVal = document.getElementById('signupDOB').value;
+            if (initialVal) {
+                const parsed = new Date(initialVal);
+                if (!isNaN(parsed.getTime())) {
+                    currentCalDate = parsed;
+                    selectedCalDate = parsed;
+                }
+            }
+            
+            const yearBtn = document.getElementById('calendarYearBtn');
+            const monthBtn = document.getElementById('calendarMonthBtn');
+            
+            yearBtn.textContent = currentCalDate.getFullYear();
+            
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            monthBtn.textContent = months[currentCalDate.getMonth()];
+
+            yearBtn.onclick = () => {
+                const years = [];
+                const curY = new Date().getFullYear();
+                for(let y = curY; y >= 1940; y--) years.push(String(y));
+                window.openCustomListSelector("Select Year", years, (selectedYear) => {
+                    currentCalDate.setFullYear(parseInt(selectedYear));
+                    yearBtn.textContent = selectedYear;
+                    renderCalendarDays();
+                });
+            };
+
+            monthBtn.onclick = () => {
+                window.openCustomListSelector("Select Month", months, (selectedMonthName) => {
+                    const mIdx = months.indexOf(selectedMonthName);
+                    currentCalDate.setMonth(mIdx);
+                    monthBtn.textContent = selectedMonthName;
+                    renderCalendarDays();
+                });
+            };
+
+            renderCalendarDays();
+            
+            const modal = document.getElementById('customCalendarModal');
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+        };
+
+        window.closeCustomCalendar = function() {
+            const modal = document.getElementById('customCalendarModal');
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+        };
+
+        function renderCalendarDays() {
+            const year = currentCalDate.getFullYear();
+            const month = currentCalDate.getMonth();
+            
+            document.getElementById('calendarMonthYear').textContent = new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const lastDay = new Date(year, month + 1, 0).getDate();
+            const prevLastDay = new Date(year, month, 0).getDate();
+
+            const grid = document.getElementById('calendarDaysGrid');
+            grid.innerHTML = '';
+
+            for (let x = firstDayIndex; x > 0; x--) {
+                const dayDiv = document.createElement('div');
+                dayDiv.textContent = prevLastDay - x + 1;
+                dayDiv.style.opacity = '0.3';
+                grid.appendChild(dayDiv);
+            }
+
+            for (let i = 1; i <= lastDay; i++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.textContent = i;
+                dayDiv.className = 'sharp-inner-item';
+                dayDiv.style.padding = '8px';
+                dayDiv.style.cursor = 'pointer';
+                dayDiv.style.textAlign = 'center';
+                dayDiv.style.fontWeight = '600';
+                dayDiv.style.borderRadius = '50%';
+                dayDiv.style.margin = '2px';
+                
+                if (i === selectedCalDate.getDate() && month === selectedCalDate.getMonth() && year === selectedCalDate.getFullYear()) {
+                    dayDiv.style.background = 'linear-gradient(135deg, #FF69B4, #8A2BE2)';
+                    dayDiv.style.color = '#9aa0a6'; 
+                    dayDiv.style.boxShadow = 'var(--card-shadow-inset) !important';
+                    dayDiv.style.borderColor = 'transparent';
+                } else {
+                    dayDiv.style.color = 'var(--text-color)';
+                }
+
+                dayDiv.onclick = () => {
+                    playClickSFX();
+                    selectedCalDate = new Date(year, month, i);
+                    renderCalendarDays();
+                };
+                grid.appendChild(dayDiv);
+            }
+        }
+
+        document.getElementById('signupCountry').addEventListener('click', (e) => {
+            e.preventDefault();
+            const popup = document.getElementById('avatarPopup');
+            popup.querySelector('h3').textContent = "Select Country";
+            const grid = document.getElementById('avatarGrid');
+            grid.innerHTML = '';
+            grid.style.gridTemplateColumns = '1fr';
+
+            Object.keys(COUNTRY_PHONE_RULES).forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = 'sharp-inner-item';
+                btn.style.width = '100%';
+                btn.style.marginBottom = '8px';
+                btn.style.justifyContent = 'center';
+                btn.textContent = c;
+                btn.onclick = () => {
+                    playClickSFX();
+                    document.getElementById('signupCountry').value = c;
+                    
+                    const rule = COUNTRY_PHONE_RULES[c];
+                    const mobileInput = document.getElementById('signupMobile');
+                    
+                    mobileInput.disabled = false;
+                    mobileInput.value = rule.dial + " ";
+                    mobileInput.placeholder = `${rule.dial} 10-digit number (Optional)`;
+                    mobileInput.maxLength = rule.dial.length + 1 + rule.len;
+                    
+                    window.closeAvatarPopup();
+                    
+                    popup.querySelector('h3').textContent = "Select 3D Avatar";
+                    grid.style.gridTemplateColumns = 'repeat(5, 1fr)';
+                };
+                grid.appendChild(btn);
+            });
+
+            popup.style.display = 'flex';
+            popup.classList.add('show');
+        });
+
+        document.getElementById('signupMobile').addEventListener('input', (e) => {
+            const countrySelected = document.getElementById('signupCountry').value;
+            const rule = COUNTRY_PHONE_RULES[countrySelected];
+            if (!rule) return;
+            
+            const dial = rule.dial;
+            const dialDigits = dial.replace('+', '');
+            let digits = e.target.value.replace(/\D/g, '');
+            
+            if (digits.startsWith(dialDigits)) {
+                digits = digits.slice(dialDigits.length);
+            }
+            
+            digits = digits.slice(0, rule.len);
+            e.target.value = `${dial} ${digits}`;
+        });
+
+        document.querySelectorAll('.custom-modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('show');
+                    overlay.style.display = 'none';
+                    playCancelSFX();
+                }
+            });
+        });
+
+        document.getElementById('prevMonthBtn').onclick = () => {
+            currentCalDate.setMonth(currentCalDate.getMonth() - 1);
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            document.getElementById('calendarMonthBtn').textContent = months[currentCalDate.getMonth()];
+            document.getElementById('calendarYearBtn').textContent = currentCalDate.getFullYear();
+            renderCalendarDays();
+        };
+
+        document.getElementById('nextMonthBtn').onclick = () => {
+            currentCalDate.setMonth(currentCalDate.getMonth() + 1);
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            document.getElementById('calendarMonthBtn').textContent = months[currentCalDate.getMonth()];
+            document.getElementById('calendarYearBtn').textContent = currentCalDate.getFullYear();
+            renderCalendarDays();
+        };
+
+        document.getElementById('closeCalendarBtn').onclick = () => {
+            window.closeCustomCalendar();
+        };
+
+        document.getElementById('confirmCalendarBtn').onclick = () => {
+            playClickSFX();
+            const y = selectedCalDate.getFullYear();
+            const m = String(selectedCalDate.getMonth() + 1).padStart(2, '0');
+            const d = String(selectedCalDate.getDate()).padStart(2, '0');
+            document.getElementById('signupDOB').value = `${y}-${m}-${d}`;
+            window.closeCustomCalendar();
+        };
+
+        document.getElementById('forgotPasswordLink').onclick = (e) => {
+            e.preventDefault();
+            window.openForgotPasswordModal();
+        };
+
+        // --- Onboarding logic ---
+        let currentOnboardingSlide = 0;
+        const totalOnboardingSlides = 4;
+        const onboardingSlider = document.getElementById('onboardingSlider');
+        const onboardingDotsContainer = document.getElementById('onboardingDots');
+        const prevOnboardingBtn = document.getElementById('prevOnboardingBtn');
+        const nextOnboardingBtn = document.getElementById('nextOnboardingBtn');
+        const skipOnboardingBtn = document.getElementById('skipOnboardingBtn');
+
+        const onboardingContainer = document.getElementById('onboardingContainer');
+        function updateOnboardingSlider() {
+            onboardingContainer.classList.remove('hidden');
+            onboardingContainer.style.opacity = '1';
+            onboardingContainer.style.pointerEvents = 'auto';
+
+            const slideWidth = onboardingSlider.children[0].clientWidth || window.innerWidth;
+            onboardingSlider.style.transform = `translateX(-${currentOnboardingSlide * slideWidth}px)`;
+
+            Array.from(onboardingSlider.children).forEach(slide => {
+                slide.classList.remove('active-slide');
+            });
+            onboardingSlider.children[currentOnboardingSlide].classList.add('active-slide');
+
+            if (onboardingDotsContainer.children.length !== totalOnboardingSlides) {
+                onboardingDotsContainer.innerHTML = '';
+                for (let i = 0; i < totalOnboardingSlides; i++) {
+                    const dot = document.createElement('span');
+                    dot.classList.add('onboarding-dot');
+                    dot.dataset.slide = i;
+                    onboardingDotsContainer.appendChild(dot);
+                }
+            }
+            Array.from(onboardingDotsContainer.children).forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentOnboardingSlide);
+            });
+
+            prevOnboardingBtn.style.visibility = (currentOnboardingSlide === 0) ? 'hidden' : 'visible';
+            if (currentOnboardingSlide === totalOnboardingSlides - 1) {
+                nextOnboardingBtn.innerHTML = '<span style="position:relative;z-index:2;">&#10003;</span>';
+            } else {
+                nextOnboardingBtn.innerHTML = '<span class="onb-next-arrow"><div></div></span>';
+            }
+
+            const activeSlide = onboardingSlider.children[currentOnboardingSlide];
+            const illus = activeSlide.querySelector('.illustration-placeholder');
+            const heading = activeSlide.querySelector('h3');
+            [illus, heading].forEach(el => {
+                if (!el) return;
+                el.style.animation = 'none';
+                void el.offsetWidth;
+                el.style.animation = '';
+            });
+            const nav = document.querySelector('.onboarding-navigation');
+            nav.classList.remove('onb-anim');
+            void nav.offsetWidth;
+            nav.classList.add('onb-anim');
+
+            const para = activeSlide.querySelector('p');
+            if (para) {
+                if (!para.dataset.fullText) {
+                    para.dataset.fullText = para.textContent.trim();
+                }
+                const fullText = para.dataset.fullText;
+                if (para._gsapTween) { try { para._gsapTween.kill(); } catch(_){} }
+                para.textContent = '';
+                if (window.gsap) {
+                    para._gsapTween = gsap.to(para, {
+                        text: fullText,
+                        duration: 2,
+                        ease: 'power1.in',
+                        delay: 0.3
+                    });
+                } else {
+                    para.textContent = fullText;
+                }
+            }
+        }
+
+        function finishOnboarding() {
+            onboardingContainer.style.opacity = '0';
+            onboardingContainer.style.pointerEvents = 'none';
+            onboardingContainer.classList.add('hidden');
+            localStorage.setItem('hasSeenLearnEraOnboarding', 'true');
+            hasSeenOnboarding = true;
+
+            setTimeout(() => { onboardingContainer.style.display = 'none'; }, 550);
+
+            const authMainContainer = document.getElementById('initialAuthContainer');
+            authMainContainer.style.display = '';
+            authMainContainer.style.opacity = '1';
+            authMainContainer.style.pointerEvents = 'auto';
+            const authWrap = document.querySelector('.auth-container');
+            if (authWrap) {
+                authWrap.classList.remove('onb-zoom-in');
+                void authWrap.offsetWidth;
+                authWrap.classList.add('onb-zoom-in');
+            }
+            showInitialView();
+        }
+
+        nextOnboardingBtn.addEventListener('click', () => {
+            playClickSFX();
+            if (currentOnboardingSlide < totalOnboardingSlides - 1) {
+                currentOnboardingSlide++;
+                updateOnboardingSlider();
+            } else {
+                finishOnboarding();
+            }
+        });
+
+        let _onbNextHoverTimer = null;
+        nextOnboardingBtn.addEventListener('mouseenter', () => {
+            nextOnboardingBtn.classList.add('is-hover');
+            clearTimeout(_onbNextHoverTimer);
+            _onbNextHoverTimer = setTimeout(() => {
+                nextOnboardingBtn.classList.remove('is-hover');
+            }, 1000);
+        });
+        nextOnboardingBtn.addEventListener('mouseleave', () => {
+            clearTimeout(_onbNextHoverTimer);
+            nextOnboardingBtn.classList.remove('is-hover');
+        });
+        nextOnboardingBtn.addEventListener('touchstart', () => {
+            nextOnboardingBtn.classList.add('is-hover');
+            clearTimeout(_onbNextHoverTimer);
+            _onbNextHoverTimer = setTimeout(() => {
+                nextOnboardingBtn.classList.remove('is-hover');
+            }, 1000);
+        }, { passive: true });
+
+        prevOnboardingBtn.addEventListener('click', () => {
+            playClickSFX();
+            if (currentOnboardingSlide > 0) {
+                currentOnboardingSlide--;
+                updateOnboardingSlider();
+            }
+        });
+
+        skipOnboardingBtn.addEventListener('click', () => {
+            playClickSFX();
+            finishOnboarding();
+        });
+
+        onboardingDotsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('onboarding-dot')) {
+                const slideIndex = parseInt(e.target.dataset.slide);
+                if (!isNaN(slideIndex)) {
+                    playClickSFX();
+                    currentOnboardingSlide = slideIndex;
+                    updateOnboardingSlider();
+                }
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            let authInterval = setInterval(() => {
+                if (window.auth && window.db) {
+                    clearInterval(authInterval);
+                    initializeFirebaseLogic();
+                }
+            }, 50);
+        });
+
+        function initializeFirebaseLogic() {
+            const auth = window.auth;
+            const db = window.db;
+
+            async function checkFirebaseStatus() {
+                try {
+                    let isMaint = false;
+
+                    // Direct Leaf Node Check
+                    try {
+                        const leafRef = window.getRef(db, "maintenance/isMaintenanceMode");
+                        const leafSnap = await window.dbGet(leafRef);
+                        if (leafSnap.exists()) {
+                            const v = leafSnap.val();
+                            if (v === true || v === "true" || v === "on" || v === 1 || v === "1") {
+                                isMaint = true;
+                            }
+                        }
+                    } catch(e) {}
+
+                    // Parent Node Check
+                    if (!isMaint) {
+                        try {
+                            const maintRef = window.getRef(db, "maintenance");
+                            const maintSnap = await window.dbGet(maintRef);
+                            if (maintSnap.exists()) {
+                                const val = maintSnap.val();
+                                if (val === true || val === "true" || val === "on") {
+                                    isMaint = true;
+                                } else if (typeof val === 'object' && val !== null) {
+                                    const mVal = val.isMaintenanceMode ?? val.maintenanceMode ?? val.status ?? val.enabled;
+                                    if (mVal === true || mVal === "true" || mVal === "on" || mVal === 1 || mVal === "1") {
+                                        isMaint = true;
+                                    }
+                                }
+                            }
+                        } catch(e) {}
+                    }
+
+                    // Fallback Check
+                    if (!isMaint) {
+                        try {
+                            const settingsMaintRef = window.getRef(db, "settings/maintenance");
+                            const settingsSnap = await window.dbGet(settingsMaintRef);
+                            if (settingsSnap.exists()) {
+                                const val = settingsSnap.val();
+                                if (val === true || val === "true" || val === "on") {
+                                    isMaint = true;
+                                } else if (typeof val === 'object' && val !== null) {
+                                    const mVal = val.isMaintenanceMode ?? val.status ?? val.enabled;
+                                    if (mVal === true || mVal === "true" || mVal === "on") {
+                                        isMaint = true;
+                                    }
+                                }
+                            }
+                        } catch(e) {}
+                    }
+
+                    if (isMaint) {
+                        if (typeof window.onFirebaseStateResolved === 'function') {
+                            window.onFirebaseStateResolved('maintenance');
+                        }
+                        return;
+                    }
+
+                    auth.onAuthStateChanged(async (user) => {
+                        if (user) {
+                            try {
+                                const userRef = window.getRef(db, `users/${user.uid}`);
+                                const userSnap = await window.dbGet(userRef);
+                                if (userSnap.exists()) {
+                                    const val = userSnap.val();
+                                    if (val.status === 'Suspended') {
+                                        showCustomAlert("Account Suspended", false);
+                                        await auth.signOut();
+                                        if (typeof window.onFirebaseStateResolved === 'function') {
+                                            window.onFirebaseStateResolved('auth');
+                                        }
+                                        return;
+                                    }
+                                }
+                                if (typeof window.onFirebaseStateResolved === 'function') {
+                                    window.onFirebaseStateResolved('app');
+                                }
+                            } catch(e) {
+                                if (typeof window.onFirebaseStateResolved === 'function') {
+                                    window.onFirebaseStateResolved('app');
+                                }
+                            }
+                        } else {
+                            if (typeof window.onFirebaseStateResolved === 'function') {
+                                window.onFirebaseStateResolved('auth');
+                            }
+                        }
+                    });
+
+                } catch(e) {
+                    console.error("Firebase status check failed:", e);
+                    if (typeof window.onFirebaseStateResolved === 'function') {
+                        window.onFirebaseStateResolved('auth');
+                    }
+                }
+            }
+
+            checkFirebaseStatus();
+
+            document.getElementById('googleSignInBtn').addEventListener('click', async () => {
+                try {
+                    const result = await window.signInWithPopup(auth, window.googleProvider);
+                    const user = result.user;
+                    
+                    const userRef = window.getRef(db, `users/${user.uid}`);
+                    const snapshot = await window.dbGet(userRef);
+
+                    if (!snapshot.exists()) {
+                        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                        let generatedCode = '';
+                        let isUnique = false;
+                        while (!isUnique) {
+                            generatedCode = Array.from({ length: 8 }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
+                            const codeCheck = await window.dbGet(window.getRef(db, `referralCodes/${generatedCode}`));
+                            if (!codeCheck.exists()) isUnique = true;
+                        }
+
+                        const defaultAvatar = window.LEARNERA_DEFAULT_AVATAR;
+                        await saveImageToIndexedDB(user.uid, defaultAvatar);
+
+                        const basicData = {
+                            firstName: user.displayName ? user.displayName.split(' ')[0] : 'Learner',
+                            lastName: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : 'App',
+                            email: user.email,
+                            mobileNumber: '',
+                            referralCode: generatedCode,
+                            gender: 'Other',
+                            country: 'India',
+                            dob: '',
+                            profilePicURL: defaultAvatar,
+                            status: 'Active',
+                            createdAt: new Date().toISOString()
+                        };
+
+                        const updates = {};
+                        updates[`users/${user.uid}`] = basicData;
+                        updates[`referralCodes/${generatedCode}`] = user.uid;
+                        updates[`affiliate/${user.uid}`] = {
+                            totalRefer: 0, totalEarnings: 0, totalWithdrawals: 0,
+                            availablePoints: 0, totalSales: 0, referredUsers: {}
+                        };
+
+                        await window.dbUpdate(window.getRef(db), updates);
+                    }
+                    window.openLearnEraApp();
+                } catch(err) {
+                    showCustomAlert("Authentication Cancelled", false);
+                }
+            });
+
+            function checkRequiredEmpty(form) {
+                const missing = [];
+                form.querySelectorAll('input[required], select[required]').forEach(el => {
+                    if (el.offsetParent === null && el.type !== 'hidden') return;
+                    if (!el.value || !String(el.value).trim()) {
+                        const label = (el.placeholder || el.getAttribute('aria-label') || el.id || 'this field').replace(/\*/g,'').trim();
+                        missing.push(label);
+                    }
+                });
+                return missing;
+            }
+
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const loginForm = e.currentTarget;
+                const missing = checkRequiredEmpty(loginForm);
+                if (missing.length) {
+                    showCustomAlert(`Please fill: ${missing.join(', ')}`, false);
+                    return;
+                }
+
+                document.getElementById('appLoadingOverlay').classList.remove('hidden');
+
+                const email = document.getElementById('loginEmail').value.trim();
+                const pass = document.getElementById('loginPassword').value;
+
+                try {
+                    const cred = await window.signInWithEmailAndPassword(auth, email, pass);
+                    const userSnapshot = await window.dbGet(window.getRef(db, `users/${cred.user.uid}`));
+                    if (userSnapshot.exists() && userSnapshot.val().status === 'Suspended') {
+                        document.getElementById('appLoadingOverlay').classList.add('hidden');
+                        showCustomAlert("Account Suspended", false);
+                        await auth.signOut();
+                    } else {
+                        window.openLearnEraApp();
+                    }
+                } catch(error) {
+                    document.getElementById('appLoadingOverlay').classList.add('hidden');
+                    showCustomAlert("Invalid Credentials", false);
+                }
+            });
+
+            document.getElementById('signupForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const fn = document.getElementById('signupFirstName').value.trim();
+                const ln = document.getElementById('signupLastName').value.trim();
+                const email = document.getElementById('signupEmail').value.trim();
+                const mob = document.getElementById('signupMobile').value.trim();
+                const pass = document.getElementById('signupPassword').value;
+                const cPass = document.getElementById('signupConfirmPassword').value;
+                const gender = document.getElementById('signupGender').value;
+                const country = document.getElementById('signupCountry').value.trim();
+                const dob = document.getElementById('signupDOB').value;
+                const terms = document.getElementById('signupAcceptTerms').checked;
+                const refCode = document.getElementById('signupReferralCode').value.trim().toUpperCase();
+
+                const missingSU = checkRequiredEmpty(e.currentTarget);
+                if (missingSU.length) {
+                    showCustomAlert(`Please fill: ${missingSU.join(', ')}`, false);
+                    return;
+                }
+
+                if (pass !== cPass) {
+                    showCustomAlert("Passwords do not match!", false);
+                    return;
+                }
+                if (!terms) {
+                    showTermsRequiredPopup();
+                    return;
+                }
+
+                document.getElementById('appLoadingOverlay').classList.remove('hidden');
+
+                try {
+                    const emailQuery = window.dbQuery(window.getRef(db, 'users'), window.dbOrderBy('email'), window.dbEqualTo(email));
+                    const emailSnap = await window.dbGet(emailQuery);
+                    if (emailSnap.exists()) {
+                        document.getElementById('appLoadingOverlay').classList.add('hidden');
+                        showCustomAlert("Email already exists!", false);
+                        return;
+                    }
+
+                    if (mob) {
+                        const mobQuery = window.dbQuery(window.getRef(db, 'users'), window.dbOrderBy('mobileNumber'), window.dbEqualTo(mob));
+                        const mobSnap = await window.dbGet(mobQuery);
+                        if (mobSnap.exists()) {
+                            document.getElementById('appLoadingOverlay').classList.add('hidden');
+                            showCustomAlert("Mobile number registered!", false);
+                            return;
+                        }
+                    }
+
+                    let referrerUid = null;
+                    if (refCode) {
+                        const refSnap = await window.dbGet(window.getRef(db, `referralCodes/${refCode}`));
+                        if (!refSnap.exists()) {
+                            document.getElementById('appLoadingOverlay').classList.add('hidden');
+                            showCustomAlert("Invalid referral code!", false);
+                            return;
+                        }
+                        referrerUid = refSnap.val();
+                    }
+
+                    const cred = await window.createUserWithEmailAndPassword(auth, email, pass);
+                    const user = cred.user;
+
+                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                    let code = '';
+                    let isUnique = false;
+                    while (!isUnique) {
+                        code = Array.from({ length: 8 }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
+                        const checkCode = await window.dbGet(window.getRef(db, `referralCodes/${code}`));
+                        if (!checkCode.exists()) isUnique = true;
+                    }
+
+                    const finalAvatar = selectedAvatarUrl || window.LEARNERA_DEFAULT_AVATAR;
+                    await saveImageToIndexedDB(user.uid, finalAvatar);
+
+                    const updates = {};
+                    updates[`users/${user.uid}`] = {
+                        firstName: fn,
+                        lastName: ln,
+                        email: email,
+                        mobileNumber: mob,
+                        referralCode: code,
+                        referredBy: referrerUid,
+                        gender: gender,
+                        country: country,
+                        dob: dob,
+                        profilePicURL: finalAvatar,
+                        status: 'Active',
+                        createdAt: new Date().toISOString()
+                    };
+                    updates[`referralCodes/${code}`] = user.uid;
+                    updates[`affiliate/${user.uid}`] = {
+                        totalRefer: 0, totalEarnings: 0, totalWithdrawals: 0,
+                        availablePoints: 0, totalSales: 0, referredUsers: {}
+                    };
+
+                    if (referrerUid) {
+                        const referrerAffRef = window.getRef(db, `affiliate/${referrerUid}`);
+                        const refDataSnap = await window.dbGet(referrerAffRef);
+                        const curCount = refDataSnap.child('totalRefer').val() || 0;
+                        updates[`affiliate/${referrerUid}/totalRefer`] = curCount + 1;
+                        updates[`affiliate/${referrerUid}/referredUsers/${user.uid}`] = true;
+                    }
+
+                    await window.dbUpdate(window.getRef(db), updates);
+                    window.openLearnEraApp();
+
+                } catch(err) {
+                    document.getElementById('appLoadingOverlay').classList.add('hidden');
+                    const msg = (typeof window.friendlyAuthError === 'function')
+                        ? window.friendlyAuthError(err)
+                        : "Something went wrong. Please try again.";
+                    showCustomAlert(msg, false);
+                }
+            });
+
+            document.getElementById('confirmResetBtn').addEventListener('click', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('forgotPasswordEmail').value.trim();
+                if (!email) {
+                    showCustomAlert("Please enter email!", false);
+                    return;
+                }
+                
+                try {
+                    await window.sendPasswordResetEmail(auth, email);
+                    window.closeForgotPasswordModal();
+                    showCustomAlert("Reset link sent!", true);
+                } catch(err) {
+                    const msg = (typeof window.friendlyAuthError === 'function')
+                        ? window.friendlyAuthError(err)
+                        : "Something went wrong. Please try again.";
+                    showCustomAlert(msg, false);
+                }
+            });
+        }
+    </script>
+
+    <!-- Splash Loader Script -->
+    <script>
+    (function () {
+        const splash    = document.getElementById('learneraSplash');
+        const fillEl    = document.getElementById('splashLoadingFill');
+        const pctEl     = document.getElementById('splashLoadingPercent');
+        const logoBox   = document.getElementById('splashLogoBox');
+        if (!splash) return;
+
+        let authStateResolved = false;
+        let userDestination  = 'auth'; // 'maintenance' | 'app' | 'auth'
+
+        window.onFirebaseStateResolved = function(destination) {
+            userDestination = destination;
+            authStateResolved = true;
+        };
+
+        const videoUrls = Array.from(document.querySelectorAll('#onboardingContainer video'))
+            .map(v => v.currentSrc || v.src)
+            .filter(Boolean);
+
+        const assetPromises = [];
+
+        if (document.fonts && document.fonts.ready) {
+            assetPromises.push(document.fonts.ready.catch(() => {}));
+        }
+        assetPromises.push(new Promise(res => {
+            const probe = document.createElement('i');
+            probe.className = 'fas fa-eye';
+            probe.style.cssText = 'position:absolute;left:-9999px;top:-9999px;font-size:16px;';
+            document.body.appendChild(probe);
+            requestAnimationFrame(() => { document.body.removeChild(probe); res(); });
+        }));
+
+        videoUrls.forEach(url => {
+            assetPromises.push(fetch(url, { mode: 'cors' })
+                .then(r => r.ok ? r.blob() : null)
+                .catch(() => null));
+        });
+
+        assetPromises.push(new Promise(res => {
+            const img = new Image();
+            img.onload = img.onerror = () => {
+                if (logoBox) logoBox.classList.remove('skeleton');
+                res();
+            };
+            img.src = 'https://i.ibb.co/bgWVZn48/LearnEra-Logo.webp';
+        }));
+
+        let realProgress = 0;
+        let displayed    = 0;
+        const total      = assetPromises.length || 1;
+        let done         = 0;
+        let allSettled   = false;
+
+        assetPromises.forEach(p => Promise.resolve(p).finally(() => {
+            done += 1;
+            realProgress = Math.max(realProgress, (done / total) * 100);
+        }));
+        Promise.allSettled(assetPromises).then(() => { allSettled = true; });
+
+        let shineStarted = false;
+        const tick = setInterval(() => {
+            const isReady = allSettled && authStateResolved;
+            const target = isReady ? 100 : Math.min(realProgress, 90);
+
+            displayed = Math.min(100, displayed + Math.max(0.8, (target - displayed) * 0.15));
+
+            fillEl.style.width  = displayed.toFixed(1) + '%';
+            pctEl.textContent   = Math.floor(displayed) + '%';
+
+            if (displayed >= 42) pctEl.classList.add('reached');
+            else pctEl.classList.remove('reached');
+
+            if (displayed >= 70 && !shineStarted) {
+                shineStarted = true;
+                if (logoBox) {
+                    logoBox.classList.remove('skeleton');
+                    logoBox.classList.add('shining');
+                }
+            }
+
+            if (isReady && displayed >= 99.5) {
+                clearInterval(tick);
+                pctEl.textContent = '100%';
+                fillEl.style.width = '100%';
+
+                if (logoBox) {
+                    logoBox.classList.remove('skeleton');
+                    logoBox.classList.add('shining');
+                }
+
+                setTimeout(() => {
+                    splash.classList.add('splash-hidden');
+                    setTimeout(() => { splash.style.display = 'none'; }, 400);
+
+                    if (userDestination === 'maintenance') {
+                        window.openMaintenanceApp();
+                    } else if (userDestination === 'app') {
+                        window.openLearnEraApp();
+                    } else {
+                        const appLoadingOverlay = document.getElementById('appLoadingOverlay');
+                        if (appLoadingOverlay) appLoadingOverlay.classList.add('hidden');
+                        if (!hasSeenOnboarding) {
+                            updateOnboardingSlider();
+                        } else {
+                            showInitialView();
+                        }
+                    }
+                }, 300);
+            }
+        }, 50);
+
+        setTimeout(() => { 
+            allSettled = true; 
+            if (!authStateResolved) {
+                window.onFirebaseStateResolved('auth');
+            }
+        }, 8000);
+    })();
+    </script>
+
+    <!-- Email validation & error translator -->
+    <script>
+    (function () {
+        const EMAIL_IDS = ['loginEmail', 'signupEmail', 'forgotPasswordEmail'];
+        const ALLOWED = /[^A-Za-z0-9._%+\-@]/g;
+
+        function sanitize(value) {
+            let v = value.replace(ALLOWED, '');
+            v = v.replace(/\.{2,}/g, '.');
+            v = v.replace(/^[.@]+/, '');
+            const at = v.indexOf('@');
+            if (at !== -1) {
+                v = v.slice(0, at + 1) + v.slice(at + 1).replace(/@/g, '');
+            }
+            return v.toLowerCase();
+        }
+
+        const ALLOWED_DOMAINS = [
+            'gmail.com', 'outlook.com', 'yahoo.com', 'hotmail.com',
+            'icloud.com', 'live.com', 'protonmail.com', 'proton.me',
+            'rediffmail.com', 'aol.com', 'yandex.com', 'zoho.com'
+        ];
+        const STRICT_EMAIL_RE = /^[a-z0-9]+(?:[._+-][a-z0-9]+)*@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/;
+
+        window.isValidEmailStrict = function (raw) {
+            if (!raw) return false;
+            const email = String(raw).trim().toLowerCase();
+            if (!STRICT_EMAIL_RE.test(email)) return false;
+            if (email.includes('..')) return false;
+            const domain = email.split('@')[1];
+            return ALLOWED_DOMAINS.includes(domain);
+        };
+
+        window.emailValidationMessage = function () {
+            return "Please enter a valid email (e.g. name@gmail.com, @outlook.com, @yahoo.com).";
+        };
+
+        EMAIL_IDS.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.setAttribute('autocomplete', 'email');
+            el.setAttribute('inputmode', 'email');
+            el.setAttribute('spellcheck', 'false');
+            el.addEventListener('blur', () => { el.value = sanitize(el.value); });
+        });
+
+        window.friendlyAuthError = function (err) {
+            const code = (err && err.code) ? String(err.code) : '';
+            const map = {
+                'auth/invalid-email':            "That email address doesn't look right.",
+                'auth/user-disabled':            "This account has been disabled. Please contact support.",
+                'auth/user-not-found':           "No account found for this email.",
+                'auth/wrong-password':           "Incorrect email or password.",
+                'auth/invalid-credential':       "Incorrect email or password.",
+                'auth/invalid-login-credentials':"Incorrect email or password.",
+                'auth/email-already-in-use':     "An account already exists with this email.",
+                'auth/weak-password':            "Please choose a stronger password (at least 6 characters).",
+                'auth/too-many-requests':        "Too many attempts. Please wait a moment and try again.",
+                'auth/network-request-failed':   "You're offline. Please check your internet and try again.",
+                'auth/popup-closed-by-user':     "Sign-in was cancelled.",
+                'auth/cancelled-popup-request':  "Sign-in was cancelled.",
+                'auth/popup-blocked':            "Your browser blocked the sign-in window. Please allow pop-ups and try again.",
+                'auth/operation-not-allowed':    "This sign-in method isn't enabled right now.",
+                'auth/requires-recent-login':    "For your security, please sign in again to continue."
+            };
+            if (map[code]) return map[code];
+            return "Something went wrong. Please try again.";
+        };
+
+        function guardEmailSubmit(formId, emailId) {
+            const form = document.getElementById(formId);
+            const input = document.getElementById(emailId);
+            if (!form || !input) return;
+            form.addEventListener('submit', (e) => {
+                const val = input.value.trim();
+                if (!window.isValidEmailStrict(val)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    if (typeof window.showCustomAlert === 'function') {
+                        window.showCustomAlert(window.emailValidationMessage(), false);
+                    }
+                    try { input.focus(); } catch (_) {}
+                }
+            }, true);
+        }
+
+        function guardEmailClick(btnId, emailId) {
+            const btn = document.getElementById(btnId);
+            const input = document.getElementById(emailId);
+            if (!btn || !input) return;
+            btn.addEventListener('click', (e) => {
+                const val = input.value.trim();
+                if (!window.isValidEmailStrict(val)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    if (typeof window.showCustomAlert === 'function') {
+                        window.showCustomAlert(window.emailValidationMessage(), false);
+                    }
+                    try { input.focus(); } catch (_) {}
+                }
+            }, true);
+        }
+
+        guardEmailSubmit('loginForm',  'loginEmail');
+        guardEmailSubmit('signupForm', 'signupEmail');
+        guardEmailClick('confirmResetBtn', 'forgotPasswordEmail');
+    })();
+    </script>
+
+    <!-- Global Typing Effect + Auto Selection Collapse -->
+    <script>
+    (function () {
+        const nativeValueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+        
+        Object.defineProperty(HTMLInputElement.prototype, 'value', {
+            set: function(val) {
+                nativeValueSetter.call(this, val);
+                this.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        });
+
+        // Completely prevent native text selection blue highlight inside typing textboxes
+        document.addEventListener('selectionchange', () => {
+            const active = document.activeElement;
+            if (active && active.tagName === 'INPUT' && active.classList.contains('typing-effect-input')) {
+                try {
+                    if (active.selectionStart !== active.selectionEnd) {
+                        active.setSelectionRange(active.selectionEnd, active.selectionEnd);
+                    }
+                } catch (_) {}
+            }
+        });
+
+        const SELECTOR = 'input[type="text"], input[type="email"], input[type="password"], input[type="tel"], input[type="search"], input[type="number"], textarea';
+
+        function getCaretPos(input, fallback) {
+            try {
+                if (typeof input.selectionStart === 'number' && input.selectionStart !== null) {
+                    return input.selectionStart;
+                }
+            } catch (_) {}
+            return fallback;
+        }
+
+        function setupTypingEffect(input) {
+            if (input.dataset.typingEffectAttached) return;
+            input.dataset.typingEffectAttached = "true";
+
+            input.classList.add('typing-effect-input');
+
+            const parent = input.parentElement;
+            if (parent && getComputedStyle(parent).position === 'static') {
+                parent.style.position = 'relative';
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'typing-display-wrapper';
+
+            const display = document.createElement('div');
+            display.className = 'typing-display-text';
+
+            const cursor = document.createElement('div');
+            cursor.className = 'typing-cursor';
+
+            display.appendChild(cursor);
+            wrapper.appendChild(display);
+
+            if (input.nextSibling) {
+                parent.insertBefore(wrapper, input.nextSibling);
+            } else {
+                parent.appendChild(wrapper);
+            }
+
+            const syncStyles = () => {
+                const cs = getComputedStyle(input);
+                wrapper.style.paddingLeft = cs.paddingLeft;
+                wrapper.style.paddingRight = cs.paddingRight;
+                wrapper.style.paddingTop = cs.paddingTop;
+                wrapper.style.paddingBottom = cs.paddingBottom;
+                wrapper.style.fontSize = cs.fontSize;
+                wrapper.style.fontFamily = cs.fontFamily;
+                wrapper.style.fontWeight = cs.fontWeight;
+            };
+            syncStyles();
+
+            let previousText = "";
+
+            const updateCursorPos = () => {
+                const activeChars = Array.from(display.querySelectorAll('.char:not(.animate-out)'));
+                let pos = getCaretPos(input, activeChars.length);
+                pos = Math.max(0, Math.min(pos, activeChars.length));
+
+                if (pos < activeChars.length) {
+                    display.insertBefore(cursor, activeChars[pos]);
+                } else {
+                    display.appendChild(cursor);
+                }
+            };
+
+            const handleTyping = () => {
+                const isPassword = input.type === 'password';
+                const isEmail = input.getAttribute('inputmode') === 'email' || input.type === 'email' || input.id === 'loginEmail' || input.id === 'signupEmail' || input.id === 'forgotPasswordEmail';
+                
+                let rawValue = input.value || "";
+
+                if (input.id === 'signupFirstName' && rawValue.length > 10) {
+                    const start = Math.min(getCaretPos(input, 10), 10);
+                    rawValue = rawValue.slice(0, 10);
+                    nativeValueSetter.call(input, rawValue);
+                    try { input.setSelectionRange(start, start); } catch (_) {}
+                }
+
+                if (isEmail && /[A-Z]/.test(rawValue)) {
+                    const start = getCaretPos(input, rawValue.length);
+                    rawValue = rawValue.toLowerCase();
+                    nativeValueSetter.call(input, rawValue);
+                    try { input.setSelectionRange(start, start); } catch (_) {}
+                }
+
+                const currentText = isPassword ? "•".repeat(rawValue.length) : rawValue;
+
+                if (input.readOnly || Math.abs(currentText.length - previousText.length) > 2) {
+                    const chars = display.querySelectorAll('.char');
+                    chars.forEach(c => c.remove());
+
+                    for (let char of currentText) {
+                        const span = document.createElement('span');
+                        span.textContent = char === ' ' ? '\u00A0' : char;
+                        span.className = 'char';
+                        display.insertBefore(span, cursor);
+                    }
+
+                    previousText = currentText;
+                    display.classList.remove('smooth-update');
+                    void display.offsetWidth;
+                    display.classList.add('smooth-update');
+                    requestAnimationFrame(updateCursorPos);
+                    return;
+                }
+
+                let p = 0;
+                while (p < previousText.length && p < currentText.length && previousText[p] === currentText[p]) {
+                    p++;
+                }
+
+                let s = 0;
+                while (
+                    s < (previousText.length - p) && 
+                    s < (currentText.length - p) && 
+                    previousText[previousText.length - 1 - s] === currentText[currentText.length - 1 - s]
+                ) {
+                    s++;
+                }
+
+                const inserted = currentText.slice(p, currentText.length - s);
+                const deletedLen = (previousText.length - p - s);
+
+                const activeChars = Array.from(display.querySelectorAll('.char:not(.animate-out)'));
+
+                if (deletedLen > 0) {
+                    for (let i = 0; i < deletedLen; i++) {
+                        const charToRemove = activeChars[p + i];
+                        if (charToRemove) {
+                            charToRemove.classList.remove('animate-in');
+                            charToRemove.classList.add('animate-out');
+
+                            setTimeout(() => {
+                                if (charToRemove.parentNode) charToRemove.remove();
+                            }, 200);
+                        }
+                    }
+                }
+
+                if (inserted.length > 0) {
+                    const refNode = activeChars[p + deletedLen] || cursor;
+                    for (let char of inserted) {
+                        const span = document.createElement('span');
+                        span.textContent = char === ' ' ? '\u00A0' : char;
+                        span.className = 'char animate-in';
+                        display.insertBefore(span, refNode);
+                    }
+                }
+
+                previousText = currentText;
+                requestAnimationFrame(updateCursorPos);
+            };
+
+            input.addEventListener('input', handleTyping);
+            input.addEventListener('change', handleTyping);
+
+            ['keyup', 'keydown', 'click', 'focus', 'touchend'].forEach(evt => {
+                input.addEventListener(evt, () => requestAnimationFrame(updateCursorPos));
+            });
+
+            if (input.value) {
+                handleTyping();
+            }
+        }
+
+        function initAllInputs() {
+            document.querySelectorAll(SELECTOR).forEach(input => {
+                setupTypingEffect(input);
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initAllInputs);
+        } else {
+            initAllInputs();
+        }
+
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach(mutation => {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === 1) {
+                        if (node.matches && node.matches(SELECTOR)) {
+                            setupTypingEffect(node);
+                        }
+                        if (node.querySelectorAll) {
+                            node.querySelectorAll(SELECTOR).forEach(setupTypingEffect);
+                        }
+                    }
+                });
+            });
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    })();
+    </script>
+
+</body>
+</html>
