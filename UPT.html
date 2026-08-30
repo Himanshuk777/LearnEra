@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LearnEra - Personality Test</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Lottie & GSAP libraries -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <!-- Early theme bootstrap -->
+    <script>
+        (function () {
+            try {
+                const savedTheme = localStorage.getItem('appThemeMode') || 'system';
+                const isDark = savedTheme === 'dark' ||
+                    (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const darkStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.documentElement.setAttribute('data-dark-text', darkStyle);
+                } else {
+                    document.documentElement.removeAttribute('data-dark-text');
+                }
+                const topSp = localStorage.getItem('appTopSpace') || '5';
+                document.documentElement.style.setProperty('--top-space', topSp + 'vh');
+            } catch (e) {
+                document.documentElement.style.setProperty('--top-space', '5vh');
+            }
+            
+            const savedLang = localStorage.getItem('appLanguageSelection') || 'en';
+            document.documentElement.setAttribute('data-lang', savedLang);
+        })();
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        :root {
+            --body-bg: #e6edf7; 
+            --neu-shadow-light: #ffffff;
+            --neu-shadow-dark: #c8d3e4;
+            
+            --text-color: #2d3748; 
+            --sub-text-color: #718096; 
+            
+            --pink: #FF69B4;
+            --pink-strong: #FF1493;
+            --blue: #1E90FF;
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+            
+            --inner-highlight: inset 1px 1px 2px rgba(255,255,255,0.7);
+            --border-soft: 1px solid rgba(255,255,255,0.35);
+            
+            --top-space: 5vh;
+            --transition-theme: background-color 0.8s ease, color 0.8s ease, box-shadow 0.8s ease, border-color 0.8s ease;
+        }
+
+        html[data-theme="dark"] {
+            --body-bg: #1e1e24; 
+            --neu-shadow-dark: #101014;
+            --neu-shadow-light: rgba(255, 255, 255, 0.05);
+            
+            --text-color: #d1d9e6; 
+            --sub-text-color: #a3b1c6; 
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.02);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px rgba(255, 255, 255, 0.02);
+        }
+
+        html[data-dark-text="deep-dark"] {
+            --body-bg: #0c0c0f; 
+            --neu-shadow-dark: #050506;
+            --neu-shadow-light: rgba(255, 255, 255, 0.02);
+            
+            --text-color: rgba(255, 255, 255, 0.35); 
+            --sub-text-color: rgba(255, 255, 255, 0.3); 
+            
+            --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255, 255, 255, 0.01);
+            --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255, 255, 255, 0.01);
+            --card-shadow-micro: 2px 2px 5px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255, 255, 255, 0.01);
+            --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255, 255, 255, 0.01);
+            --pressed-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -2px -2px 5px rgba(255, 255, 255, 0.02);
+            --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -2px -2px 4px rgba(255, 255, 255, 0.02);
+        }
+
+        /* Language Overrides */
+        html[data-lang="hi"] *, html[data-lang="ch"] *, html[data-lang="bh"] * {
+            font-family: 'Tiro Devanagari Hindi', serif !important;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            overflow: hidden;
+            overscroll-behavior: none;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Modified: Content sits naturally at the top of the viewport */
+            align-items: center;
+            font-size: 13px; 
+            transition: var(--transition-theme);
+        }
+
+        /* Custom top screen toast styling */
+        #customToast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #ff4d4d;
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            z-index: 99999;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif !important;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+            width: 90%;
+            max-width: 400px;
+            justify-content: center;
+        }
+
+        html[data-dark-text="deep-dark"] #customToast {
+            background: #242424 !important;
+            color: rgba(255, 255, 255, 0.35) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+        }
+
+        /* Responsive Layout Container */
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 15px 15px 15px; /* Spaced symmetrically without top padding values */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: flex-start; /* Modified: Content fits cleanly flush to the top */
+            height: auto;
+            min-height: 100%;
+        }
+
+        .app-card {
+            background: var(--body-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--card-shadow), inset 1px 1px 2px rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.35);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition-theme);
+            margin-top: 15px; /* Compact top alignment gap */
+        }
+
+        /* Neumorphic UI Details for Header metrics */
+        .card-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .section-progress-text {
+            font-weight: 700;
+            color: var(--sub-text-color);
+            font-size: 0.95em;
+        }
+
+        .timer-pill {
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9em;
+            color: var(--text-color);
+            background: var(--body-bg);
+            box-shadow: var(--card-shadow-micro), var(--inner-highlight);
+            border: var(--border-soft);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Progress Bar Inset styling */
+        .progress-container {
+            width: 100%;
+            background: var(--body-bg);
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            box-shadow: var(--settings-shadow-inset-sharp);
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--blue);
+            border-radius: 10px;
+            transition: width 0.4s ease-in-out;
+        }
+
+        .question-box {
+            padding: 18px;
+            border-radius: 16px;
+            background: var(--body-bg);
+            box-shadow: var(--settings-shadow-inset-sharp);
+            margin-bottom: 22px;
+            color: var(--text-color);
+            font-size: 1.1em;
+            font-weight: 600;
+            line-height: 1.5;
+            text-align: left;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        /* Neumorphic Option Button Styles */
+        .sharp-inner-item {
+            box-shadow: var(--card-shadow-micro) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            border-radius: 14px !important;
+            background: var(--body-bg) !important;
+            padding: 14px 18px;
+            font-size: 0.95em;
+            font-weight: 500;
+            color: var(--text-color);
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            display: block;
+            outline: none;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+
+        .sharp-inner-item:active:not(.disabled):not(.skeleton-loading) {
+            box-shadow: var(--card-shadow-inset) !important;
+            transform: scale(0.98);
+        }
+
+        .sharp-inner-item.selected {
+            box-shadow: var(--pressed-shadow) !important;
+            border-color: var(--blue) !important;
+            font-weight: 600;
+        }
+
+        .sharp-inner-item.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Neumorphic Action Button Layout */
+        .button {
+          --radius: 14px;
+          cursor: pointer;
+          border-radius: var(--radius);
+          border: 3px solid var(--body-bg) !important; 
+          background: var(--body-bg);
+          box-shadow: var(--card-shadow-sm), var(--inner-highlight) !important;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 600ms cubic-bezier(0.16, 1, 0.3, 1);
+          width: 100%;
+          padding: 12px 20px; 
+          height: 54px; 
+          font-family: inherit;
+          font-style: normal;
+          font-size: 16px;
+          font-weight: 600;
+          outline: none; 
+          z-index: 10;
+          touch-action: manipulation !important;
+          -webkit-user-select: none !important;
+          user-select: none !important;
+          -webkit-touch-callout: none !important;
+        }
+        body[data-theme="dark"] .button {
+          --neutral-1: #1e1e24;
+          --neutral-2: #101014;
+        }
+        body[data-theme="dark"][data-dark-text="deep-dark"] .button {
+          --neutral-1: #0c0c0f;
+          --neutral-2: #050506;
+          box-shadow: none !important;
+        }
+        
+        .button.button--hovered {
+          transform: none !important;
+          box-shadow: var(--card-shadow) !important;
+        }
+        .button:active, .button:focus {
+          transform: scale(0.98);
+          box-shadow: var(--pressed-shadow) !important; 
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: var(--card-shadow-micro) !important;
+        }
+
+        .state p {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0;
+        }
+        .state p span {
+          display: block;
+          opacity: 1; 
+          color: var(--text-color);
+        }
+
+        /* Screen views configurations */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* Intro Screen Details */
+        .welcome-title {
+            font-size: 1.8em;
+            font-weight: 800;
+            color: var(--text-color);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .welcome-desc {
+            font-size: 0.95em;
+            color: var(--sub-text-color);
+            margin-bottom: 24px;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        /* Results / Profile Detail Containers */
+        .profile-title {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: var(--text-color);
+            margin-bottom: 6px;
+            text-align: center;
+        }
+
+        .profile-subtitle {
+            font-size: 1.15em;
+            font-weight: 700;
+            color: var(--blue);
+            margin-bottom: 18px;
+            text-align: center;
+        }
+
+        /* Modified: Height increased to 440px to capture more information under top aligned cards */
+        .scroll-details-container {
+            background: var(--body-bg);
+            border-radius: 16px;
+            box-shadow: var(--settings-shadow-inset-sharp);
+            padding: 18px;
+            height: 440px; /* Increased from 360px */
+            overflow-y: auto;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .scroll-details-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-details-container::-webkit-scrollbar-thumb {
+            background: var(--sub-text-color);
+            border-radius: 4px;
+        }
+
+        .detail-heading {
+            font-size: 0.95em;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: var(--text-color);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+            padding-bottom: 4px;
+        }
+
+        .detail-text {
+            font-size: 0.9em;
+            line-height: 1.5;
+            color: var(--sub-text-color);
+            margin-bottom: 18px;
+        }
+
+        .traits-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 18px;
+        }
+
+        .traits-list li {
+            font-size: 0.9em;
+            color: var(--sub-text-color);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Modified: Symmetrical prepended bullet points styles */
+        #personalityStrengths li::before,
+        #personalityWeaknesses li::before {
+            content: "✦";
+            color: var(--blue);
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        /* Modified: Grey bullet icon prefix mapped directly for the Traits section */
+        #personalityTraits li::before {
+            content: "✦";
+            color: var(--sub-text-color);
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        /* Component-Level Skeleton Shimmer System */
+        .skeleton-loading {
+            background: var(--body-bg) !important;
+            border-color: transparent !important;
+            box-shadow: var(--settings-shadow-inset-sharp) !important;
+            color: transparent !important;
+            pointer-events: none !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+        .sharp-inner-item.skeleton-loading {
+            box-shadow: var(--card-shadow-micro) !important;
+        }
+        .skeleton-loading::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -150%;
+            width: 150%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+            animation: skeleton-shimmer-animation 1.5s infinite;
+        }
+        body[data-theme="dark"] .skeleton-loading::after {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+        }
+        @keyframes skeleton-shimmer-animation {
+            0% { left: -150%; }
+            100% { left: 150%; }
+        }
+
+        /* Deep Dark Mode Monochrome Overrides */
+        html[data-dark-text="deep-dark"] {
+            --blue: #888888 !important; 
+            --pink: #555555 !important;
+            --pink-strong: #444444 !important;
+        }
+        body[data-dark-text="deep-dark"] .back-pill-button,
+        body[data-dark-text="deep-dark"] .welcome-title, 
+        body[data-dark-text="deep-dark"] .profile-title,
+        body[data-dark-text="deep-dark"] .profile-subtitle,
+        body[data-dark-text="deep-dark"] .detail-heading,
+        body[data-dark-text="deep-dark"] .sharp-inner-item {
+            color: rgba(255, 255, 255, 0.35) !important;
+            background: none !important;
+            box-shadow: var(--settings-shadow-inset-sharp) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.35) !important;
+        }
+        body[data-dark-text="deep-dark"] lottie-player,
+        html[data-dark-text="deep-dark"] lottie-player {
+            filter: grayscale(100%) opacity(0.35) !important;
+        }
+
+        /* Enable vertical scroll logic ONLY on compact or low height viewports */
+        @media (max-height: 680px) {
+            html, body {
+                overflow-y: auto; 
+            }
+            body {
+                justify-content: flex-start;
+                padding-top: 15px;
+                padding-bottom: 15px;
+            }
+            /* Modified: Reduces internal details height on compact viewports to avoid layout clipping */
+            .scroll-details-container {
+                height: 240px; 
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Custom Toast Notification Element -->
+    <div id="customToast">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span id="customToastText">Please choose an answer.</span>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="app-container">
+        <div class="app-card" id="appCard">
+            
+            <!-- VIEW 1: WELCOME SCREEN -->
+            <div id="welcomeSection" class="view-section active">
+                <div class="welcome-title">Personality Profile</div>
+                <p class="welcome-desc">Ready to uncover your unique archetype? Answer 20 questions and explore your strategic alignment, traits, strengths, and weaknesses.</p>
+                <button class="button" id="startButton">
+                    <div class="state">
+                        <p><span>Start Profiling</span></p>
+                    </div>
+                </button>
+            </div>
+
+            <!-- VIEW 2: TEST SECTION -->
+            <div id="testSection" class="view-section">
+                <div class="card-header-bar">
+                    <span class="section-progress-text" id="questionCount">Question 1/20</span>
+                    <span class="timer-pill" id="timer"><i class="fa-regular fa-clock"></i> <span id="timerText">60s</span></span>
+                </div>
+
+                <div class="progress-container">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+
+                <div class="question-box" id="questionText">
+                    Loading current personality question metrics...
+                </div>
+
+                <div class="options-list" id="optionsGrid">
+                    <!-- Option items populated by JS -->
+                </div>
+
+                <button class="button" id="nextButton" disabled>
+                    <div class="state">
+                        <p><span>Next Question</span></p>
+                    </div>
+                </button>
+            </div>
+
+            <!-- VIEW 3: RESULTS SECTION -->
+            <div id="resultSection" class="view-section">
+                <div class="profile-title">Analysis Completed</div>
+                <div class="profile-subtitle" id="personalityTitle">Sigma Archetype</div>
+                
+                <div class="scroll-details-container">
+                    <div class="detail-heading">Overview</div>
+                    <div class="detail-text" id="personalityOverview">Loading...</div>
+
+                    <div class="detail-heading">Archetype Traits</div>
+                    <ul class="traits-list" id="personalityTraits">
+                        <!-- Traits loaded dynamically -->
+                    </ul>
+
+                    <div class="detail-heading">Behavioral Mindset</div>
+                    <div class="detail-text" id="personalityMindset">Loading...</div>
+
+                    <div class="detail-heading">Strengths</div>
+                    <ul class="traits-list" id="personalityStrengths">
+                        <!-- Strengths loaded dynamically -->
+                    </ul>
+
+                    <div class="detail-heading">Weaknesses</div>
+                    <ul class="traits-list" id="personalityWeaknesses">
+                        <!-- Weaknesses loaded dynamically -->
+                    </ul>
+                </div>
+
+                <button class="button" id="restartButton">
+                    <div class="state">
+                        <p><span>Retake Profiler</span></p>
+                    </div>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Sound FX System
+        (function initDashboardSoundFX(){
+            const LS_MASTER = 'touchSoundsEnabled';
+            const LS_GROUPS = 'touchSoundsGroupState';
+
+            const CLICK_SOUND_URLS = [
+                "Click1.ogg", "Click2.ogg", "Click3.ogg", "Click4.ogg", "Click5.ogg",
+                "Click6.ogg", "Click7.ogg", "Click8.ogg", "Click9.ogg", "Click10.ogg",
+                "Click11.ogg", "Click12.ogg", "Click13.ogg", "Click14.ogg"
+            ];
+
+            const GROUP_TO_CLICKS = {
+                'buttons'   : [1, 2, 3, 7, 8, 9, 14],
+                'navigation': [5],
+                'inputs'    : [4, 6],
+                'reserved'  : [10, 11, 12, 13]
+            };
+
+            const CLICK_TO_GROUP = {};
+            Object.keys(GROUP_TO_CLICKS).forEach(g => {
+                GROUP_TO_CLICKS[g].forEach(n => { CLICK_TO_GROUP[n] = g; });
+            });
+
+            const audioCache = {};
+            let _ac = null;
+            let _masterGain = null;
+
+            function getAC(){
+                if (_ac) return _ac;
+                try {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (Ctx) {
+                        _ac = new Ctx();
+                        const comp = _ac.createDynamicsCompressor();
+                        comp.threshold.value = -10;
+                        comp.knee.value = 6;
+                        comp.ratio.value = 12;
+                        comp.attack.value = 0.001;
+                        comp.release.value = 0.05;
+                        _masterGain = _ac.createGain();
+                        _masterGain.gain.value = 1.0;
+                        comp.connect(_masterGain).connect(_ac.destination);
+                        _ac._busIn = comp;
+                    }
+                } catch(e){}
+                return _ac;
+            }
+
+            function synthClick(n){
+                const ac = getAC();
+                if (!ac) return;
+                if (ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                const SYNTH = {
+                    1:  { f: 880,  d: 0.05, w: 'triangle', g: 0.18 },
+                    2:  { f: 520,  d: 0.07, w: 'sine',     g: 0.22 },
+                    3:  { f: 660,  d: 0.08, w: 'square',   g: 0.16 },
+                    4:  { f: 1200, d: 0.03, w: 'sine',     g: 0.12 },
+                    5:  { f: 740,  d: 0.05, w: 'triangle', g: 0.18 },
+                    6:  { f: 1000, d: 0.025,w: 'sine',     g: 0.10 },
+                    7:  { f: 600,  d: 0.05, w: 'square',   g: 0.16 },
+                    8:  { f: 820,  d: 0.05, w: 'triangle', g: 0.18 },
+                    9:  { f: 420,  d: 0.06, w: 'sine',     g: 0.18 },
+                    10: { f: 480,  d: 0.05, w: 'triangle', g: 0.16 },
+                    11: { f: 560,  d: 0.05, w: 'triangle', g: 0.16 },
+                    12: { f: 640,  d: 0.05, w: 'triangle', g: 0.16 },
+                    13: { f: 720,  d: 0.05, w: 'triangle', g: 0.16 },
+                    14: { f: 440,  d: 0.08, w: 'sine',     g: 0.60 }
+                };
+                const r = SYNTH[n] || SYNTH[7];
+                const t0 = ac.currentTime;
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                osc.type = r.w;
+                osc.frequency.setValueAtTime(r.f, t0);
+                osc.frequency.exponentialRampToValueAtTime(Math.max(80, r.f * 0.6), t0 + r.d);
+                gain.gain.setValueAtTime(0.0001, t0);
+                gain.gain.exponentialRampToValueAtTime(r.g, t0 + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + r.d);
+                osc.connect(gain).connect(ac._busIn || ac.destination);
+                osc.start(t0);
+                osc.stop(t0 + r.d + 0.02);
+            }
+
+            function playClick(n, opts){
+                opts = opts || {};
+                const isMasterOn = localStorage.getItem(LS_MASTER) === '1' || localStorage.getItem(LS_MASTER) === null;
+                if (!opts.force && !isMasterOn) return;
+
+                let groupState = {};
+                try { groupState = JSON.parse(localStorage.getItem(LS_GROUPS) || '{}'); } catch(e){}
+                const groupId = CLICK_TO_GROUP[n];
+                if (!opts.force && groupId && groupState[groupId] === false) return;
+
+                const url = CLICK_SOUND_URLS[n - 1];
+                try {
+                    if (n === 14) {
+                        const a = new Audio(url);
+                        a.volume = 1.0;
+                        a.play().catch(() => synthClick(14));
+                        return;
+                    }
+                    if (!audioCache[n]) {
+                        const a = new Audio(url);
+                        a.volume = 0.5;
+                        a.preload = 'auto';
+                        audioCache[n] = a;
+                    }
+                    const a = audioCache[n];
+                    a.currentTime = 0;
+                    const p = a.play();
+                    if (p && p.catch) p.catch(() => synthClick(n));
+                    return;
+                } catch(e) {
+                    synthClick(n);
+                }
+            }
+
+            window.playTouchSound = playClick;
+
+            ['pointerdown','touchstart','keydown','click'].forEach(ev => {
+                document.addEventListener(ev, () => {
+                    const ac = getAC();
+                    if (ac && ac.state === 'suspended') { ac.resume().catch(()=>{}); }
+                }, { capture: true, passive: true });
+            });
+        })();
+
+        // Firebase Setup configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyBWOdk2_NJntQ4Pob7_tN6kb1W5rMy-tcw",
+          authDomain: "learnera-d6309.firebaseapp.com",
+          projectId: "learnera-d6309",
+          messagingSenderId: "752970675909",
+          appId: "1:752970675909:web:9c4513809ca51ea60122ac",
+          databaseURL: "https://learnera-d6309-default-rtdb.firebaseio.com"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        // Archetypes Definitions
+        const PERSONALITY_TYPES = {
+            Sigma: {
+                title: "Sigma: The Lone Wolf",
+                overview: "Independent, strategic, and self-reliant, Sigmas are standard lone wolves. They navigate life on their own terms, valuing freedom and self-determination above all else.",
+                traits: ["Independent", "Strategic", "Mysterious", "Self-reliant", "Observant", "Introspective"],
+                mindset: "A Sigma's mindset is geared toward continuous self-improvement and objective observation. They question artificial norms.",
+                strengths: ["Exceptional problem-solver", "High adaptability", "Deep strategic resilience"],
+                weaknesses: ["Perceived as aloof", "May struggle in structured group frameworks"]
+            },
+            Alpha: {
+                title: "Alpha: The Natural Leader",
+                overview: "Confident, dominant, and charismatically influential, Alphas thrive in guiding others and translating strategy into reality.",
+                traits: ["Confident", "Dominant", "Charismatic", "Decisive", "Ambitious", "Protective"],
+                mindset: "An Alpha's mindset is focused entirely on expansion and achievement. They see barriers as pathways.",
+                strengths: ["Strong decisiveness", "Inspirational presence", "Goal-oriented execution"],
+                weaknesses: ["Can appear overbearing", "Prone to impatience with static tasks"]
+            },
+            Beta: {
+                title: "Beta: The Loyal Cooperative",
+                overview: "Loyal, cooperative, and highly reliable, Betas are the core supportive bedrock of any strategic team structure.",
+                traits: ["Loyal", "Cooperative", "Calm", "Reliable", "Supportive", "Empathetic"],
+                mindset: "Betas prioritize collective progress and functional unity, working calmly behind the scenes to secure victory.",
+                strengths: ["Exceptional active listener", "Highly dependable", "Conflict resolution specialist"],
+                weaknesses: ["Averse to necessary friction", "Can suppress personal boundaries"]
+            },
+            Gamma: {
+                title: "Gamma: The Intellectual Philosopher",
+                overview: "Intellectual, deeply philosophical, and curious, Gammas seek deep contextual knowledge and systemic truths.",
+                traits: ["Intellectual", "Philosophical", "Curious", "Analytical", "Insightful", "Truth-seeker"],
+                mindset: "A Gamma operates on high-level analysis, seeking the underlying 'why' in structural frameworks.",
+                strengths: ["High learning capacity", "Original analytical views", "Complex concepts processing"],
+                weaknesses: ["Prone to academic detours", "May overanalyze practical operations"]
+            },
+            Delta: {
+                title: "Delta: The Disciplined Resilient",
+                overview: "Disciplined, hardworking, and deeply practical, Deltas approach challenges with objective realism.",
+                traits: ["Disciplined", "Hardworking", "Introverted", "Resilient", "Practical", "Adaptable"],
+                mindset: "Deltas possess a methodical mindset focused on high dependability and practical, step-by-step progress.",
+                strengths: ["Extreme responsibility", "Grounded work ethic", "Steady adaptive capacity"],
+                weaknesses: ["Resistant to sudden disruption", "Prone to self-critical cycles"]
+            },
+            Omega: {
+                title: "Omega: The Rebellious Creative",
+                overview: "Fiercely non-conformist and highly imaginative, Omegas push creative boundaries to invent raw original concepts.",
+                traits: ["Rebellious", "Creative", "Non-conformist", "Imaginative", "Passionate", "Individualistic"],
+                mindset: "Omegas operates on constant innovation, viewing the status quo as a design challenge.",
+                strengths: ["High-level originality", "Authentic expression", "Unconventional brainstorming"],
+                weaknesses: ["Highly erratic workflow", "Struggles inside standard rigid templates"]
+            },
+            Zeta: {
+                title: "Zeta: The Logical Observer",
+                overview: "Highly astute and tech-savvy observers, Zetas seek absolute efficiency and clean, minimal setups.",
+                traits: ["Logical", "Observant", "Minimalist", "Tech-savvy", "Analytical", "Efficient"],
+                mindset: "Zetas look at life through logical structures, isolating key system variables to find immediate shortcuts.",
+                strengths: ["Precision planning", "Objective reasoning", "Rapid system mapping"],
+                weaknesses: ["Can appear emotionally detached", "Impatient with subjective procedures"]
+            }
+        };
+
+        // UI State Parameters
+        let allQuestions = [];
+        let testQuestions = [];
+        let currentQuestionIndex = 0;
+        let userScores = { Sigma: 0, Alpha: 0, Beta: 0, Gamma: 0, Delta: 0, Omega: 0, Zeta: 0 };
+        let selectedChoice = null;
+        let timerInterval = null;
+        const TIME_PER_QUESTION = 60; // 60 seconds
+
+        const choiceWeights = {
+            'Strongly Agree': 2,
+            'Agree': 1,
+            'Neutral': 0,
+            'Disagree': -1,
+            'Strongly Disagree': -2
+        };
+
+        // Custom validation message alerts
+        window.showToast = function(message) {
+            const toast = document.getElementById('customToast');
+            const toastText = document.getElementById('customToastText');
+            if (!toast || !toastText) return;
+            
+            toastText.textContent = message;
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+            
+            if (window.toastTimeout) clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => {
+                toast.style.transform = 'translateX(-50%) translateY(-100px)';
+            }, 3000);
+        };
+
+        // Shuffle arrays helper
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Component-level skeleton state rendering
+        function applyComponentSkeletons() {
+            const qBox = document.getElementById('questionText');
+            qBox.classList.add('skeleton-loading');
+            qBox.textContent = "Loading current personality question metrics...";
+
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const dummyBtn = document.createElement('button');
+                dummyBtn.className = 'sharp-inner-item skeleton-loading';
+                dummyBtn.textContent = "Option loading placeholder...";
+                grid.appendChild(dummyBtn);
+            }
+
+            document.getElementById('nextButton').disabled = true;
+        }
+
+        // Fetch questions from Firebase admin/UncensoredPersonalityTest path
+        async function fetchQuestionsData() {
+            applyComponentSkeletons();
+
+            try {
+                const snapshot = await database.ref('admin/UncensoredPersonalityTest').once('value');
+                const rawData = snapshot.val();
+
+                if (!rawData) {
+                    throw new Error("No data found in Firebase path: admin/UncensoredPersonalityTest");
+                }
+
+                let parsedList = [];
+                Object.keys(rawData).forEach(key => {
+                    const item = rawData[key];
+                    if (item.Text && item.TypeInfluence) {
+                        parsedList.push({
+                            text: item.Text,
+                            typeInfluence: item.TypeInfluence
+                        });
+                    }
+                });
+
+                if (parsedList.length === 0) {
+                    throw new Error("Parsed Personality questions list is empty.");
+                }
+
+                allQuestions = parsedList;
+                
+                // Allow the skeleton shimmer to be visible briefly on startup
+                setTimeout(() => {
+                    document.getElementById('questionText').classList.remove('skeleton-loading');
+                    startPersonalityProfiler();
+                }, 1200);
+
+            } catch (err) {
+                console.error("Firebase fetch error: ", err);
+                window.showToast("Seed database path: admin/UncensoredPersonalityTest first.");
+            }
+        }
+
+        function startPersonalityProfiler() {
+            // Select exactly 20 random questions
+            testQuestions = shuffleArray([...allQuestions]).slice(0, 20);
+            currentQuestionIndex = 0;
+            userScores = { Sigma: 0, Alpha: 0, Beta: 0, Gamma: 0, Delta: 0, Omega: 0, Zeta: 0 };
+            
+            showView('testSection');
+            loadQuestion();
+        }
+
+        function showView(viewId) {
+            document.querySelectorAll('.view-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(viewId).classList.add('active');
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= testQuestions.length) {
+                clearInterval(timerInterval);
+                calculateResults();
+                return;
+            }
+
+            selectedChoice = null;
+            const qNode = testQuestions[currentQuestionIndex];
+            
+            document.getElementById('questionCount').textContent = `Question ${currentQuestionIndex + 1}/${testQuestions.length}`;
+            
+            const qBox = document.getElementById('questionText');
+            qBox.classList.remove('skeleton-loading');
+            qBox.textContent = qNode.text;
+
+            // Fill standard choices list
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+
+            const nextBtn = document.getElementById('nextButton');
+            nextBtn.disabled = true;
+
+            const choices = ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'];
+            choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'sharp-inner-item';
+                button.textContent = choice;
+                
+                button.onclick = () => {
+                    if (window.playTouchSound) window.playTouchSound(4); // Select Choice
+                    
+                    document.querySelectorAll('.sharp-inner-item').forEach(b => b.classList.remove('selected'));
+                    button.classList.add('selected');
+                    selectedChoice = choice;
+                    nextBtn.disabled = false;
+                };
+
+                grid.appendChild(button);
+            });
+
+            // Update Progress Bar
+            const progressRatio = ((currentQuestionIndex + 1) / testQuestions.length) * 100;
+            document.getElementById('progressBar').style.width = `${progressRatio}%`;
+
+            startTimer();
+        }
+
+        function startTimer() {
+            let timeLeft = TIME_PER_QUESTION;
+            const timerText = document.getElementById('timerText');
+            timerText.textContent = `${timeLeft}s`;
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerText.textContent = `${timeLeft}s`;
+
+                if (timeLeft <= 10) {
+                    timerText.style.color = "#dc143c"; // Crimson red warn
+                } else {
+                    timerText.style.color = "var(--text-color)";
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    autoSkipOnTimeout();
+                }
+            }, 1000);
+        }
+
+        function autoSkipOnTimeout() {
+            window.showToast("Time expired! Neutral influence applied.");
+            if (window.playTouchSound) window.playTouchSound(7);
+            
+            // Apply neutral choice influence on timeout
+            selectedChoice = 'Neutral';
+            submitCurrentAnswer();
+        }
+
+        function submitCurrentAnswer() {
+            const qNode = testQuestions[currentQuestionIndex];
+            const weight = choiceWeights[selectedChoice] || 0;
+
+            const influence = qNode.typeInfluence;
+            if (influence) {
+                // Support both dynamic stringified payloads or objects
+                const parsedInfluence = typeof influence === 'string' ? JSON.parse(influence) : influence;
+                for (const archetype in parsedInfluence) {
+                    if (userScores.hasOwnProperty(archetype)) {
+                        userScores[archetype] += (Number(parsedInfluence[archetype]) || 0) * weight;
+                    }
+                }
+            }
+
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function calculateResults() {
+            // Locate maximum score archetype
+            let dominantArchetype = 'Sigma';
+            let maxVal = -Infinity;
+
+            for (const key in userScores) {
+                if (userScores[key] > maxVal) {
+                    maxVal = userScores[key];
+                    dominantArchetype = key;
+                }
+            }
+
+            renderResultsScreen(dominantArchetype);
+        }
+
+        function renderResultsScreen(archetype) {
+            const profile = PERSONALITY_TYPES[archetype];
+            
+            document.getElementById('personalityTitle').textContent = profile.title;
+            document.getElementById('personalityOverview').textContent = profile.overview;
+            document.getElementById('personalityMindset').textContent = profile.mindset;
+
+            // Fill lists dynamically
+            const traitsList = document.getElementById('personalityTraits');
+            traitsList.innerHTML = '';
+            profile.traits.forEach(trait => {
+                const li = document.createElement('li');
+                li.textContent = trait;
+                traitsList.appendChild(li);
+            });
+
+            const strengthsList = document.getElementById('personalityStrengths');
+            strengthsList.innerHTML = '';
+            profile.strengths.forEach(str => {
+                const li = document.createElement('li');
+                li.textContent = str;
+                strengthsList.appendChild(li);
+            });
+
+            const weaknessesList = document.getElementById('personalityWeaknesses');
+            weaknessesList.innerHTML = '';
+            profile.weaknesses.forEach(weak => {
+                const li = document.createElement('li');
+                li.textContent = weak;
+                weaknessesList.appendChild(li);
+            });
+
+            if (window.playTouchSound) window.playTouchSound(14); // Success outcomes trigger
+            showView('resultSection');
+        }
+
+        // Programmatic CTA Button Controls (Modified: Hover visual scaling completely stripped)
+        const startBtn = document.getElementById('startButton');
+        const nextBtn = document.getElementById('nextButton');
+        const restartBtn = document.getElementById('restartButton');
+        let hoverTimeout = null;
+
+        function configureButtonHover(btn) {
+            btn.addEventListener('mouseenter', () => {
+                if (btn.disabled) return;
+                btn.classList.add('button--hovered');
+                if (hoverTimeout) clearTimeout(hoverTimeout);
+                hoverTimeout = setTimeout(() => { btn.classList.remove('button--hovered'); }, 2000);
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.classList.remove('button--hovered');
+                if (hoverTimeout) clearTimeout(hoverTimeout);
+            });
+            btn.addEventListener('mousedown', () => { btn.classList.remove('button--hovered'); });
+        }
+
+        configureButtonHover(startBtn);
+        configureButtonHover(nextBtn);
+        configureButtonHover(restartBtn);
+
+        // Click Event Bindings
+        startBtn.addEventListener('click', () => {
+            if (window.playTouchSound) window.playTouchSound(1);
+            fetchQuestionsData();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (window.playTouchSound) window.playTouchSound(1);
+            submitCurrentAnswer();
+        });
+
+        restartBtn.addEventListener('click', () => {
+            if (window.playTouchSound) window.playTouchSound(2);
+            showView('welcomeSection');
+        });
+    </script>
+</body>
+</html>

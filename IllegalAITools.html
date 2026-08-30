@@ -1,0 +1,1730 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>LearnEra Calculator Hub — Tools & Utilities</title>
+<meta name="description" content="LearnEra neumorphic hub with hundreds of financial, health, math, conversion and everyday calculators plus utilities, in a single file."/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- ============================================================
+     Early theme bootstrap — identical logic to LearnEra / News.
+     Reads appThemeMode (light | dark | system) and darkTextStyle
+     (colorful | deep-dark) BEFORE first paint so there is no flash.
+     ============================================================ -->
+<script>
+(function () {
+  try {
+    var savedTheme = localStorage.getItem('appThemeMode') || 'system';
+    var isDark = savedTheme === 'dark' ||
+      (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (isDark) {
+      var darkStyle = localStorage.getItem('darkTextStyle') || 'colorful';
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.documentElement.setAttribute('data-dark-text', darkStyle);
+    } else {
+      document.documentElement.setAttribute('data-theme', 'default');
+      document.documentElement.removeAttribute('data-dark-text');
+    }
+    var topSp = localStorage.getItem('appTopSpace') || '2';
+    document.documentElement.style.setProperty('--top-space', topSp + 'vh');
+  } catch (e) {
+    document.documentElement.style.setProperty('--top-space', '2vh');
+  }
+})();
+</script>
+
+<style>
+/* ============================================================
+   1. DESIGN TOKENS — copied 1:1 from LearnEra main file so the
+      neumorphic sharp-shadow effect matches exactly.
+   ============================================================ */
+:root{
+  --body-bg:#e6edf7;
+  --neu-shadow-light:#ffffff;
+  --neu-shadow-dark:#c8d3e4;
+
+  --text-color:#2d3748;
+  --sub-text-color:#718096;
+  --head-color:#8A2BE2;
+  --blue:#1E90FF;
+  --accent2:#12b6a4;
+  --danger:#f2647a;
+  --divider-color:rgba(138,43,226,.15);
+
+  /* Sharp neumorphic shadow set (LearnEra) */
+  --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+  --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+  --card-shadow-micro: 3px 3px 6px var(--neu-shadow-dark), -3px -3px 6px var(--neu-shadow-light);
+  --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -6px -6px 12px var(--neu-shadow-light);
+  --settings-shadow-sharp: 4px 4px 6px var(--neu-shadow-dark), -4px -4px 6px var(--neu-shadow-light);
+  --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+
+  --top-space:2vh;
+  --transition-theme: background-color .8s ease, color .8s ease, box-shadow .8s ease, border-color .8s ease;
+
+  /* LearnEra unified header tokens (News.html) */
+  --learnera-purple:#7c3aed;
+  --learnera-pink:#ec4899;
+  --themed-blue:var(--blue);
+  --header-outline-start:var(--learnera-purple);
+  --header-outline-end:var(--learnera-pink);
+  --icon-gradient-start:var(--learnera-purple);
+  --icon-gradient-end:var(--learnera-pink);
+  --search-bar-bg:var(--body-bg);
+  --search-input-color:var(--learnera-purple);
+  --search-input-placeholder-color:#a3b1c6;
+}
+
+/* ---- Dark (Colorful) Mode ---- */
+html[data-theme="dark"]{
+  --body-bg:#1e1e24;
+  --neu-shadow-dark:#101014;
+  --neu-shadow-light:rgba(255,255,255,.05);
+
+  --text-color:rgba(255,255,255,.7);
+  --sub-text-color:#a3b1c6;
+  --head-color:rgba(233,30,99,.85);
+  --divider-color:rgba(255,255,255,.06);
+
+  --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255,255,255,.02);
+  --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255,255,255,.02);
+  --card-shadow-micro: 3px 3px 6px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255,255,255,.02);
+  --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255,255,255,.02);
+  --settings-shadow-sharp: 4px 4px 6px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255,255,255,.02);
+  --settings-shadow-inset-sharp: inset 3px 3px 6px var(--neu-shadow-dark), inset -2px -2px 4px rgba(255,255,255,.02);
+}
+
+/* ---- Deep Dark Mode ---- */
+html[data-dark-text="deep-dark"]{
+  --body-bg:#0c0c0f;
+  --neu-shadow-dark:#050506;
+  --divider-color:rgba(255,255,255,.04);
+
+  --text-color:rgba(255,255,255,.35);
+  --sub-text-color:rgba(255,255,255,.3);
+  --head-color:rgba(255,255,255,.35);
+  --blue:#ffffff;
+  --themed-blue:#ffffff;
+  --accent2:rgba(255,255,255,.35);
+
+  --card-shadow: 8px 8px 16px var(--neu-shadow-dark), inset 2px 2px 6px rgba(255,255,255,.01);
+  --card-shadow-sm: 4px 4px 8px var(--neu-shadow-dark), inset 1px 1px 3px rgba(255,255,255,.01);
+  --card-shadow-micro: 3px 3px 6px var(--neu-shadow-dark), inset 1px 1px 2px rgba(255,255,255,.01);
+  --card-shadow-inset: inset 6px 6px 12px var(--neu-shadow-dark), inset -2px -2px 6px rgba(255,255,255,.01);
+
+  --search-input-color:#ffffff;
+  --search-input-placeholder-color:#9b9b9f;
+  --header-outline-start:#080808;
+  --header-outline-end:#ffffff;
+  --icon-gradient-start:#080808;
+  --icon-gradient-end:#ffffff;
+}
+html[data-dark-text="deep-dark"] *,
+html[data-dark-text="deep-dark"] h1,
+html[data-dark-text="deep-dark"] h2,
+html[data-dark-text="deep-dark"] h3,
+html[data-dark-text="deep-dark"] p,
+html[data-dark-text="deep-dark"] span,
+html[data-dark-text="deep-dark"] button,
+html[data-dark-text="deep-dark"] input,
+html[data-dark-text="deep-dark"] select{
+  color:#7a8b9e !important;
+}
+html[data-dark-text="deep-dark"] img{
+  filter:grayscale(100%) brightness(.75) opacity(.8) !important;
+}
+
+/* ============================================================
+   2. BASE
+   ============================================================ */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+input,textarea{user-select:text;-webkit-user-select:text}
+html,body{margin:0;padding:0}
+body{
+  background:var(--body-bg);
+  color:var(--text-color);
+  font-family:'Poppins',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  transition:var(--transition-theme);
+  min-height:100vh;
+}
+a{color:inherit}
+
+.app-container{
+  width:100%;
+  max-width:1180px;
+  margin:0 auto;
+  padding:0 15px 90px;
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+}
+
+/* ============================================================
+   3. HEADER — identical to News.html unified LearnEra header
+      (branding + theme button intentionally removed).
+   ============================================================ */
+.header-card{
+  flex-shrink:0;
+  position:sticky;
+  top:0;
+  width:calc(100% + 30px);
+  margin:0 -15px;
+  border-top-left-radius:0 !important;
+  border-top-right-radius:0 !important;
+  border-bottom-left-radius:20px !important;
+  border-bottom-right-radius:20px !important;
+  padding:20px;
+  box-shadow:none !important;
+  border:1.5px solid transparent !important;
+  background:
+    linear-gradient(var(--body-bg),var(--body-bg)) padding-box,
+    linear-gradient(110deg,var(--header-outline-start),var(--header-outline-end)) border-box !important;
+  outline:none !important;
+  border-top:none !important;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  transition:var(--transition-theme), transform .4s cubic-bezier(.25,1,.5,1), opacity .4s ease, visibility .4s ease;
+  z-index:1000;
+}
+.header-card.hidden{transform:translateY(-130%);opacity:0;visibility:hidden;pointer-events:none}
+@media (max-width:768px){
+  .header-card{width:calc(100% + 30px) !important;margin:0 -15px !important;padding:18px 15px !important}
+}
+
+.search-row{display:flex;align-items:center;gap:10px;width:100%;transition:gap .4s cubic-bezier(.25,1,.5,1)}
+.search-bar-container{
+  flex:1;min-width:0;background:var(--search-bar-bg);border-radius:25px;padding:10px 18px;
+  display:flex;align-items:center;border:1px solid rgba(255,255,255,.4);
+  box-shadow:var(--card-shadow-micro);
+  transition:box-shadow .3s ease, flex .4s cubic-bezier(.25,1,.5,1), opacity .3s ease;
+}
+.search-bar-container:focus-within{
+  border-color:transparent;
+  box-shadow:var(--card-shadow-inset);
+  background:
+    linear-gradient(var(--search-bar-bg),var(--search-bar-bg)) padding-box,
+    linear-gradient(110deg,var(--header-outline-start),var(--header-outline-end)) border-box;
+}
+.search-icon-mask{
+  width:20px;height:20px;
+  background:linear-gradient(110deg,var(--icon-gradient-start),var(--icon-gradient-end));
+  -webkit-mask:url('https://ik.imagekit.io/lssafvcmr/magnifying-glass%20(1).png') no-repeat center / contain;
+  mask:url('https://ik.imagekit.io/lssafvcmr/magnifying-glass%20(1).png') no-repeat center / contain;
+  opacity:.9;margin-right:10px;flex-shrink:0;transition:background-color .3s ease;
+}
+.search-bar-container input{
+  flex-grow:1;background:transparent;border:none;outline:none;color:transparent;
+  background-image:linear-gradient(110deg,var(--icon-gradient-start),var(--icon-gradient-end));
+  background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  caret-color:var(--learnera-pink);
+  font-size:.95em;font-weight:600;font-family:'Poppins',sans-serif !important;
+}
+.search-bar-container input::placeholder{
+  color:var(--search-input-placeholder-color);
+  -webkit-text-fill-color:var(--search-input-placeholder-color);
+  font-weight:500;
+}
+
+.filter-toggle-btn{
+  width:42px;height:42px;flex-shrink:0;border-radius:50%;
+  border:1px solid rgba(255,255,255,.35);cursor:pointer;background:var(--body-bg);color:var(--blue);
+  display:flex;align-items:center;justify-content:center;box-shadow:var(--card-shadow-micro);
+  transition:width .4s cubic-bezier(.25,1,.5,1), opacity .4s cubic-bezier(.25,1,.5,1),
+             margin .4s cubic-bezier(.25,1,.5,1), box-shadow .3s ease, transform .2s ease, border-color .3s ease;
+}
+.filter-toggle-btn svg{width:20px;height:20px;stroke:url(#learneraIconGradient) !important;color:var(--themed-blue) !important}
+.filter-toggle-btn:active{transform:scale(.92);box-shadow:var(--card-shadow-inset)}
+.filter-toggle-btn.active{
+  box-shadow:var(--card-shadow-inset) !important;color:var(--blue);
+  border:1px solid transparent !important;
+  background:
+    linear-gradient(var(--body-bg),var(--body-bg)) padding-box,
+    linear-gradient(110deg,var(--icon-gradient-start),var(--icon-gradient-end)) border-box !important;
+}
+.search-row.search-active .filter-toggle-btn{width:0 !important;opacity:0 !important;margin:0 !important;padding:0 !important;pointer-events:none !important}
+.search-row.search-active{gap:0 !important}
+
+/* Header controls disabled (Utilities section active) */
+.search-row.controls-disabled{opacity:.45;pointer-events:none;filter:saturate(.4)}
+.header-card.controls-off .categories-filter-wrapper{max-height:0;opacity:0;padding-top:0;padding-bottom:0;margin:0;pointer-events:none;overflow:hidden}
+
+.categories-filter-wrapper{
+  display:flex;overflow-x:auto;width:100%;padding:6px 2px 4px;gap:10px;
+  max-height:100px;opacity:1;margin:0;scrollbar-width:none;
+  transition:max-height .35s ease, opacity .3s ease, padding .35s ease, margin .35s ease;
+}
+.categories-filter-wrapper.collapsed,
+.search-row.search-active ~ .categories-filter-wrapper{
+  max-height:0;opacity:0;padding-top:0;padding-bottom:0;margin:0;pointer-events:none;overflow:hidden;
+}
+.categories-filter-wrapper::-webkit-scrollbar{display:none}
+
+.category-pill{
+  flex-shrink:0;background:var(--body-bg);border:1px solid rgba(255,255,255,.3);border-radius:16px;
+  padding:6px 16px;margin:2px 0;color:var(--text-color);font-size:.85em;font-weight:600;cursor:pointer;
+  box-shadow:var(--card-shadow-micro);transition:all .3s;display:inline-flex;align-items:center;justify-content:center;
+}
+.category-pill.active{
+  box-shadow:var(--card-shadow-inset);border:1px solid transparent !important;
+  background:
+    linear-gradient(var(--body-bg),var(--body-bg)) padding-box,
+    linear-gradient(110deg,var(--icon-gradient-start),var(--icon-gradient-end)) border-box !important;
+  font-weight:700;
+}
+.category-pill.active span{
+  background-image:linear-gradient(110deg,var(--icon-gradient-start),var(--icon-gradient-end));
+  background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+
+/* ============================================================
+   4. SECTION SWITCHER — Tools & Utilities
+   ============================================================ */
+.section-switch{
+  display:flex;gap:10px;padding:6px;border-radius:22px;background:var(--body-bg);
+  box-shadow:var(--card-shadow-inset);margin-top:6px;
+}
+.section-switch button{
+  flex:1;border:0;cursor:pointer;background:var(--body-bg);color:var(--sub-text-color);
+  font:700 .9em 'Poppins',sans-serif;padding:12px 10px;border-radius:16px;
+  box-shadow:var(--card-shadow-micro);transition:all .3s ease;
+}
+.section-switch button.active{
+  box-shadow:var(--settings-shadow-inset-sharp);
+  background-image:linear-gradient(110deg,var(--icon-gradient-start),var(--icon-gradient-end));
+  background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  font-weight:800;
+}
+.section-switch button:active{transform:scale(.97)}
+
+.sec-title{
+  margin:14px 0 0;font-size:.8em;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--head-color);font-weight:800;
+}
+.count{font-size:.78em;color:var(--sub-text-color);font-weight:600}
+
+/* ============================================================
+   5. CARDS + GRID (neumorphic sharp shadows)
+   ============================================================ */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;margin-top:6px}
+@media (min-width:1024px){.grid{grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:22px}}
+
+.card{
+  border-radius:20px;box-shadow:var(--card-shadow);padding:18px;cursor:pointer;
+  border:0;background:var(--body-bg);text-align:left;font-family:inherit;color:var(--text-color);
+  transition:box-shadow .25s ease, transform .25s cubic-bezier(.25,1,.5,1), opacity .5s ease;
+  opacity:0;transform:translateY(18px);
+}
+.card.in-view{opacity:1;transform:translateY(0)}
+.card:hover{transform:translateY(-3px)}
+.card:active{box-shadow:var(--card-shadow-inset);transform:scale(.98)}
+.card .cat{font:800 .62em 'Poppins';letter-spacing:1.2px;text-transform:uppercase;color:var(--accent2)}
+.card h3{margin:8px 0 6px;font-size:.98em;color:var(--head-color);font-weight:800}
+.card p{margin:0;font-size:.78em;color:var(--sub-text-color);line-height:1.55}
+
+/* Utilities cards with parallax image window */
+.util-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;margin-top:6px}
+.utility-card{
+  border-radius:22px;background:var(--body-bg);box-shadow:var(--card-shadow);
+  overflow:hidden;cursor:pointer;border:0;padding:0;text-align:left;font-family:inherit;
+  transition:box-shadow .25s ease, transform .25s cubic-bezier(.25,1,.5,1);
+}
+.utility-card:active{box-shadow:var(--card-shadow-inset);transform:scale(.98)}
+.utility-media{position:relative;height:150px;overflow:hidden;border-radius:22px 22px 0 0}
+.utility-media img{
+  position:absolute;left:0;top:-18%;width:100%;height:136%;object-fit:cover;
+  will-change:transform;transition:transform .1s linear;
+}
+.utility-body{padding:16px 18px 20px}
+.utility-body h3{margin:0 0 6px;font-size:.98em;font-weight:800;color:var(--head-color)}
+.utility-body p{margin:0;font-size:.78em;color:var(--sub-text-color);line-height:1.55}
+
+.empty-state{
+  border-radius:22px;box-shadow:var(--settings-shadow-inset-sharp);padding:44px 22px;text-align:center;
+  color:var(--sub-text-color);font-size:.85em;font-weight:600;
+}
+
+/* ============================================================
+   6. SKELETON LOADING (LearnEra + News shimmer)
+   ============================================================ */
+.skeleton-loading{
+  background:var(--body-bg) !important;border-color:transparent !important;
+  box-shadow:var(--settings-shadow-inset-sharp) !important;color:transparent !important;
+  pointer-events:none !important;position:relative !important;overflow:hidden !important;
+  height:140px !important;border-radius:20px;opacity:.75;
+}
+.skeleton-loading *{visibility:hidden !important}
+.skeleton-loading::after{
+  content:"";position:absolute;top:0;left:-150%;width:150%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);
+  animation:skeleton-shimmer-animation 2.5s linear infinite;
+}
+html[data-theme="dark"] .skeleton-loading::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent)}
+@keyframes skeleton-shimmer-animation{0%{left:-150%}100%{left:150%}}
+.skeleton-pill{height:32px !important;border-radius:16px;width:110px;flex-shrink:0}
+
+/* ============================================================
+   7. MODAL SHEET
+   ============================================================ */
+.modal{
+  position:fixed;inset:0;z-index:2000;display:none;
+  background:color-mix(in srgb,var(--body-bg) 78%,transparent);
+  backdrop-filter:blur(6px);overflow:auto;padding:22px 14px 60px;
+}
+.modal.on{display:block;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0}to{opacity:1}}
+.sheet{
+  max-width:640px;margin:0 auto;border-radius:26px;box-shadow:var(--card-shadow);
+  padding:22px;background:var(--body-bg);animation:sheetIn .35s cubic-bezier(.25,1,.5,1);
+}
+@keyframes sheetIn{from{opacity:0;transform:translateY(26px) scale(.98)}to{opacity:1;transform:none}}
+.sheet h2{margin:2px 0 4px;font-size:1.2em;color:var(--head-color);font-weight:800}
+.sheet .sub{font-size:.8em;color:var(--sub-text-color);margin:0 0 18px;line-height:1.55}
+.iconbtn{
+  border:0;background:var(--body-bg);color:var(--blue);width:42px;height:42px;border-radius:50%;
+  box-shadow:var(--card-shadow-micro);cursor:pointer;font-size:1em;
+}
+.iconbtn:active{box-shadow:var(--card-shadow-inset);transform:scale(.92)}
+.closex{float:right}
+.field{margin-bottom:14px}
+.field label{display:block;font:700 .75em 'Poppins';color:var(--sub-text-color);margin-bottom:7px}
+.field input,.field select{
+  width:100%;border:0;outline:0;background:var(--body-bg);box-shadow:var(--settings-shadow-inset-sharp);
+  border-radius:14px;padding:13px 15px;font:600 .95em 'Poppins';color:var(--text-color);appearance:none;
+}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btns{display:flex;gap:12px;margin-top:6px}
+.btn{
+  flex:1;border:0;cursor:pointer;background:var(--body-bg);color:var(--blue);
+  font:800 .88em 'Poppins';padding:15px;border-radius:16px;box-shadow:var(--card-shadow-sm);
+  transition:transform .2s ease, box-shadow .25s ease;
+}
+.btn:active{box-shadow:var(--card-shadow-inset);transform:scale(.97)}
+.btn.ghost{color:var(--sub-text-color)}
+.result{margin-top:20px;border-radius:18px;box-shadow:var(--card-shadow-inset);padding:18px}
+.result .rrow{display:flex;justify-content:space-between;gap:14px;padding:9px 0;font-size:.85em;border-bottom:1px dashed var(--divider-color)}
+.result .rrow:last-child{border:0}
+.result .rrow span:first-child{color:var(--sub-text-color);font-weight:600}
+.result .rrow span:last-child{color:var(--text-color);font-weight:800;text-align:right}
+.result .rrow.hero span:last-child{color:var(--blue);font-size:1.2em}
+.err{color:var(--danger);font-weight:700;font-size:.8em}
+
+/* ============================================================
+   8. SCIENTIFIC CALCULATOR — neumorphic build in the spirit of
+      https://codepen.io/jh3y/pen/QWYPaax (soft squircle keys,
+      deep inset display, pressed-in feedback on every tap).
+   ============================================================ */
+.sci-shell{
+  border-radius:28px;background:var(--body-bg);box-shadow:var(--card-shadow);
+  padding:20px;margin-top:14px;
+}
+.sci-disp{
+  border-radius:20px;box-shadow:var(--card-shadow-inset);padding:18px 20px;text-align:right;
+  background:var(--body-bg);margin-bottom:18px;
+}
+.sci-disp .expr{
+  font:600 .8em 'Poppins';color:var(--sub-text-color);min-height:1.2em;
+  overflow-x:auto;white-space:nowrap;scrollbar-width:none;
+}
+.sci-disp .expr::-webkit-scrollbar{display:none}
+.sci-disp .out{
+  font:800 1.75em 'Poppins';color:var(--head-color);overflow-x:auto;white-space:nowrap;scrollbar-width:none;
+}
+.sci-disp .out::-webkit-scrollbar{display:none}
+.sci-modes{display:flex;gap:8px;margin-bottom:14px}
+.sci-modes button{
+  flex:1;border:0;cursor:pointer;background:var(--body-bg);color:var(--sub-text-color);
+  font:700 .72em 'Poppins';padding:9px 4px;border-radius:14px;box-shadow:var(--card-shadow-micro);
+  transition:all .25s ease;
+}
+.sci-modes button.on{box-shadow:var(--settings-shadow-inset-sharp);color:var(--blue)}
+.keys{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.keys button{
+  border:0;cursor:pointer;background:var(--body-bg);color:var(--text-color);
+  font:700 .92em 'Poppins';aspect-ratio:1/1;border-radius:18px;
+  box-shadow:var(--card-shadow-sm);
+  display:flex;align-items:center;justify-content:center;
+  transition:box-shadow .12s ease, transform .12s ease, color .3s ease;
+}
+.keys button:active,.keys button.pressed{box-shadow:var(--card-shadow-inset);transform:scale(.95)}
+.keys button.fn{color:var(--accent2);font-size:.78em}
+.keys button.op{color:var(--blue)}
+.keys button.eq{
+  grid-column:span 1;color:var(--learnera-pink);
+  background:linear-gradient(var(--body-bg),var(--body-bg)) padding-box,
+             linear-gradient(110deg,var(--icon-gradient-start),var(--icon-gradient-end)) border-box;
+  border:1.5px solid transparent;
+}
+@media (max-width:420px){.keys{gap:9px}.keys button{border-radius:15px;font-size:.85em}}
+
+footer{margin-top:34px;text-align:center;font-size:.72em;color:var(--sub-text-color)}
+@media(max-width:520px){.row2{grid-template-columns:1fr}.sheet{padding:18px}}
+@media(min-width:1024px){.app-container{padding:0 24px 90px}}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- ===== LearnEra unified header (News.html style, no branding / theme button) ===== -->
+  <div class="header-card" id="headerCard">
+    <div class="search-row" id="searchRow">
+      <div class="search-bar-container" id="searchWrap">
+        <div class="search-icon-mask"></div>
+        <input id="q" type="text" autocomplete="off" placeholder="Search calculators… (mortgage, BMI, percent, area)"/>
+      </div>
+      <button class="filter-toggle-btn" id="filterBtn" aria-label="Toggle filters" title="Toggle filters">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <defs>
+            <linearGradient id="learneraIconGradient" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+              <stop stop-color="var(--icon-gradient-start)"/>
+              <stop offset="1" stop-color="var(--icon-gradient-end)"/>
+            </linearGradient>
+          </defs>
+          <line x1="4" y1="6" x2="20" y2="6"></line>
+          <line x1="7" y1="12" x2="17" y2="12"></line>
+          <line x1="10" y1="18" x2="14" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="categories-filter-wrapper collapsed" id="chips"></div>
+  </div>
+
+  <!-- ===== Tools & Utilities section switcher ===== -->
+  <div class="section-switch" id="sectionSwitch">
+    <button data-section="tools" class="active">Tools</button>
+    <button data-section="utilities">Utilities</button>
+  </div>
+
+  <!-- ===== Tools section ===== -->
+  <div id="toolsSection">
+    <div class="sec-title">All Tools</div>
+    <div class="count" id="count"></div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <!-- ===== Utilities section (parallax cards) ===== -->
+  <div id="utilitiesSection" style="display:none">
+    <div class="sec-title">Utilities</div>
+    <div class="count" id="utilCount"></div>
+    <div class="util-grid" id="utilGrid"></div>
+  </div>
+
+  <footer>Built for LearnEra · all math runs locally in your browser</footer>
+</div>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<script>
+const F=n=>isFinite(n)?Number(n).toLocaleString(undefined,{maximumFractionDigits:2}):'—';
+const M=n=>isFinite(n)?Number(n).toLocaleString(undefined,{maximumFractionDigits:6}):'—';
+const C=n=>isFinite(n)?Number(n).toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2}):'—';
+const P=n=>isFinite(n)?Number(n).toFixed(2)+'%':'—';
+const pmt=(p,r,n)=>r===0?p/n:p*r/(1-Math.pow(1+r,-n));
+const CALCS=[];
+const add=(c,n,d,f,fn)=>CALCS.push({c,n,d,f,fn});
+const num=(k,l,v,step)=>({k,l,v,step});
+const sel=(k,l,o,v)=>({k,l,o,v});
+</script>
+<script>
+/* ---------------- FINANCIAL ---------------- */
+add('Financial','Loan Calculator','Monthly payment, total interest and cost for any amortizing loan.',
+ [num('p','Loan amount',25000),num('r','Annual interest rate (%)',7.5),num('y','Term (years)',5)],
+ i=>{const n=i.y*12,m=pmt(i.p,i.r/1200,n);return[['Monthly payment',C(m),1],['Total paid',C(m*n)],['Total interest',C(m*n-i.p)],['Payments',F(n)]];});
+add('Financial','Mortgage Calculator','Home loan payment including taxes, insurance and PMI.',
+ [num('p','Home price',350000),num('d','Down payment',70000),num('r','Rate (%)',6.5),num('y','Term (years)',30),num('t','Annual property tax',3600),num('ins','Annual insurance',1500)],
+ i=>{const L=i.p-i.d,n=i.y*12,m=pmt(L,i.r/1200,n),extra=(i.t+i.ins)/12;return[['Monthly payment (PITI)',C(m+extra),1],['Principal & interest',C(m)],['Taxes + insurance',C(extra)],['Loan amount',C(L)],['Total interest',C(m*n-L)]];});
+add('Financial','Auto Loan Calculator','Car finance payment with trade-in, tax and fees.',
+ [num('p','Vehicle price',32000),num('d','Down payment',5000),num('tr','Trade-in value',3000),num('tax','Sales tax (%)',7),num('r','Rate (%)',6.9),num('y','Term (years)',5)],
+ i=>{const L=(i.p-i.tr)*(1+i.tax/100)-i.d,n=i.y*12,m=pmt(L,i.r/1200,n);return[['Monthly payment',C(m),1],['Amount financed',C(L)],['Total interest',C(m*n-L)],['Total cost',C(m*n+i.d)]];});
+add('Financial','Interest Calculator','Growth of a deposit with optional contributions.',
+ [num('p','Principal',10000),num('r','Annual rate (%)',5),num('y','Years',10),num('c','Monthly contribution',100)],
+ i=>{const r=i.r/1200,n=i.y*12,fv=i.p*Math.pow(1+r,n)+(r?i.c*((Math.pow(1+r,n)-1)/r):i.c*n);return[['Future value',C(fv),1],['Total contributed',C(i.p+i.c*n)],['Interest earned',C(fv-i.p-i.c*n)]];});
+add('Financial','Compound Interest Calculator','Compare compounding frequencies over time.',
+ [num('p','Principal',5000),num('r','Rate (%)',6),num('y','Years',10),sel('m','Compounds per year',[['12','Monthly'],['1','Annually'],['4','Quarterly'],['365','Daily']],'12')],
+ i=>{const m=+i.m,fv=i.p*Math.pow(1+i.r/100/m,m*i.y);return[['Future value',C(fv),1],['Interest',C(fv-i.p)],['Effective annual rate',P((Math.pow(1+i.r/100/m,m)-1)*100)]];});
+add('Financial','Simple Interest Calculator','Interest without compounding.',
+ [num('p','Principal',5000),num('r','Rate (%)',6),num('y','Years',3)],
+ i=>{const x=i.p*i.r/100*i.y;return[['Interest',C(x),1],['Total',C(i.p+x)]];});
+add('Financial','Savings Calculator','How much a monthly saving habit becomes.',
+ [num('p','Starting balance',1000),num('c','Monthly deposit',300),num('r','APY (%)',4),num('y','Years',8)],
+ i=>{const r=i.r/1200,n=i.y*12,fv=i.p*Math.pow(1+r,n)+i.c*((Math.pow(1+r,n)-1)/r);return[['Balance',C(fv),1],['Deposited',C(i.p+i.c*n)],['Interest',C(fv-i.p-i.c*n)]];});
+add('Financial','Investment Return Calculator','CAGR and profit for an investment.',
+ [num('p','Initial value',10000),num('f','Final value',26000),num('y','Years',7)],
+ i=>[['CAGR',P((Math.pow(i.f/i.p,1/i.y)-1)*100),1],['Total return',P((i.f/i.p-1)*100)],['Profit',C(i.f-i.p)]]);
+add('Financial','Retirement Calculator','Projected nest egg and sustainable income.',
+ [num('a','Current age',32),num('ra','Retirement age',65),num('b','Current savings',45000),num('c','Monthly savings',700),num('r','Return (%)',7),num('w','Withdrawal rate (%)',4)],
+ i=>{const n=(i.ra-i.a)*12,r=i.r/1200,fv=i.b*Math.pow(1+r,n)+i.c*((Math.pow(1+r,n)-1)/r);return[['Nest egg at retirement',C(fv),1],['Annual income',C(fv*i.w/100)],['Monthly income',C(fv*i.w/1200)],['Years saving',F(i.ra-i.a)]];});
+add('Financial','401(k) Calculator','Balance with employer match.',
+ [num('s','Annual salary',85000),num('c','Your contribution (%)',8),num('m','Employer match (%)',4),num('r','Return (%)',7),num('y','Years',25)],
+ i=>{const mo=(i.s*(i.c+i.m)/100)/12,r=i.r/1200,n=i.y*12,fv=mo*((Math.pow(1+r,n)-1)/r);return[['Projected balance',C(fv),1],['Monthly contribution',C(mo)],['Total contributed',C(mo*n)]];});
+add('Financial','Annuity Payout Calculator','Income a lump sum can pay out.',
+ [num('p','Balance',500000),num('r','Return (%)',5),num('y','Years of payout',25)],
+ i=>{const m=pmt(i.p,i.r/1200,i.y*12);return[['Monthly payout',C(m),1],['Annual payout',C(m*12)],['Total paid',C(m*i.y*12)]];});
+add('Financial','Amortization Calculator','Balance after a chosen number of payments.',
+ [num('p','Loan amount',200000),num('r','Rate (%)',6),num('y','Years',30),num('k','Payments made',60)],
+ i=>{const r=i.r/1200,n=i.y*12,m=pmt(i.p,r,n),bal=i.p*Math.pow(1+r,i.k)-m*((Math.pow(1+r,i.k)-1)/r);return[['Remaining balance',C(bal),1],['Monthly payment',C(m)],['Principal paid',C(i.p-bal)],['Interest paid',C(m*i.k-(i.p-bal))]];});
+add('Financial','Refinance Calculator','Savings from refinancing a loan.',
+ [num('b','Current balance',240000),num('r1','Current rate (%)',7.2),num('r2','New rate (%)',5.8),num('y','New term (years)',25),num('cost','Closing costs',4000)],
+ i=>{const n=i.y*12,a=pmt(i.b,i.r1/1200,n),b=pmt(i.b,i.r2/1200,n),s=a-b;return[['New payment',C(b),1],['Monthly savings',C(s)],['Break-even',F(i.cost/s)+' months'],['5-year net savings',C(s*60-i.cost)]];});
+add('Financial','Debt Payoff Calculator','Months to clear a balance.',
+ [num('b','Balance',12000),num('r','APR (%)',19.99),num('p','Monthly payment',400)],
+ i=>{const r=i.r/1200;if(i.p<=i.b*r)return[['Result','Payment too low to ever clear',1]];const n=-Math.log(1-i.b*r/i.p)/Math.log(1+r);return[['Months to payoff',F(Math.ceil(n)),1],['Years',F(n/12)],['Total interest',C(i.p*n-i.b)]];});
+add('Financial','Credit Card Payoff Calculator','Minimum vs fixed payment comparison.',
+ [num('b','Balance',6000),num('r','APR (%)',22),num('p','Monthly payment',250)],
+ i=>{const r=i.r/1200,n=-Math.log(1-i.b*r/i.p)/Math.log(1+r);return[['Payoff time',F(n)+' months',1],['Interest paid',C(i.p*n-i.b)],['Total paid',C(i.p*n)]];});
+add('Financial','Down Payment Calculator','How much cash you need up front.',
+ [num('p','Home price',400000),num('d','Down payment (%)',20)],
+ i=>[['Down payment',C(i.p*i.d/100),1],['Loan amount',C(i.p*(1-i.d/100))],['PMI likely?',i.d<20?'Yes':'No']]);
+add('Financial','House Affordability Calculator','Price range based on income and debts.',
+ [num('s','Annual income',95000),num('d','Monthly debts',600),num('r','Rate (%)',6.5),num('dp','Down payment',60000),num('y','Term (years)',30)],
+ i=>{const cap=i.s/12*0.36-i.d,r=i.r/1200,n=i.y*12,L=cap*(1-Math.pow(1+r,-n))/r;return[['Affordable price',C(L+i.dp),1],['Max loan',C(L)],['Max monthly payment',C(cap)]];});
+add('Financial','Rent vs Buy Calculator','Rough monthly cost comparison.',
+ [num('rent','Monthly rent',2200),num('p','Home price',420000),num('dp','Down payment',84000),num('r','Rate (%)',6.4),num('own','Monthly taxes+upkeep',900)],
+ i=>{const m=pmt(i.p-i.dp,i.r/1200,360)+i.own;return[['Owning per month',C(m),1],['Renting per month',C(i.rent)],['Difference',C(m-i.rent)],['Cheaper option',m<i.rent?'Buying':'Renting']];});
+add('Financial','Rental Property Calculator','Cash flow and cap rate.',
+ [num('p','Purchase price',300000),num('rent','Monthly rent',2600),num('ex','Monthly expenses',700),num('m','Monthly mortgage',1500)],
+ i=>{const cf=i.rent-i.ex-i.m,noi=(i.rent-i.ex)*12;return[['Monthly cash flow',C(cf),1],['Annual cash flow',C(cf*12)],['NOI',C(noi)],['Cap rate',P(noi/i.p*100)]];});
+add('Financial','ROI Calculator','Return on investment percentage.',
+ [num('c','Cost',5000),num('g','Gain / final value',7200)],
+ i=>[['ROI',P((i.g-i.c)/i.c*100),1],['Net profit',C(i.g-i.c)]]);
+add('Financial','Break-Even Calculator','Units needed to cover fixed costs.',
+ [num('f','Fixed costs',20000),num('p','Price per unit',49),num('v','Variable cost per unit',18)],
+ i=>[['Break-even units',F(Math.ceil(i.f/(i.p-i.v))),1],['Break-even revenue',C(Math.ceil(i.f/(i.p-i.v))*i.p)],['Contribution margin',C(i.p-i.v)]]);
+add('Financial','Business Loan Calculator','Payment for a commercial loan with fee.',
+ [num('p','Loan amount',150000),num('r','Rate (%)',9),num('y','Term (years)',7),num('fee','Origination fee (%)',2)],
+ i=>{const n=i.y*12,m=pmt(i.p,i.r/1200,n);return[['Monthly payment',C(m),1],['Fee',C(i.p*i.fee/100)],['Total interest',C(m*n-i.p)]];});
+add('Financial','Lease Calculator','Monthly vehicle lease estimate.',
+ [num('p','Vehicle price',38000),num('res','Residual value',22000),num('y','Lease years',3),num('mf','Money factor',0.0022)],
+ i=>{const n=i.y*12,dep=(i.p-i.res)/n,fin=(i.p+i.res)*i.mf;return[['Monthly lease',C(dep+fin),1],['Depreciation part',C(dep)],['Finance part',C(fin)]];});
+add('Financial','Payback Period Calculator','Years to recover an investment.',
+ [num('c','Initial cost',60000),num('cf','Annual cash flow',14000)],
+ i=>[['Payback period',F(i.c/i.cf)+' years',1],['Months',F(i.c/i.cf*12)]]);
+add('Financial','NPV Calculator','Net present value of a level cash flow.',
+ [num('c','Initial investment',100000),num('cf','Annual cash flow',25000),num('y','Years',6),num('r','Discount rate (%)',8)],
+ i=>{const r=i.r/100,pv=i.cf*(1-Math.pow(1+r,-i.y))/r;return[['NPV',C(pv-i.c),1],['PV of inflows',C(pv)],['Profitability index',M(pv/i.c)]];});
+add('Financial','Present Value Calculator','Today\u2019s value of a future sum.',
+ [num('f','Future value',50000),num('r','Rate (%)',6),num('y','Years',10)],
+ i=>[['Present value',C(i.f/Math.pow(1+i.r/100,i.y)),1],['Discount',C(i.f-i.f/Math.pow(1+i.r/100,i.y))]]);
+add('Financial','Future Value Calculator','Value of money later on.',
+ [num('p','Present value',20000),num('r','Rate (%)',6),num('y','Years',10)],
+ i=>[['Future value',C(i.p*Math.pow(1+i.r/100,i.y)),1],['Growth',C(i.p*Math.pow(1+i.r/100,i.y)-i.p)]]);
+add('Financial','Inflation Calculator','Purchasing power over time.',
+ [num('a','Amount today',1000),num('r','Inflation (%)',3.2),num('y','Years',20)],
+ i=>[['Equivalent future cost',C(i.a*Math.pow(1+i.r/100,i.y)),1],['Value of today\u2019s money then',C(i.a/Math.pow(1+i.r/100,i.y))]]);
+add('Financial','Salary Calculator','Convert pay between periods.',
+ [num('a','Amount',30),sel('per','Per',[['hour','Hour'],['day','Day'],['week','Week'],['month','Month'],['year','Year']],'hour'),num('h','Hours per week',40)],
+ i=>{const wk={hour:i.a*i.h,day:i.a*5,week:i.a,month:i.a*12/52,year:i.a/52}[i.per];return[['Yearly',C(wk*52),1],['Monthly',C(wk*52/12)],['Weekly',C(wk)],['Hourly',C(wk/i.h)]];});
+add('Financial','Take-Home Pay Calculator','Estimated net pay after tax rate.',
+ [num('s','Gross annual salary',80000),num('t','Effective tax rate (%)',24),num('d','Annual deductions',6000)],
+ i=>{const net=(i.s-i.d)*(1-i.t/100);return[['Net annual',C(net),1],['Net monthly',C(net/12)],['Tax paid',C((i.s-i.d)*i.t/100)]];});
+add('Financial','Income Tax Estimator','Progressive-bracket style estimate.',
+ [num('s','Taxable income',75000),num('b1','Bracket 1 up to',11000),num('r1','Rate 1 (%)',10),num('b2','Bracket 2 up to',44725),num('r2','Rate 2 (%)',12),num('r3','Rate above (%)',22)],
+ i=>{let t=0;t+=Math.min(i.s,i.b1)*i.r1/100;if(i.s>i.b1)t+=(Math.min(i.s,i.b2)-i.b1)*i.r2/100;if(i.s>i.b2)t+=(i.s-i.b2)*i.r3/100;return[['Estimated tax',C(t),1],['Effective rate',P(t/i.s*100)],['After tax',C(i.s-t)]];});
+add('Financial','Sales Tax Calculator','Add or remove sales tax.',
+ [num('a','Amount',129.99),num('r','Tax rate (%)',8.25)],
+ i=>[['Tax',C(i.a*i.r/100),1],['Total',C(i.a*(1+i.r/100))],['Pre-tax if amount includes tax',C(i.a/(1+i.r/100))]]);
+add('Financial','VAT Calculator','Value added tax both directions.',
+ [num('a','Amount',250),num('r','VAT rate (%)',20)],
+ i=>[['VAT',C(i.a*i.r/100),1],['Gross',C(i.a*(1+i.r/100))],['Net from gross',C(i.a/(1+i.r/100))]]);
+add('Financial','Tip Calculator','Tip and split per person.',
+ [num('b','Bill',86.4),num('t','Tip (%)',18),num('n','People',3)],
+ i=>[['Tip',C(i.b*i.t/100),1],['Total',C(i.b*(1+i.t/100))],['Per person',C(i.b*(1+i.t/100)/i.n)]]);
+add('Financial','Discount Calculator','Sale price and savings.',
+ [num('p','Original price',249),num('d','Discount (%)',35),num('d2','Extra discount (%)',0)],
+ i=>{const f=i.p*(1-i.d/100)*(1-i.d2/100);return[['Final price',C(f),1],['You save',C(i.p-f)],['Total discount',P((1-f/i.p)*100)]];});
+add('Financial','Margin Calculator','Profit margin and markup.',
+ [num('c','Cost',40),num('p','Selling price',65)],
+ i=>[['Gross margin',P((i.p-i.c)/i.p*100),1],['Markup',P((i.p-i.c)/i.c*100)],['Profit',C(i.p-i.c)]]);
+add('Financial','Markup Calculator','Price from cost and markup.',
+ [num('c','Cost',40),num('m','Markup (%)',60)],
+ i=>[['Selling price',C(i.c*(1+i.m/100)),1],['Profit',C(i.c*i.m/100)],['Margin',P(i.m/(100+i.m)*100)]]);
+add('Financial','Commission Calculator','Sales commission earned.',
+ [num('s','Sale amount',45000),num('r','Commission (%)',3.5),num('sp','Split with (%)',0)],
+ i=>{const g=i.s*i.r/100;return[['Your commission',C(g*(1-i.sp/100)),1],['Gross commission',C(g)]];});
+add('Financial','Currency Margin Calculator','Convert with an exchange rate and fee.',
+ [num('a','Amount',1000),num('r','Exchange rate',83.2),num('f','Fee (%)',1.5)],
+ i=>[['Converted',F(i.a*i.r*(1-i.f/100)),1],['Fee cost',F(i.a*i.r*i.f/100)],['Mid-market value',F(i.a*i.r)]]);
+add('Financial','CD Calculator','Certificate of deposit maturity value.',
+ [num('p','Deposit',10000),num('r','APY (%)',4.75),num('y','Years',3)],
+ i=>[['Maturity value',C(i.p*Math.pow(1+i.r/100,i.y)),1],['Interest earned',C(i.p*Math.pow(1+i.r/100,i.y)-i.p)]]);
+add('Financial','Bond Yield Calculator','Current yield and simple YTM.',
+ [num('f','Face value',1000),num('c','Coupon rate (%)',5),num('p','Price',940),num('y','Years to maturity',8)],
+ i=>{const cpn=i.f*i.c/100;return[['Current yield',P(cpn/i.p*100),1],['Approx YTM',P((cpn+(i.f-i.p)/i.y)/((i.f+i.p)/2)*100)],['Annual coupon',C(cpn)]];});
+add('Financial','Stock Profit Calculator','Trade P&L after commissions.',
+ [num('b','Buy price',120),num('s','Sell price',158),num('q','Shares',50),num('f','Total fees',10)],
+ i=>{const p=(i.s-i.b)*i.q-i.f;return[['Net profit',C(p),1],['Return',P(p/(i.b*i.q)*100)],['Proceeds',C(i.s*i.q-i.f)]];});
+add('Financial','Dividend Yield Calculator','Yield and annual income.',
+ [num('d','Annual dividend per share',3.2),num('p','Share price',78),num('q','Shares',200)],
+ i=>[['Dividend yield',P(i.d/i.p*100),1],['Annual income',C(i.d*i.q)],['Monthly income',C(i.d*i.q/12)]]);
+add('Financial','Depreciation Calculator','Straight-line depreciation.',
+ [num('c','Asset cost',50000),num('s','Salvage value',5000),num('y','Useful life (years)',8)],
+ i=>[['Annual depreciation',C((i.c-i.s)/i.y),1],['Monthly',C((i.c-i.s)/i.y/12)],['Total depreciable',C(i.c-i.s)]]);
+add('Financial','Net Worth Calculator','Assets minus liabilities.',
+ [num('a','Total assets',420000),num('l','Total liabilities',185000)],
+ i=>[['Net worth',C(i.a-i.l),1],['Debt ratio',P(i.l/i.a*100)]]);
+add('Financial','Budget Calculator','50/30/20 split of income.',
+ [num('s','Monthly income after tax',5200)],
+ i=>[['Needs (50%)',C(i.s*.5),1],['Wants (30%)',C(i.s*.3)],['Savings (20%)',C(i.s*.2)]]);
+add('Financial','Emergency Fund Calculator','Target cushion and time to build it.',
+ [num('e','Monthly expenses',3200),num('m','Months of cover',6),num('s','Monthly saving',500),num('h','Already saved',2000)],
+ i=>{const t=i.e*i.m;return[['Target fund',C(t),1],['Still needed',C(Math.max(0,t-i.h))],['Months to reach',F(Math.max(0,t-i.h)/i.s)]];});
+add('Financial','Student Loan Calculator','Repayment on education debt.',
+ [num('p','Loan balance',35000),num('r','Rate (%)',5.5),num('y','Term (years)',10)],
+ i=>{const n=i.y*12,m=pmt(i.p,i.r/1200,n);return[['Monthly payment',C(m),1],['Total interest',C(m*n-i.p)],['Total paid',C(m*n)]];});
+add('Financial','College Savings Calculator','Saving for future tuition.',
+ [num('cost','Annual cost today',28000),num('y','Years until college',12),num('inf','Cost inflation (%)',5),num('r','Return (%)',6)],
+ i=>{const need=i.cost*Math.pow(1+i.inf/100,i.y)*4,r=i.r/1200,n=i.y*12;return[['Total needed',C(need),1],['Monthly saving required',C(need*r/(Math.pow(1+r,n)-1))]];});
+add('Financial','Payroll Overtime Calculator','Weekly pay with overtime.',
+ [num('h','Hours worked',48),num('r','Hourly rate',24),num('ot','Overtime multiplier',1.5)],
+ i=>{const reg=Math.min(i.h,40),o=Math.max(0,i.h-40);return[['Weekly gross',C(reg*i.r+o*i.r*i.ot),1],['Regular pay',C(reg*i.r)],['Overtime pay',C(o*i.r*i.ot)]];});
+add('Financial','Hourly to Salary Calculator','Annualise an hourly wage.',
+ [num('r','Hourly rate',28),num('h','Hours/week',40),num('w','Weeks/year',50)],
+ i=>[['Annual salary',C(i.r*i.h*i.w),1],['Monthly',C(i.r*i.h*i.w/12)],['Weekly',C(i.r*i.h)]]);
+add('Financial','Cost of Living Comparison','Income needed in a new city.',
+ [num('s','Current salary',85000),num('idx','Current city index',100),num('idx2','New city index',132)],
+ i=>[['Equivalent salary needed',C(i.s*i.idx2/i.idx),1],['Difference',C(i.s*i.idx2/i.idx-i.s)],['Cost change',P((i.idx2/i.idx-1)*100)]]);
+add('Financial','Fuel Cost Trip Calculator','Cost of driving a distance.',
+ [num('d','Distance',420),num('e','Fuel economy (mpg)',31),num('p','Fuel price per gallon',3.55)],
+ i=>[['Trip fuel cost',C(i.d/i.e*i.p),1],['Fuel used',F(i.d/i.e)+' gal'],['Cost per mile',C(i.p/i.e)]]);
+add('Financial','Car Affordability Calculator','Vehicle price your budget supports.',
+ [num('m','Monthly budget',450),num('r','Rate (%)',6.9),num('y','Term (years)',5),num('dp','Down payment',4000)],
+ i=>{const r=i.r/1200,n=i.y*12,L=i.m*(1-Math.pow(1+r,-n))/r;return[['Affordable price',C(L+i.dp),1],['Max loan',C(L)]];});
+add('Financial','Insurance Premium Estimator','Simple risk-rated premium.',
+ [num('v','Coverage amount',300000),num('r','Rate per $1000',1.85),num('f','Policy fee',75)],
+ i=>[['Annual premium',C(i.v/1000*i.r+i.f),1],['Monthly',C((i.v/1000*i.r+i.f)/12)]]);
+add('Financial','APR to APY Calculator','Convert nominal to effective rate.',
+ [num('r','APR (%)',12),sel('m','Compounds per year',[['12','Monthly'],['4','Quarterly'],['365','Daily'],['1','Annual']],'12')],
+ i=>[['APY',P((Math.pow(1+i.r/100/ +i.m,+i.m)-1)*100),1],['APR',P(i.r)]]);
+add('Financial','Debt-to-Income Calculator','Lender DTI ratio.',
+ [num('d','Monthly debt payments',1450),num('s','Gross monthly income',6200)],
+ i=>{const x=i.d/i.s*100;return[['DTI ratio',P(x),1],['Assessment',x<36?'Healthy':x<43?'Acceptable':'High']];});
+</script>
+<script>
+/* ---------------- HEALTH & FITNESS ---------------- */
+const kg=(v,u)=>u==='lb'?v*0.45359237:v, cm=(v,u)=>u==='in'?v*2.54:v;
+add('Health','BMI Calculator','Body mass index and category.',
+ [num('w','Weight (kg)',72),num('h','Height (cm)',175)],
+ i=>{const b=i.w/Math.pow(i.h/100,2);return[['BMI',M(b),1],['Category',b<18.5?'Underweight':b<25?'Normal':b<30?'Overweight':'Obese'],['Healthy weight range',F(18.5*Math.pow(i.h/100,2))+'–'+F(24.9*Math.pow(i.h/100,2))+' kg']];});
+add('Health','BMR Calculator','Basal metabolic rate (Mifflin-St Jeor).',
+ [num('w','Weight (kg)',72),num('h','Height (cm)',175),num('a','Age',30),sel('s','Sex',[['m','Male'],['f','Female']],'m')],
+ i=>{const b=10*i.w+6.25*i.h-5*i.a+(i.s==='m'?5:-161);return[['BMR',F(b)+' kcal/day',1],['Sedentary TDEE',F(b*1.2)],['Active TDEE',F(b*1.55)]];});
+add('Health','Calorie Calculator','Daily calories for your goal.',
+ [num('w','Weight (kg)',72),num('h','Height (cm)',175),num('a','Age',30),sel('s','Sex',[['m','Male'],['f','Female']],'m'),sel('act','Activity',[['1.2','Sedentary'],['1.375','Light'],['1.55','Moderate'],['1.725','Very active']],'1.375'),sel('g','Goal',[['0','Maintain'],['-500','Lose 0.5 kg/wk'],['500','Gain']],'0')],
+ i=>{const b=10*i.w+6.25*i.h-5*i.a+(i.s==='m'?5:-161),t=b*+i.act;return[['Daily calories',F(t+ +i.g)+' kcal',1],['Maintenance',F(t)],['BMR',F(b)]];});
+add('Health','Macro Calculator','Protein, carbs and fat split.',
+ [num('c','Daily calories',2200),num('p','Protein (%)',30),num('cb','Carbs (%)',40),num('f','Fat (%)',30)],
+ i=>[['Protein',F(i.c*i.p/400)+' g',1],['Carbs',F(i.c*i.cb/400)+' g'],['Fat',F(i.c*i.f/900)+' g']]);
+add('Health','Body Fat Calculator','US Navy method estimate.',
+ [num('h','Height (cm)',175),num('n','Neck (cm)',38),num('wa','Waist (cm)',86),num('hp','Hip (cm, female)',95),sel('s','Sex',[['m','Male'],['f','Female']],'m')],
+ i=>{const bf=i.s==='m'?495/(1.0324-0.19077*Math.log10(i.wa-i.n)+0.15456*Math.log10(i.h))-450:495/(1.29579-0.35004*Math.log10(i.wa+i.hp-i.n)+0.221*Math.log10(i.h))-450;return[['Body fat',P(bf),1],['Category',bf<14?'Athletic':bf<21?'Fitness':bf<26?'Average':'High']];});
+add('Health','Ideal Weight Calculator','Devine and BMI-based targets.',
+ [num('h','Height (cm)',175),sel('s','Sex',[['m','Male'],['f','Female']],'m')],
+ i=>{const inch=i.h/2.54-60,d=(i.s==='m'?50:45.5)+2.3*inch;return[['Ideal weight (Devine)',F(d)+' kg',1],['Healthy BMI range',F(18.5*Math.pow(i.h/100,2))+'–'+F(24.9*Math.pow(i.h/100,2))+' kg']];});
+add('Health','Lean Body Mass Calculator','Fat-free mass estimate.',
+ [num('w','Weight (kg)',80),num('bf','Body fat (%)',20)],
+ i=>[['Lean body mass',F(i.w*(1-i.bf/100))+' kg',1],['Fat mass',F(i.w*i.bf/100)+' kg']]);
+add('Health','Water Intake Calculator','Daily hydration target.',
+ [num('w','Weight (kg)',72),num('e','Exercise minutes',45)],
+ i=>[['Daily water',M(i.w*0.033+i.e/30*0.35)+' L',1],['Glasses (250 ml)',F((i.w*0.033+i.e/30*0.35)*4)]]);
+add('Health','Heart Rate Zone Calculator','Training zones from age.',
+ [num('a','Age',30),num('r','Resting HR',62)],
+ i=>{const max=220-i.a,res=max-i.r,z=p=>F(i.r+res*p);return[['Max heart rate',F(max)+' bpm',1],['Fat burn (60-70%)',z(.6)+'–'+z(.7)],['Cardio (70-80%)',z(.7)+'–'+z(.8)],['Peak (80-90%)',z(.8)+'–'+z(.9)]];});
+add('Health','Pace Calculator','Running pace, time and speed.',
+ [num('d','Distance (km)',10),num('t','Time (minutes)',52)],
+ i=>[['Pace',F(Math.floor(i.t/i.d))+':'+String(Math.round(i.t/i.d%1*60)).padStart(2,'0')+' /km',1],['Speed',M(i.d/(i.t/60))+' km/h'],['Marathon estimate',F(i.t/i.d*42.195)+' min']]);
+add('Health','Calories Burned Calculator','Energy used by activity (MET).',
+ [num('w','Weight (kg)',72),num('t','Minutes',45),sel('met','Activity',[['3.5','Walking'],['7','Jogging'],['9.8','Running'],['6','Cycling'],['8','Swimming'],['5','Weights']],'7')],
+ i=>[['Calories burned',F(+i.met*3.5*i.w/200*i.t)+' kcal',1],['Per minute',M(+i.met*3.5*i.w/200)]]);
+add('Health','Pregnancy Due Date Calculator','Due date from last period.',
+ [num('d','Days since last period',60),num('cyc','Cycle length',28)],
+ i=>{const rem=280-i.d+(i.cyc-28);return[['Days until due',F(rem),1],['Weeks pregnant',F(i.d/7)],['Trimester',i.d<91?'First':i.d<189?'Second':'Third']];});
+add('Health','Ovulation Calculator','Fertile window estimate.',
+ [num('cyc','Cycle length (days)',28),num('d','Days since period started',7)],
+ i=>[['Ovulation day of cycle',F(i.cyc-14),1],['Fertile window',F(i.cyc-19)+'–'+F(i.cyc-13)+' days'],['Days until ovulation',F(i.cyc-14-i.d)]]);
+add('Health','Sleep Calculator','Bedtime from wake time in cycles.',
+ [num('h','Hours until wake',8),num('lat','Minutes to fall asleep',15)],
+ i=>[['Sleep cycles',F((i.h*60-i.lat)/90),1],['Ideal sleep (5 cycles)','7h 30m'],['Actual sleep',F(i.h-i.lat/60)+' h']]);
+add('Health','Blood Alcohol (BAC) Estimator','Rough BAC from drinks (educational).',
+ [num('d','Standard drinks',3),num('w','Weight (kg)',72),num('t','Hours since first drink',2),sel('s','Sex',[['m','Male'],['f','Female']],'m')],
+ i=>{const r=i.s==='m'?0.68:0.55,bac=Math.max(0,(i.d*14/(i.w*1000*r))*100-0.015*i.t);return[['Estimated BAC',M(bac)+'%',1],['Status',bac>=0.08?'Over legal limit (US)':'Under 0.08%'],['Hours to sober',F(bac/0.015)]];});
+add('Health','GFR Estimator','Kidney function (CKD-EPI style).',
+ [num('cr','Creatinine (mg/dL)',1),num('a','Age',45),sel('s','Sex',[['m','Male'],['f','Female']],'m')],
+ i=>{const k=i.s==='m'?0.9:0.7,al=i.s==='m'?-0.302:-0.241,g=142*Math.pow(Math.min(i.cr/k,1),al)*Math.pow(Math.max(i.cr/k,1),-1.2)*Math.pow(0.9938,i.a)*(i.s==='f'?1.012:1);return[['eGFR',F(g)+' mL/min/1.73m²',1],['Stage',g>=90?'G1 normal':g>=60?'G2 mild':g>=30?'G3':'G4-5']];});
+add('Health','Body Surface Area Calculator','Mosteller BSA.',
+ [num('w','Weight (kg)',72),num('h','Height (cm)',175)],
+ i=>[['BSA',M(Math.sqrt(i.h*i.w/3600))+' m²',1]]);
+add('Health','Waist-to-Hip Ratio','Health risk indicator.',
+ [num('w','Waist (cm)',86),num('h','Hip (cm)',98),sel('s','Sex',[['m','Male'],['f','Female']],'m')],
+ i=>{const r=i.w/i.h;return[['Ratio',M(r),1],['Risk',(i.s==='m'?r>0.9:r>0.85)?'Elevated':'Low']];});
+add('Health','Protein Intake Calculator','Daily protein target.',
+ [num('w','Weight (kg)',72),sel('g','Goal',[['0.8','Sedentary'],['1.4','Active'],['1.8','Build muscle'],['2.2','Cutting']],'1.4')],
+ i=>[['Daily protein',F(i.w*+i.g)+' g',1],['Per meal (4)',F(i.w*+i.g/4)+' g']]);
+add('Health','One Rep Max Calculator','Estimated 1RM (Epley).',
+ [num('w','Weight lifted',80),num('r','Reps',8)],
+ i=>{const m=i.w*(1+i.r/30);return[['Estimated 1RM',F(m),1],['85% (5 reps)',F(m*.85)],['70% (12 reps)',F(m*.7)]];});
+add('Health','Army Body Fat Standard','Circumference-based estimate.',
+ [num('h','Height (in)',69),num('n','Neck (in)',15),num('wa','Waist (in)',34)],
+ i=>[['Body fat',P(86.01*Math.log10(i.wa-i.n)-70.041*Math.log10(i.h)+36.76),1]]);
+add('Health','Target Weight Timeline','Time to reach goal weight.',
+ [num('w','Current weight (kg)',85),num('g','Goal weight (kg)',75),num('def','Daily calorie deficit',500)],
+ i=>{const wk=(i.w-i.g)/(i.def*7/7700);return[['Weeks needed',F(wk),1],['Months',F(wk/4.33)],['Weekly loss',M(i.def*7/7700)+' kg']];});
+add('Health','Child Height Predictor','Mid-parental height estimate.',
+ [num('m','Mother height (cm)',162),num('f','Father height (cm)',178),sel('s','Child sex',[['m','Boy'],['f','Girl']],'m')],
+ i=>[['Predicted height',F((i.m+i.f+(i.s==='m'?13:-13))/2)+' cm',1],['Range ±8 cm',F((i.m+i.f+(i.s==='m'?13:-13))/2-8)+'–'+F((i.m+i.f+(i.s==='m'?13:-13))/2+8)]]);
+add('Health','Smoking Cost Calculator','Money and cigarettes over time.',
+ [num('c','Cigarettes/day',12),num('p','Price per pack',9),num('y','Years',10)],
+ i=>[['Total cost',C(i.c/20*i.p*365*i.y),1],['Yearly',C(i.c/20*i.p*365)],['Cigarettes smoked',F(i.c*365*i.y)]]);
+add('Health','Steps to Calories','Energy from a step count.',
+ [num('s','Steps',10000),num('w','Weight (kg)',72)],
+ i=>[['Calories burned',F(i.s*0.0005*i.w),1],['Distance',M(i.s*0.762/1000)+' km']]);
+</script>
+<script>
+/* ---------------- MATH ---------------- */
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+add('Math','Percentage Calculator','What is X% of Y, and related forms.',
+ [num('x','X (percent)',15),num('y','Of value Y',280)],
+ i=>[['X% of Y',M(i.x/100*i.y),1],['X is what % of Y',P(i.x/i.y*100)],['Y increased by X%',M(i.y*(1+i.x/100))],['Y decreased by X%',M(i.y*(1-i.x/100))]]);
+add('Math','Percentage Change Calculator','Increase or decrease between two numbers.',
+ [num('a','From',120),num('b','To',186)],
+ i=>[['Change',P((i.b-i.a)/i.a*100),1],['Difference',M(i.b-i.a)],['Direction',i.b>i.a?'Increase':'Decrease']]);
+add('Math','Percentage Difference Calculator','Relative difference between values.',
+ [num('a','Value A',40),num('b','Value B',60)],
+ i=>[['Percent difference',P(Math.abs(i.a-i.b)/((i.a+i.b)/2)*100),1],['Average',M((i.a+i.b)/2)]]);
+add('Math','Fraction Calculator','Add, subtract, multiply or divide fractions.',
+ [num('a','Numerator 1',3),num('b','Denominator 1',4),sel('op','Operation',[['+','Add'],['-','Subtract'],['*','Multiply'],['/','Divide']],'+'),num('c','Numerator 2',5),num('d','Denominator 2',6)],
+ i=>{let n,dd;if(i.op==='+'){n=i.a*i.d+i.c*i.b;dd=i.b*i.d}else if(i.op==='-'){n=i.a*i.d-i.c*i.b;dd=i.b*i.d}else if(i.op==='*'){n=i.a*i.c;dd=i.b*i.d}else{n=i.a*i.d;dd=i.b*i.c}const g=gcd(n,dd)||1;return[['Result',(n/g)+'/'+(dd/g),1],['Decimal',M(n/dd)],['Unsimplified',n+'/'+dd]];});
+add('Math','Fraction to Decimal','Convert a fraction to decimal and percent.',
+ [num('a','Numerator',7),num('b','Denominator',8)],
+ i=>[['Decimal',M(i.a/i.b),1],['Percent',P(i.a/i.b*100)]]);
+add('Math','Decimal to Fraction','Nearest simple fraction.',
+ [num('d','Decimal',0.625),num('md','Max denominator',1000)],
+ i=>{let best=[0,1],err=1e9;for(let q=1;q<=i.md;q++){const p=Math.round(i.d*q),e=Math.abs(i.d-p/q);if(e<err){err=e;best=[p,q]}}const g=gcd(best[0],best[1])||1;return[['Fraction',(best[0]/g)+'/'+(best[1]/g),1],['Error',M(err)]];});
+add('Math','Ratio Calculator','Solve A:B = C:D.',
+ [num('a','A',3),num('b','B',4),num('c','C',9)],
+ i=>[['D',M(i.b*i.c/i.a),1],['Simplified A:B',(i.a/(gcd(i.a,i.b)||1))+':'+(i.b/(gcd(i.a,i.b)||1))]]);
+add('Math','Proportion Calculator','Scale a quantity proportionally.',
+ [num('a','Known part',12),num('b','Known whole',48),num('c','New whole',200)],
+ i=>[['New part',M(i.a/i.b*i.c),1],['Ratio',P(i.a/i.b*100)]]);
+add('Math','Average / Mean Calculator','Mean, median, range of a list.',
+ [{k:'l',l:'Numbers (comma separated)',v:'12, 19, 4, 7, 22, 15',text:1}],
+ i=>{const a=String(i.l).split(/[,\s]+/).filter(Boolean).map(Number).sort((x,y)=>x-y),s=a.reduce((p,c)=>p+c,0);return[['Mean',M(s/a.length),1],['Median',M(a.length%2?a[(a.length-1)/2]:(a[a.length/2-1]+a[a.length/2])/2)],['Sum',M(s)],['Min / Max',M(a[0])+' / '+M(a[a.length-1])],['Count',a.length]];});
+add('Math','Standard Deviation Calculator','Population and sample SD.',
+ [{k:'l',l:'Numbers (comma separated)',v:'4, 9, 11, 12, 17, 5, 8, 12, 14',text:1}],
+ i=>{const a=String(i.l).split(/[,\s]+/).filter(Boolean).map(Number),m=a.reduce((p,c)=>p+c,0)/a.length,ss=a.reduce((p,c)=>p+(c-m)**2,0);return[['Sample SD',M(Math.sqrt(ss/(a.length-1))),1],['Population SD',M(Math.sqrt(ss/a.length))],['Variance (sample)',M(ss/(a.length-1))],['Mean',M(m)]];});
+add('Math','Random Number Generator','Pick a random integer in a range.',
+ [num('a','Minimum',1),num('b','Maximum',100),num('n','How many',5)],
+ i=>{const out=[];for(let k=0;k<i.n;k++)out.push(Math.floor(Math.random()*(i.b-i.a+1))+i.a);return[['Numbers',out.join(', '),1]];});
+add('Math','Scientific Notation Converter','Standard form of a number.',
+ [num('n','Number',0.000452)],
+ i=>{const e=Math.floor(Math.log10(Math.abs(i.n)));return[['Scientific',M(i.n/Math.pow(10,e))+' × 10^'+e,1],['E-notation',i.n.toExponential(6)]];});
+add('Math','Exponent Calculator','Raise a number to a power.',
+ [num('b','Base',2),num('e','Exponent',16)],
+ i=>[['Result',M(Math.pow(i.b,i.e)),1],['Root form',M(Math.pow(i.b,1/i.e))+' is the '+i.e+'th root']]);
+add('Math','Root Calculator','Square, cube and nth roots.',
+ [num('n','Number',729),num('r','Root degree',3)],
+ i=>[['Nth root',M(Math.pow(i.n,1/i.r)),1],['Square root',M(Math.sqrt(i.n))],['Cube root',M(Math.cbrt(i.n))]]);
+add('Math','Logarithm Calculator','Log in any base.',
+ [num('n','Number',1000),num('b','Base',10)],
+ i=>[['log_b(n)',M(Math.log(i.n)/Math.log(i.b)),1],['Natural log',M(Math.log(i.n))],['log10',M(Math.log10(i.n))]]);
+add('Math','Quadratic Equation Solver','Roots of ax² + bx + c.',
+ [num('a','a',1),num('b','b',-3),num('c','c',-10)],
+ i=>{const d=i.b*i.b-4*i.a*i.c;return d<0?[['Roots','Complex: '+M(-i.b/(2*i.a))+' ± '+M(Math.sqrt(-d)/(2*i.a))+'i',1],['Discriminant',M(d)]]:[['Root 1',M((-i.b+Math.sqrt(d))/(2*i.a)),1],['Root 2',M((-i.b-Math.sqrt(d))/(2*i.a))],['Discriminant',M(d)],['Vertex x',M(-i.b/(2*i.a))]];});
+add('Math','Linear Equation Solver','Solve ax + b = c.',
+ [num('a','a',4),num('b','b',7),num('c','c',31)],
+ i=>[['x',M((i.c-i.b)/i.a),1]]);
+add('Math','System of Equations Solver','Two equations, two unknowns.',
+ [num('a','a1',2),num('b','b1',3),num('c','c1',12),num('d','a2',4),num('e','b2',-1),num('f','c2',10)],
+ i=>{const det=i.a*i.e-i.b*i.d;if(!det)return[['Result','No unique solution',1]];return[['x',M((i.c*i.e-i.b*i.f)/det),1],['y',M((i.a*i.f-i.c*i.d)/det)]];});
+add('Math','Slope Calculator','Slope, intercept and distance.',
+ [num('x1','x1',1),num('y1','y1',2),num('x2','x2',7),num('y2','y2',14)],
+ i=>{const m=(i.y2-i.y1)/(i.x2-i.x1);return[['Slope',M(m),1],['Y-intercept',M(i.y1-m*i.x1)],['Distance',M(Math.hypot(i.x2-i.x1,i.y2-i.y1))],['Equation','y = '+M(m)+'x + '+M(i.y1-m*i.x1)]];});
+add('Math','Distance Between Points','2D and 3D distance.',
+ [num('x1','x1',0),num('y1','y1',0),num('z1','z1',0),num('x2','x2',3),num('y2','y2',4),num('z2','z2',12)],
+ i=>[['3D distance',M(Math.hypot(i.x2-i.x1,i.y2-i.y1,i.z2-i.z1)),1],['2D distance',M(Math.hypot(i.x2-i.x1,i.y2-i.y1))]]);
+add('Math','Midpoint Calculator','Midpoint of a segment.',
+ [num('x1','x1',2),num('y1','y1',5),num('x2','x2',10),num('y2','y2',-3)],
+ i=>[['Midpoint','('+M((i.x1+i.x2)/2)+', '+M((i.y1+i.y2)/2)+')',1]]);
+add('Math','Pythagorean Theorem Calculator','Find the hypotenuse or a leg.',
+ [num('a','Leg a',3),num('b','Leg b',4)],
+ i=>[['Hypotenuse',M(Math.hypot(i.a,i.b)),1],['Area',M(i.a*i.b/2)],['Perimeter',M(i.a+i.b+Math.hypot(i.a,i.b))]]);
+add('Math','Triangle Calculator','Sides, area and angles (SSS).',
+ [num('a','Side a',7),num('b','Side b',9),num('c','Side c',12)],
+ i=>{const s=(i.a+i.b+i.c)/2,ar=Math.sqrt(s*(s-i.a)*(s-i.b)*(s-i.c)),A=Math.acos((i.b**2+i.c**2-i.a**2)/(2*i.b*i.c))*180/Math.PI,B=Math.acos((i.a**2+i.c**2-i.b**2)/(2*i.a*i.c))*180/Math.PI;return[['Area',M(ar),1],['Perimeter',M(2*s)],['Angle A',M(A)+'°'],['Angle B',M(B)+'°'],['Angle C',M(180-A-B)+'°']];});
+add('Math','Right Triangle Calculator','Angles from two legs.',
+ [num('a','Opposite',5),num('b','Adjacent',12)],
+ i=>[['Hypotenuse',M(Math.hypot(i.a,i.b)),1],['Angle',M(Math.atan2(i.a,i.b)*180/Math.PI)+'°'],['Other angle',M(90-Math.atan2(i.a,i.b)*180/Math.PI)+'°']]);
+add('Math','Circle Calculator','Area, circumference, diameter.',
+ [num('r','Radius',7)],
+ i=>[['Area',M(Math.PI*i.r**2),1],['Circumference',M(2*Math.PI*i.r)],['Diameter',M(2*i.r)]]);
+add('Math','Sphere Calculator','Volume and surface area.',
+ [num('r','Radius',5)],
+ i=>[['Volume',M(4/3*Math.PI*i.r**3),1],['Surface area',M(4*Math.PI*i.r**2)]]);
+add('Math','Cylinder Calculator','Volume and surface area.',
+ [num('r','Radius',3),num('h','Height',10)],
+ i=>[['Volume',M(Math.PI*i.r**2*i.h),1],['Surface area',M(2*Math.PI*i.r*(i.r+i.h))],['Lateral area',M(2*Math.PI*i.r*i.h)]]);
+add('Math','Cone Calculator','Volume, slant and surface area.',
+ [num('r','Radius',4),num('h','Height',9)],
+ i=>{const l=Math.hypot(i.r,i.h);return[['Volume',M(Math.PI*i.r**2*i.h/3),1],['Slant height',M(l)],['Surface area',M(Math.PI*i.r*(i.r+l))]];});
+add('Math','Rectangle / Box Calculator','Area, perimeter, volume and diagonal.',
+ [num('l','Length',12),num('w','Width',8),num('h','Height',5)],
+ i=>[['Volume',M(i.l*i.w*i.h),1],['Base area',M(i.l*i.w)],['Surface area',M(2*(i.l*i.w+i.l*i.h+i.w*i.h))],['Diagonal',M(Math.hypot(i.l,i.w,i.h))]]);
+add('Math','Trapezoid Calculator','Area of a trapezoid.',
+ [num('a','Base a',10),num('b','Base b',6),num('h','Height',4)],
+ i=>[['Area',M((i.a+i.b)/2*i.h),1],['Midsegment',M((i.a+i.b)/2)]]);
+add('Math','Ellipse Calculator','Area and approximate perimeter.',
+ [num('a','Semi-major axis',8),num('b','Semi-minor axis',5)],
+ i=>[['Area',M(Math.PI*i.a*i.b),1],['Perimeter (approx)',M(Math.PI*(3*(i.a+i.b)-Math.sqrt((3*i.a+i.b)*(i.a+3*i.b))))]]);
+add('Math','Polygon Calculator','Regular polygon area and angles.',
+ [num('n','Number of sides',6),num('s','Side length',5)],
+ i=>[['Area',M(i.n*i.s**2/(4*Math.tan(Math.PI/i.n))),1],['Perimeter',M(i.n*i.s)],['Interior angle',M((i.n-2)*180/i.n)+'°'],['Apothem',M(i.s/(2*Math.tan(Math.PI/i.n)))]]);
+add('Math','Area Calculator','Area of a chosen shape.',
+ [sel('sh','Shape',[['rect','Rectangle'],['tri','Triangle'],['circ','Circle'],['trap','Trapezoid']],'rect'),num('a','Dimension A',10),num('b','Dimension B',6)],
+ i=>{const v={rect:i.a*i.b,tri:i.a*i.b/2,circ:Math.PI*i.a**2,trap:(i.a+i.b)/2*i.a}[i.sh];return[['Area',M(v),1]];});
+add('Math','Volume Calculator','Volume of common solids.',
+ [sel('sh','Solid',[['box','Box'],['sph','Sphere'],['cyl','Cylinder'],['cone','Cone']],'box'),num('a','Dimension A',5),num('b','Dimension B',5),num('c','Dimension C',5)],
+ i=>{const v={box:i.a*i.b*i.c,sph:4/3*Math.PI*i.a**3,cyl:Math.PI*i.a**2*i.b,cone:Math.PI*i.a**2*i.b/3}[i.sh];return[['Volume',M(v),1]];});
+add('Math','Surface Area Calculator','Surface area of common solids.',
+ [sel('sh','Solid',[['box','Box'],['sph','Sphere'],['cyl','Cylinder']],'box'),num('a','A',4),num('b','B',6),num('c','C',8)],
+ i=>{const v={box:2*(i.a*i.b+i.a*i.c+i.b*i.c),sph:4*Math.PI*i.a**2,cyl:2*Math.PI*i.a*(i.a+i.b)}[i.sh];return[['Surface area',M(v),1]];});
+add('Math','Prime Number Checker','Test primality and factor.',
+ [num('n','Number',9973)],
+ i=>{const n=Math.abs(Math.round(i.n));let p=n>1,f=[];for(let d=2;d*d<=n;d++)if(n%d===0){p=false;f.push(d)}return[['Prime?',p?'Yes':'No',1],['Smallest factor',p?'—':f[0]||'—']];});
+add('Math','Prime Factorization','Break a number into primes.',
+ [num('n','Number',360)],
+ i=>{let n=Math.abs(Math.round(i.n)),f=[];for(let d=2;d*d<=n;d++)while(n%d===0){f.push(d);n/=d}if(n>1)f.push(n);return[['Factors',f.join(' × '),1],['Count',f.length]];});
+add('Math','Factor Calculator','All divisors of a number.',
+ [num('n','Number',120)],
+ i=>{const n=Math.abs(Math.round(i.n)),f=[];for(let d=1;d<=n;d++)if(n%d===0)f.push(d);return[['Factors',f.join(', '),1],['How many',f.length],['Sum of factors',f.reduce((a,b)=>a+b,0)]];});
+add('Math','GCF & LCM Calculator','Greatest common factor and least common multiple.',
+ [num('a','Number A',48),num('b','Number B',180)],
+ i=>[['GCF',gcd(i.a,i.b),1],['LCM',M(Math.abs(i.a*i.b)/gcd(i.a,i.b))]]);
+add('Math','Factorial Calculator','n! and permutations base.',
+ [num('n','n',12)],
+ i=>{let f=1;for(let k=2;k<=i.n;k++)f*=k;return[['n!',M(f),1],['Digits',String(Math.round(f)).length]];});
+add('Math','Permutation & Combination','nPr and nCr.',
+ [num('n','n',10),num('r','r',3)],
+ i=>{const f=x=>{let v=1;for(let k=2;k<=x;k++)v*=k;return v};return[['nCr (combinations)',M(f(i.n)/(f(i.r)*f(i.n-i.r))),1],['nPr (permutations)',M(f(i.n)/f(i.n-i.r))]];});
+add('Math','Binomial Probability','Chance of k successes in n trials.',
+ [num('n','Trials',10),num('k','Successes',3),num('p','Probability of success',0.3)],
+ i=>{const f=x=>{let v=1;for(let j=2;j<=x;j++)v*=j;return v},c=f(i.n)/(f(i.k)*f(i.n-i.k));return[['P(X = k)',P(c*Math.pow(i.p,i.k)*Math.pow(1-i.p,i.n-i.k)*100),1],['Expected value',M(i.n*i.p)],['Std deviation',M(Math.sqrt(i.n*i.p*(1-i.p)))]];});
+add('Math','Probability Calculator','Combine two event probabilities.',
+ [num('a','P(A) %',30),num('b','P(B) %',45)],
+ i=>{const a=i.a/100,b=i.b/100;return[['P(A and B)',P(a*b*100),1],['P(A or B)',P((a+b-a*b)*100)],['P(neither)',P((1-a)*(1-b)*100)]];});
+add('Math','Z-Score Calculator','Standard score of a value.',
+ [num('x','Value',82),num('m','Mean',70),num('s','Standard deviation',8)],
+ i=>[['Z-score',M((i.x-i.m)/i.s),1],['Deviation',M(i.x-i.m)]]);
+add('Math','Confidence Interval','95% interval for a mean.',
+ [num('m','Sample mean',52.4),num('s','Standard deviation',7.1),num('n','Sample size',80),sel('z','Confidence',[['1.96','95%'],['1.645','90%'],['2.576','99%']],'1.96')],
+ i=>{const e=+i.z*i.s/Math.sqrt(i.n);return[['Interval',M(i.m-e)+' to '+M(i.m+e),1],['Margin of error',M(e)]];});
+add('Math','Sample Size Calculator','Respondents needed for a survey.',
+ [num('e','Margin of error (%)',5),num('p','Expected proportion (%)',50),sel('z','Confidence',[['1.96','95%'],['1.645','90%'],['2.576','99%']],'1.96'),num('N','Population size',100000)],
+ i=>{const z=+i.z,p=i.p/100,n0=z*z*p*(1-p)/Math.pow(i.e/100,2);return[['Sample size',F(Math.ceil(n0/(1+(n0-1)/i.N))),1],['Unadjusted',F(Math.ceil(n0))]];});
+add('Math','Number Base Converter','Binary, octal, decimal, hex.',
+ [{k:'v',l:'Value',v:'255',text:1},sel('b','Input base',[['10','Decimal'],['2','Binary'],['8','Octal'],['16','Hex']],'10')],
+ i=>{const n=parseInt(String(i.v).trim(),+i.b);return[['Decimal',isNaN(n)?'—':n,1],['Binary',isNaN(n)?'—':n.toString(2)],['Octal',isNaN(n)?'—':n.toString(8)],['Hex',isNaN(n)?'—':n.toString(16).toUpperCase()]];});
+add('Math','Rounding Calculator','Round to given decimals.',
+ [num('n','Number',3.14159265),num('d','Decimal places',3)],
+ i=>[['Rounded',i.n.toFixed(i.d),1],['Floor',Math.floor(i.n)],['Ceiling',Math.ceil(i.n)]]);
+add('Math','Modulo Calculator','Remainder and quotient.',
+ [num('a','Dividend',137),num('b','Divisor',12)],
+ i=>[['Remainder',M(i.a%i.b),1],['Quotient',M(Math.floor(i.a/i.b))],['Exact division',M(i.a/i.b)]]);
+add('Math','Big Number Multiplier','Multiply very large integers.',
+ [{k:'a',l:'Number A',v:'987654321987654321',text:1},{k:'b',l:'Number B',v:'123456789123456789',text:1}],
+ i=>{try{return[['Product',(BigInt(String(i.a).trim())*BigInt(String(i.b).trim())).toString(),1]]}catch(e){return[['Error','Enter whole numbers',1]]}});
+add('Math','Arithmetic Sequence','Nth term and series sum.',
+ [num('a','First term',5),num('d','Common difference',3),num('n','Term number',20)],
+ i=>[['Nth term',M(i.a+(i.n-1)*i.d),1],['Sum of n terms',M(i.n/2*(2*i.a+(i.n-1)*i.d))]]);
+add('Math','Geometric Sequence','Nth term and sum.',
+ [num('a','First term',2),num('r','Common ratio',3),num('n','Term number',10)],
+ i=>[['Nth term',M(i.a*Math.pow(i.r,i.n-1)),1],['Sum of n terms',M(i.a*(Math.pow(i.r,i.n)-1)/(i.r-1))]]);
+add('Math','Fibonacci Calculator','Nth Fibonacci number.',
+ [num('n','n',40)],
+ i=>{let a=0n,b=1n;for(let k=0;k<Math.min(i.n,1000);k++){[a,b]=[b,a+b]}return[['F(n)',a.toString(),1],['Golden ratio approx',M(Number(b)/Number(a||1n))]];});
+add('Math','Trigonometry Calculator','Sin, cos, tan of an angle.',
+ [num('a','Angle',30),sel('u','Unit',[['deg','Degrees'],['rad','Radians']],'deg')],
+ i=>{const r=i.u==='deg'?i.a*Math.PI/180:i.a;return[['sin',M(Math.sin(r)),1],['cos',M(Math.cos(r))],['tan',M(Math.tan(r))],['Radians',M(r)]];});
+add('Math','Inverse Trig Calculator','Arcsin, arccos, arctan.',
+ [num('v','Value',0.5)],
+ i=>[['arcsin',M(Math.asin(i.v)*180/Math.PI)+'°',1],['arccos',M(Math.acos(i.v)*180/Math.PI)+'°'],['arctan',M(Math.atan(i.v)*180/Math.PI)+'°']]);
+add('Math','Law of Cosines','Third side from two sides and an angle.',
+ [num('a','Side a',8),num('b','Side b',11),num('C','Angle C (°)',37)],
+ i=>[['Side c',M(Math.sqrt(i.a**2+i.b**2-2*i.a*i.b*Math.cos(i.C*Math.PI/180))),1],['Area',M(0.5*i.a*i.b*Math.sin(i.C*Math.PI/180))]]);
+add('Math','Matrix 2x2 Calculator','Determinant and inverse.',
+ [num('a','a',4),num('b','b',7),num('c','c',2),num('d','d',6)],
+ i=>{const det=i.a*i.d-i.b*i.c;return[['Determinant',M(det),1],['Inverse row 1',det?M(i.d/det)+', '+M(-i.b/det):'Singular'],['Inverse row 2',det?M(-i.c/det)+', '+M(i.a/det):'Singular'],['Trace',M(i.a+i.d)]];});
+add('Math','Vector Calculator','Magnitude, dot and cross product.',
+ [num('x1','Ax',3),num('y1','Ay',-2),num('z1','Az',5),num('x2','Bx',1),num('y2','By',4),num('z2','Bz',-1)],
+ i=>[['Dot product',M(i.x1*i.x2+i.y1*i.y2+i.z1*i.z2),1],['|A|',M(Math.hypot(i.x1,i.y1,i.z1))],['|B|',M(Math.hypot(i.x2,i.y2,i.z2))],['Cross product',M(i.y1*i.z2-i.z1*i.y2)+', '+M(i.z1*i.x2-i.x1*i.z2)+', '+M(i.x1*i.y2-i.y1*i.x2)]]);
+add('Math','Interpolation Calculator','Linear interpolation between points.',
+ [num('x1','x1',0),num('y1','y1',10),num('x2','x2',10),num('y2','y2',50),num('x','x',6.5)],
+ i=>[['y',M(i.y1+(i.x-i.x1)*(i.y2-i.y1)/(i.x2-i.x1)),1],['Slope',M((i.y2-i.y1)/(i.x2-i.x1))]]);
+add('Math','Half-Life Calculator','Radioactive or drug decay.',
+ [num('n0','Initial amount',100),num('h','Half-life',5730),num('t','Time elapsed',10000)],
+ i=>[['Remaining',M(i.n0*Math.pow(0.5,i.t/i.h)),1],['Decayed',M(i.n0-i.n0*Math.pow(0.5,i.t/i.h))],['Half-lives passed',M(i.t/i.h)]]);
+add('Math','Exponential Growth Calculator','Growth or decay over time.',
+ [num('a','Initial value',1000),num('r','Growth rate (%)',7),num('t','Periods',15)],
+ i=>[['Final value',M(i.a*Math.pow(1+i.r/100,i.t)),1],['Total change',M(i.a*Math.pow(1+i.r/100,i.t)-i.a)],['Doubling time',M(Math.log(2)/Math.log(1+i.r/100))]]);
+</script>
+<script>
+/* ---------------- EVERYDAY / OTHER ---------------- */
+add('Everyday','Age Calculator','Age in years, months and days.',
+ [{k:'d',l:'Date of birth',v:'1995-06-15',date:1}],
+ i=>{const b=new Date(i.d),n=new Date();let y=n.getFullYear()-b.getFullYear(),m=n.getMonth()-b.getMonth(),d=n.getDate()-b.getDate();if(d<0){m--;d+=30}if(m<0){y--;m+=12}const days=Math.floor((n-b)/864e5);return[['Age',y+' years, '+m+' months, '+d+' days',1],['Total days',F(days)],['Total weeks',F(days/7)],['Total hours',F(days*24)]];});
+add('Everyday','Date Difference Calculator','Days between two dates.',
+ [{k:'a',l:'Start date',v:'2024-01-01',date:1},{k:'b',l:'End date',v:'2026-08-06',date:1}],
+ i=>{const d=Math.round((new Date(i.b)-new Date(i.a))/864e5);return[['Days',F(d),1],['Weeks',M(d/7)],['Months (approx)',M(d/30.44)],['Years',M(d/365.25)]];});
+add('Everyday','Date Add / Subtract','Date after adding days.',
+ [{k:'a',l:'Start date',v:'2026-08-06',date:1},num('n','Days to add',90)],
+ i=>{const d=new Date(new Date(i.a).getTime()+i.n*864e5);return[['Resulting date',d.toDateString(),1],['Weekday',d.toLocaleDateString(undefined,{weekday:'long'})]];});
+add('Everyday','Time Duration Calculator','Hours between two times.',
+ [num('h1','Start hour',9),num('m1','Start minute',15),num('h2','End hour',17),num('m2','End minute',45)],
+ i=>{let mins=(i.h2*60+i.m2)-(i.h1*60+i.m1);if(mins<0)mins+=1440;return[['Duration',Math.floor(mins/60)+'h '+(mins%60)+'m',1],['Total minutes',F(mins)],['Decimal hours',M(mins/60)]];});
+add('Everyday','Countdown Calculator','Time remaining to a date.',
+ [{k:'a',l:'Target date',v:'2027-01-01',date:1}],
+ i=>{const d=(new Date(i.a)-new Date())/864e5;return[['Days remaining',F(Math.ceil(d)),1],['Weeks',M(d/7)],['Hours',F(d*24)]];});
+add('Everyday','Working Days Calculator','Business days between dates.',
+ [{k:'a',l:'Start date',v:'2026-08-06',date:1},{k:'b',l:'End date',v:'2026-12-31',date:1}],
+ i=>{let c=0,s=new Date(i.a),e=new Date(i.b);for(let t=new Date(s);t<=e;t.setDate(t.getDate()+1)){const w=t.getDay();if(w&&w!==6)c++}return[['Working days',F(c),1],['Total days',F(Math.round((e-s)/864e5)+1)]];});
+add('Everyday','Fuel Economy Calculator','MPG, L/100km and cost.',
+ [num('d','Distance',300),num('f','Fuel used',11.5),sel('u','Units',[['mpg','Miles / gallons'],['met','km / litres']],'met')],
+ i=>i.u==='mpg'?[['MPG',M(i.d/i.f),1],['L/100km',M(235.215/(i.d/i.f))]]:[['L/100 km',M(i.f/i.d*100),1],['km per litre',M(i.d/i.f)],['MPG',M(i.d/i.f*2.352)]]);
+add('Everyday','GPA Calculator','Grade point average from credits.',
+ [{k:'g',l:'Grades (e.g. A,B+,C)',v:'A,B+,A-,B,C+',text:1},{k:'c',l:'Credits (comma separated)',v:'3,4,3,3,2',text:1}],
+ i=>{const map={'A+':4,'A':4,'A-':3.7,'B+':3.3,'B':3,'B-':2.7,'C+':2.3,'C':2,'C-':1.7,'D':1,'F':0};const g=String(i.g).split(',').map(s=>map[s.trim().toUpperCase()]??0),c=String(i.c).split(',').map(Number);const tc=c.reduce((a,b)=>a+b,0),tp=g.reduce((a,b,k)=>a+b*(c[k]||0),0);return[['GPA',M(tp/tc),1],['Total credits',F(tc)],['Quality points',M(tp)]];});
+add('Everyday','Grade Calculator','Weighted course grade.',
+ [{k:'s',l:'Scores (%)',v:'88,74,92,81',text:1},{k:'w',l:'Weights (%)',v:'20,20,30,30',text:1}],
+ i=>{const s=String(i.s).split(',').map(Number),w=String(i.w).split(',').map(Number),tw=w.reduce((a,b)=>a+b,0),t=s.reduce((a,b,k)=>a+b*w[k],0)/tw;return[['Final grade',P(t),1],['Letter',t>=90?'A':t>=80?'B':t>=70?'C':t>=60?'D':'F']];});
+add('Everyday','Final Exam Grade Needed','Score required to hit a target.',
+ [num('c','Current grade (%)',82),num('w','Final exam weight (%)',30),num('t','Target grade (%)',90)],
+ i=>[['Needed on final',P((i.t-i.c*(1-i.w/100))/(i.w/100)),1],['Achievable?',(i.t-i.c*(1-i.w/100))/(i.w/100)<=100?'Yes':'Not possible']]);
+add('Everyday','Test Score Calculator','Percentage and letter grade.',
+ [num('c','Correct answers',43),num('t','Total questions',50)],
+ i=>{const p=i.c/i.t*100;return[['Score',P(p),1],['Letter',p>=90?'A':p>=80?'B':p>=70?'C':p>=60?'D':'F'],['Wrong',F(i.t-i.c)]];});
+add('Everyday','Paint Calculator','Paint needed for walls.',
+ [num('l','Room length (m)',5),num('w','Room width (m)',4),num('h','Wall height (m)',2.7),num('co','Coats',2),num('cov','Coverage (m²/L)',11)],
+ i=>{const a=2*(i.l+i.w)*i.h;return[['Paint needed',M(a*i.co/i.cov)+' L',1],['Wall area',M(a)+' m²'],['Painted area',M(a*i.co)+' m²']];});
+add('Everyday','Flooring Calculator','Boxes of flooring and cost.',
+ [num('l','Length (m)',6),num('w','Width (m)',4.5),num('box','Coverage per box (m²)',2.2),num('p','Price per box',38),num('waste','Waste (%)',10)],
+ i=>{const a=i.l*i.w*(1+i.waste/100),b=Math.ceil(a/i.box);return[['Boxes needed',F(b),1],['Total cost',C(b*i.p)],['Area with waste',M(a)+' m²']];});
+add('Everyday','Concrete Calculator','Concrete volume for a slab.',
+ [num('l','Length (m)',5),num('w','Width (m)',3),num('t','Thickness (cm)',12)],
+ i=>{const v=i.l*i.w*i.t/100;return[['Volume',M(v)+' m³',1],['Cubic yards',M(v*1.30795)],['20 kg bags (approx)',F(v*108)]];});
+add('Everyday','Roofing Calculator','Roof area with pitch factor.',
+ [num('l','Building length (m)',12),num('w','Building width (m)',8),num('p','Pitch multiplier',1.15)],
+ i=>[['Roof area',M(i.l*i.w*i.p)+' m²',1],['Squares (100 sq ft)',M(i.l*i.w*i.p*10.7639/100)]]);
+add('Everyday','Tile Calculator','Tiles needed for an area.',
+ [num('a','Area (m²)',18),num('t','Tile size (cm)',30),num('w','Waste (%)',10)],
+ i=>{const per=Math.pow(i.t/100,2);return[['Tiles needed',F(Math.ceil(i.a*(1+i.w/100)/per)),1],['Tiles per m²',M(1/per)]];});
+add('Everyday','Mulch / Soil Calculator','Bulk material volume.',
+ [num('l','Length (m)',10),num('w','Width (m)',3),num('d','Depth (cm)',8)],
+ i=>[['Volume',M(i.l*i.w*i.d/100)+' m³',1],['50 L bags',F(i.l*i.w*i.d/100*20)]]);
+add('Everyday','Stair Calculator','Riser and tread layout.',
+ [num('h','Total rise (cm)',280),num('r','Target riser (cm)',18)],
+ i=>{const n=Math.round(i.h/i.r);return[['Number of steps',F(n),1],['Actual riser',M(i.h/n)+' cm'],['Suggested tread',M(63-2*(i.h/n))+' cm']];});
+add('Everyday','BTU / AC Size Calculator','Cooling capacity for a room.',
+ [num('a','Room area (m²)',30),num('c','Ceiling height (m)',2.7),num('p','People',3)],
+ i=>{const btu=i.a*10.764*20*(i.c/2.4)+i.p*600;return[['BTU needed',F(btu),1],['Tons',M(btu/12000)],['kW',M(btu*0.000293)]];});
+add('Everyday','Electricity Cost Calculator','Cost of running an appliance.',
+ [num('w','Power (watts)',1200),num('h','Hours per day',3),num('r','Rate per kWh',0.16)],
+ i=>{const k=i.w*i.h/1000;return[['Daily cost',C(k*i.r),1],['Monthly',C(k*i.r*30)],['Yearly',C(k*i.r*365)],['kWh per month',M(k*30)]];});
+add('Everyday','Solar Panel Calculator','System size and output.',
+ [num('u','Monthly usage (kWh)',900),num('s','Peak sun hours',4.8),num('e','System efficiency (%)',80)],
+ i=>{const kw=i.u/30/(i.s*i.e/100);return[['System size',M(kw)+' kW',1],['400 W panels',F(Math.ceil(kw*1000/400))],['Daily production',M(kw*i.s*i.e/100)+' kWh']];});
+add('Everyday','Cooking Time Calculator','Roast time by weight.',
+ [num('w','Weight (kg)',2.4),num('m','Minutes per kg',55),num('rest','Rest minutes',20)],
+ i=>[['Cooking time',F(i.w*i.m)+' min',1],['Hours',M(i.w*i.m/60)],['Total with rest',F(i.w*i.m+i.rest)+' min']]);
+add('Everyday','Recipe Scaler','Scale ingredient amounts.',
+ [num('a','Ingredient amount',250),num('s','Original servings',4),num('n','Desired servings',7)],
+ i=>[['Scaled amount',M(i.a*i.n/i.s),1],['Scale factor',M(i.n/i.s)+'×']]);
+add('Everyday','Bread / Baker\u2019s Percentage','Hydration and ingredient weights.',
+ [num('f','Flour (g)',1000),num('h','Hydration (%)',72),num('s','Salt (%)',2),num('y','Yeast (%)',1)],
+ i=>[['Water',F(i.f*i.h/100)+' g',1],['Salt',M(i.f*i.s/100)+' g'],['Yeast',M(i.f*i.y/100)+' g'],['Total dough',F(i.f*(1+i.h/100+i.s/100+i.y/100))+' g']]);
+add('Everyday','Pizza Size Comparison','Which pizza is better value.',
+ [num('d1','Pizza 1 diameter',12),num('p1','Pizza 1 price',14),num('d2','Pizza 2 diameter',16),num('p2','Pizza 2 price',20)],
+ i=>{const a1=Math.PI*(i.d1/2)**2,a2=Math.PI*(i.d2/2)**2;return[['Better value',(i.p1/a1)<(i.p2/a2)?'Pizza 1':'Pizza 2',1],['Pizza 1 cost/unit',M(i.p1/a1)],['Pizza 2 cost/unit',M(i.p2/a2)],['Area ratio',M(a2/a1)+'×']];});
+add('Everyday','Unit Price Comparison','Cheapest per unit.',
+ [num('p1','Price A',4.99),num('q1','Quantity A',500),num('p2','Price B',8.49),num('q2','Quantity B',1000)],
+ i=>[['Cheaper option',(i.p1/i.q1)<(i.p2/i.q2)?'Option A':'Option B',1],['A per unit',M(i.p1/i.q1)],['B per unit',M(i.p2/i.q2)]]);
+add('Everyday','Bill Split Calculator','Split unevenly with tax and tip.',
+ [num('b','Bill subtotal',142.5),num('tax','Tax (%)',8),num('tip','Tip (%)',18),num('n','People',4)],
+ i=>{const t=i.b*(1+i.tax/100)*(1+i.tip/100);return[['Per person',C(t/i.n),1],['Total',C(t)],['Tax',C(i.b*i.tax/100)],['Tip',C(i.b*(1+i.tax/100)*i.tip/100)]];});
+add('Everyday','Speed / Distance / Time','Solve for any of the three.',
+ [num('d','Distance',240),num('t','Time (hours)',3.5)],
+ i=>[['Speed',M(i.d/i.t)+' per hour',1],['Time for 100 units',M(100/(i.d/i.t))+' h'],['Distance in 1 h',M(i.d/i.t)]]);
+add('Everyday','Travel Time Calculator','Trip duration with breaks.',
+ [num('d','Distance (km)',620),num('s','Average speed (km/h)',85),num('b','Break minutes',45)],
+ i=>{const h=i.d/i.s+i.b/60;return[['Total travel time',Math.floor(h)+'h '+Math.round(h%1*60)+'m',1],['Driving time',M(i.d/i.s)+' h']];});
+add('Everyday','Time Zone Difference','Local time in another zone.',
+ [num('h','Your hour (0-23)',14),num('m','Minute',30),num('off','Hours offset',+9.5)],
+ i=>{let t=i.h*60+i.m+i.off*60;t=((t%1440)+1440)%1440;return[['Their time',String(Math.floor(t/60)).padStart(2,'0')+':'+String(Math.round(t%60)).padStart(2,'0'),1],['Offset',M(i.off)+' h']];});
+add('Everyday','Typing Speed Calculator','Words per minute and accuracy.',
+ [num('c','Characters typed',1450),num('t','Time (minutes)',5),num('e','Errors',12)],
+ i=>[['Net WPM',M((i.c/5-i.e)/i.t),1],['Gross WPM',M(i.c/5/i.t)],['Accuracy',P((1-i.e/(i.c/5))*100)]]);
+add('Everyday','Word Count Estimator','Reading and speaking time.',
+ [num('w','Word count',1800),num('r','Reading speed (wpm)',230)],
+ i=>[['Reading time',M(i.w/i.r)+' min',1],['Speaking time',M(i.w/130)+' min'],['Pages (250 wpp)',M(i.w/250)]]);
+add('Everyday','Password Entropy Calculator','Strength of a password scheme.',
+ [num('l','Length',14),sel('cs','Character set',[['26','Lowercase'],['52','Upper+lower'],['62','Alphanumeric'],['95','All printable']],'62')],
+ i=>{const bits=i.l*Math.log2(+i.cs),secs=Math.pow(2,bits-1)/1e10;return[['Entropy',M(bits)+' bits',1],['Strength',bits<40?'Weak':bits<60?'Fair':bits<80?'Strong':'Very strong'],['Crack time (10B/s)',secs>3.15e7?M(secs/3.15e7)+' years':M(secs)+' seconds']];});
+add('Everyday','Dice Probability','Chance of rolling a total.',
+ [num('n','Number of dice',2),num('s','Sides per die',6),num('t','Target total',7)],
+ i=>{let ways=0;const rec=(d,sum)=>{if(d===0){if(sum===i.t)ways++;return}for(let f=1;f<=i.s;f++)rec(d-1,sum+f)};rec(Math.min(i.n,8),0);const tot=Math.pow(i.s,Math.min(i.n,8));return[['Probability',P(ways/tot*100),1],['Ways',F(ways)],['Total outcomes',F(tot)]];});
+add('Everyday','Odds Calculator','Convert odds to probability.',
+ [num('a','Odds for',3),num('b','Odds against',7)],
+ i=>[['Probability',P(i.a/(i.a+i.b)*100),1],['Decimal odds',M((i.a+i.b)/i.a)],['Payout on 100',C((i.b/i.a)*100)]]);
+add('Everyday','Roman Numeral Converter','Number to Roman numerals.',
+ [num('n','Number',2026)],
+ i=>{const v=[1000,900,500,400,100,90,50,40,10,9,5,4,1],s=['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];let n=Math.round(i.n),o='';v.forEach((x,k)=>{while(n>=x){o+=s[k];n-=x}});return[['Roman numeral',o||'—',1]];});
+add('Everyday','Tire Size Calculator','Diameter and speedometer error.',
+ [num('w','Width (mm)',225),num('a','Aspect ratio',45),num('r','Rim (in)',17)],
+ i=>{const d=i.r+2*(i.w*i.a/100)/25.4;return[['Overall diameter',M(d)+' in',1],['Circumference',M(Math.PI*d)+' in'],['Revs per mile',F(63360/(Math.PI*d))]];});
+add('Everyday','Horsepower Calculator','Power from torque and RPM.',
+ [num('t','Torque (lb-ft)',280),num('r','RPM',5200)],
+ i=>[['Horsepower',M(i.t*i.r/5252),1],['kW',M(i.t*i.r/5252*0.7457)]]);
+add('Everyday','Ohm\u2019s Law Calculator','Voltage, current, resistance, power.',
+ [num('v','Voltage (V)',12),num('r','Resistance (Ω)',4)],
+ i=>[['Current',M(i.v/i.r)+' A',1],['Power',M(i.v*i.v/i.r)+' W'],['Resistance',M(i.r)+' Ω']]);
+add('Everyday','Resistor Parallel/Series','Combined resistance.',
+ [{k:'l',l:'Resistances (comma separated Ω)',v:'100, 220, 470',text:1}],
+ i=>{const a=String(i.l).split(/[,\s]+/).filter(Boolean).map(Number);return[['Series total',M(a.reduce((x,y)=>x+y,0))+' Ω',1],['Parallel total',M(1/a.reduce((x,y)=>x+1/y,0))+' Ω']];});
+add('Everyday','Wind Chill Calculator','Feels-like temperature in cold.',
+ [num('t','Temperature (°C)',-5),num('v','Wind speed (km/h)',25)],
+ i=>[['Wind chill',M(13.12+0.6215*i.t-11.37*Math.pow(i.v,0.16)+0.3965*i.t*Math.pow(i.v,0.16))+' °C',1]]);
+add('Everyday','Heat Index Calculator','Feels-like temperature in heat.',
+ [num('t','Temperature (°C)',33),num('h','Humidity (%)',65)],
+ i=>{const T=i.t*9/5+32,R=i.h,hi=-42.379+2.04901523*T+10.14333127*R-0.22475541*T*R-6.83783e-3*T*T-5.481717e-2*R*R+1.22874e-3*T*T*R+8.5282e-4*T*R*R-1.99e-6*T*T*R*R;return[['Heat index',M((hi-32)*5/9)+' °C',1],['In °F',M(hi)]];});
+add('Everyday','Dew Point Calculator','Dew point from temp and humidity.',
+ [num('t','Temperature (°C)',24),num('h','Humidity (%)',70)],
+ i=>{const a=17.27,b=237.7,g=a*i.t/(b+i.t)+Math.log(i.h/100);return[['Dew point',M(b*g/(a-g))+' °C',1]];});
+add('Everyday','Sunrise Daylight Estimator','Approximate daylight hours.',
+ [num('lat','Latitude (°)',28.6),num('doy','Day of year',218)],
+ i=>{const d=0.4093*Math.sin(2*Math.PI/365*(i.doy-81)),h=24/Math.PI*Math.acos(Math.max(-1,Math.min(1,-Math.tan(i.lat*Math.PI/180)*Math.tan(d))));return[['Daylight hours',M(h),1],['Night hours',M(24-h)]];});
+add('Everyday','Carbon Footprint Estimator','Annual CO₂ from driving and power.',
+ [num('km','Km driven per year',12000),num('e','Fuel economy (L/100km)',7.5),num('kwh','Electricity kWh/year',3600)],
+ i=>{const car=i.km*i.e/100*2.31,el=i.kwh*0.45;return[['Total CO₂',M((car+el)/1000)+' t/year',1],['From driving',F(car)+' kg'],['From electricity',F(el)+' kg']];});
+add('Everyday','Ideal Screen Size','TV size for viewing distance.',
+ [num('d','Viewing distance (cm)',280)],
+ i=>[['Recommended TV',M(i.d/2.54/1.6)+' in',1],['Range',M(i.d/2.54/2)+'–'+M(i.d/2.54/1.2)+' in']]);
+add('Everyday','Aspect Ratio Calculator','Resize keeping proportions.',
+ [num('w','Original width',1920),num('h','Original height',1080),num('nw','New width',1280)],
+ i=>[['New height',M(i.nw*i.h/i.w),1],['Aspect ratio',M(i.w/i.h)+':1'],['Simplified',(i.w/gcd(i.w,i.h))+':'+(i.h/gcd(i.w,i.h))]]);
+add('Everyday','Download Time Calculator','Time to transfer a file.',
+ [num('s','File size (GB)',4.7),num('b','Speed (Mbps)',120)],
+ i=>{const sec=i.s*8192/i.b;return[['Download time',Math.floor(sec/60)+'m '+Math.round(sec%60)+'s',1],['Seconds',F(sec)],['MB per second',M(i.b/8)]];});
+add('Everyday','Storage Unit Converter','Bytes through terabytes.',
+ [num('v','Value',1500),sel('u','Unit',[['MB','MB'],['KB','KB'],['GB','GB'],['TB','TB']],'MB')],
+ i=>{const f={KB:1e3,MB:1e6,GB:1e9,TB:1e12}[i.u],b=i.v*f;return[['Bytes',F(b),1],['KB',M(b/1e3)],['MB',M(b/1e6)],['GB',M(b/1e9)],['TB',M(b/1e12)]];});
+add('Everyday','Tip Wage Calculator','Hourly earnings including tips.',
+ [num('w','Base hourly wage',9),num('t','Tips earned',180),num('h','Hours worked',8)],
+ i=>[['Effective hourly',C(i.w+i.t/i.h),1],['Shift total',C(i.w*i.h+i.t)]]);
+add('Everyday','Pet Age Calculator','Dog and cat years.',
+ [num('a','Pet age (years)',5),sel('t','Pet',[['dog','Dog'],['cat','Cat']],'dog')],
+ i=>[['Human-equivalent age',F(i.t==='dog'?(i.a<=2?i.a*10.5:21+(i.a-2)*4):(i.a<=2?i.a*12:24+(i.a-2)*4))+' years',1]]);
+</script>
+<script>
+/* ---------------- CONVERTERS (generated) ---------------- */
+const UNITS={
+ 'Length':{base:'meter',u:{'Meter':1,'Kilometer':1000,'Centimeter':0.01,'Millimeter':0.001,'Micrometer':1e-6,'Mile':1609.344,'Yard':0.9144,'Foot':0.3048,'Inch':0.0254,'Nautical mile':1852,'Light year':9.4607e15}},
+ 'Weight':{base:'kilogram',u:{'Kilogram':1,'Gram':0.001,'Milligram':1e-6,'Tonne':1000,'Pound':0.45359237,'Ounce':0.02834952,'Stone':6.35029318,'US ton':907.18474,'Carat':0.0002}},
+ 'Volume':{base:'liter',u:{'Liter':1,'Milliliter':0.001,'Cubic meter':1000,'US gallon':3.785411784,'US quart':0.946352946,'US pint':0.473176473,'US cup':0.2365882365,'Fluid ounce':0.0295735296,'Tablespoon':0.0147867648,'Teaspoon':0.0049289216,'Imperial gallon':4.54609,'Cubic foot':28.316846592,'Barrel (oil)':158.987294928}},
+ 'Area':{base:'square meter',u:{'Square meter':1,'Square kilometer':1e6,'Square centimeter':1e-4,'Square mile':2589988.11,'Square yard':0.83612736,'Square foot':0.09290304,'Square inch':0.00064516,'Acre':4046.8564224,'Hectare':10000}},
+ 'Speed':{base:'meter/second',u:{'Meter/second':1,'Kilometer/hour':0.277777778,'Mile/hour':0.44704,'Knot':0.514444444,'Foot/second':0.3048,'Mach':343}},
+ 'Time':{base:'second',u:{'Second':1,'Minute':60,'Hour':3600,'Day':86400,'Week':604800,'Month (30d)':2592000,'Year':31557600,'Millisecond':0.001}},
+ 'Energy':{base:'joule',u:{'Joule':1,'Kilojoule':1000,'Calorie':4.184,'Kilocalorie':4184,'Watt hour':3600,'Kilowatt hour':3.6e6,'BTU':1055.05585,'Electronvolt':1.602176634e-19,'Foot-pound':1.35581795}},
+ 'Power':{base:'watt',u:{'Watt':1,'Kilowatt':1000,'Megawatt':1e6,'Horsepower':745.6998716,'BTU/hour':0.29307107,'Foot-pound/second':1.35581795}},
+ 'Pressure':{base:'pascal',u:{'Pascal':1,'Kilopascal':1000,'Bar':100000,'PSI':6894.757293,'Atmosphere':101325,'Torr':133.322368,'mmHg':133.322368}},
+ 'Data':{base:'byte',u:{'Byte':1,'Kilobyte':1e3,'Megabyte':1e6,'Gigabyte':1e9,'Terabyte':1e12,'Petabyte':1e15,'Kibibyte':1024,'Mebibyte':1048576,'Gibibyte':1073741824,'Bit':0.125}},
+ 'Angle':{base:'radian',u:{'Radian':1,'Degree':Math.PI/180,'Gradian':Math.PI/200,'Arcminute':Math.PI/10800,'Arcsecond':Math.PI/648000,'Turn':2*Math.PI}},
+ 'Fuel Economy':{base:'km/L',u:{'Kilometer/liter':1,'Miles/US gallon':0.425143707,'Miles/Imperial gallon':0.354006042,'Meters/liter':0.001}},
+ 'Force':{base:'newton',u:{'Newton':1,'Kilonewton':1000,'Pound-force':4.4482216153,'Dyne':1e-5,'Kilogram-force':9.80665}},
+ 'Density':{base:'kg/m³',u:{'Kilogram/cubic meter':1,'Gram/cubic centimeter':1000,'Pound/cubic foot':16.0184634,'Pound/gallon':119.826427}},
+ 'Frequency':{base:'hertz',u:{'Hertz':1,'Kilohertz':1000,'Megahertz':1e6,'Gigahertz':1e9,'RPM':1/60}},
+ 'Torque':{base:'newton meter',u:{'Newton meter':1,'Pound-foot':1.35581795,'Pound-inch':0.112984829,'Kilogram-meter':9.80665}},
+ 'Illuminance':{base:'lux',u:{'Lux':1,'Foot-candle':10.7639104,'Phot':10000}},
+ 'Flow Rate':{base:'L/min',u:{'Liter/minute':1,'Liter/second':60,'Cubic meter/hour':16.6666667,'US gallon/minute':3.785411784,'Cubic foot/minute':28.316846592}}
+};
+Object.entries(UNITS).forEach(([cat,def])=>{
+  const opts=Object.keys(def.u).map(k=>[k,k]),ks=Object.keys(def.u);
+  add('Converters',cat+' Converter','Convert between '+ks.length+' '+cat.toLowerCase()+' units.',
+    [num('v','Value',1),sel('from','From',opts,ks[0]),sel('to','To',opts,ks[1])],
+    i=>{const b=i.v*def.u[i.from],out=b/def.u[i.to];
+      const all=ks.slice(0,6).map(k=>[k,M(b/def.u[k])]);
+      return [['Result',M(out)+' '+i.to,1],['Formula','1 '+i.from+' = '+M(def.u[i.from]/def.u[i.to])+' '+i.to],...all];});
+});
+add('Converters','Temperature Converter','Celsius, Fahrenheit, Kelvin, Rankine.',
+ [num('v','Value',25),sel('from','From',[['C','Celsius'],['F','Fahrenheit'],['K','Kelvin'],['R','Rankine']],'C')],
+ i=>{const c=i.from==='C'?i.v:i.from==='F'?(i.v-32)*5/9:i.from==='K'?i.v-273.15:(i.v-491.67)*5/9;
+  return[['Celsius',M(c),1],['Fahrenheit',M(c*9/5+32)],['Kelvin',M(c+273.15)],['Rankine',M((c+273.15)*9/5)]];});
+add('Converters','Shoe Size Converter','US, UK and EU sizes.',
+ [num('v','US men\u2019s size',9)],
+ i=>[['UK',M(i.v-0.5),1],['EU',M(i.v*1.27+30.5)],['CM',M(i.v*0.847+21.6)]]);
+add('Converters','Height Converter','Feet/inches and centimeters.',
+ [num('ft','Feet',5),num('in','Inches',9)],
+ i=>{const cm=(i.ft*12+i.in)*2.54;return[['Centimeters',M(cm),1],['Meters',M(cm/100)],['Total inches',M(i.ft*12+i.in)]];});
+add('Converters','Cooking Measurement Converter','Cups, tablespoons, milliliters, grams.',
+ [num('v','Cups',1.5),num('d','Ingredient density (g/mL)',1)],
+ i=>{const ml=i.v*236.588;return[['Milliliters',M(ml),1],['Tablespoons',M(i.v*16)],['Teaspoons',M(i.v*48)],['Grams',M(ml*i.d)],['Fluid ounces',M(i.v*8)]];});
+add('Converters','Ring Size Converter','US to circumference.',
+ [num('v','US ring size',7)],
+ i=>{const d=11.63+(i.v-1)*0.8128;return[['Diameter',M(d)+' mm',1],['Circumference',M(Math.PI*d)+' mm'],['UK size',String.fromCharCode(65+Math.round((i.v-1)*1.7))]];});
+</script>
+<script>
+/* ============================================================
+   THEME FETCHING — exact LearnEra Light / Colorful / Deep logic
+   ============================================================ */
+(function initThemeFetching(){
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+  function readMode(){ try { return localStorage.getItem('appThemeMode') || 'system'; } catch(e){ return 'system'; } }
+  function readStyle(){ try { return localStorage.getItem('darkTextStyle') || 'colorful'; } catch(e){ return 'colorful'; } }
+
+  function applyTheme(){
+    const mode = readMode();
+    const style = readStyle();
+    let isDark = false;
+    if (mode === 'dark') isDark = true;
+    else if (mode === 'light') isDark = false;
+    else isDark = prefersDark.matches;
+
+    const root = document.documentElement, body = document.body;
+    if (isDark) {
+      root.setAttribute('data-theme','dark');
+      root.setAttribute('data-dark-text', style);
+      body.setAttribute('data-theme','dark');
+      body.setAttribute('data-dark-text', style);
+    } else {
+      root.setAttribute('data-theme','default');
+      root.removeAttribute('data-dark-text');
+      body.setAttribute('data-theme','default');
+      body.removeAttribute('data-dark-text');
+    }
+    try {
+      const topSp = localStorage.getItem('appTopSpace');
+      if (topSp) root.style.setProperty('--top-space', topSp + 'vh');
+    } catch(e){}
+  }
+
+  applyTheme();
+  // Follow the device when LearnEra is on "system".
+  prefersDark.addEventListener('change', () => { if (readMode() === 'system') applyTheme(); });
+  // Follow LearnEra settings changed in another tab / the parent app.
+  window.addEventListener('storage', (e) => {
+    if (!e.key || e.key === 'appThemeMode' || e.key === 'darkTextStyle' || e.key === 'appTopSpace') applyTheme();
+  });
+  // Re-sync whenever this screen becomes visible again (returning from Settings).
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) applyTheme(); });
+  window.addEventListener('focus', applyTheme);
+  window.applyLearnEraTheme = applyTheme;
+})();
+
+/* ============================================================
+   SFX — touch sounds fetched from LearnEra.
+   Respects the LearnEra master switch (touchSoundsEnabled) and
+   the per-group switches (touchSoundsGroupState). If the user
+   has sounds OFF, nothing plays.
+   ============================================================ */
+(function initTouchSounds(){
+  const LS_MASTER = 'touchSoundsEnabled';
+  const LS_GROUPS = 'touchSoundsGroupState';
+
+  /* Same 14 LearnEra click slots. Replace a filename with a real
+     URL and it plays that file instead of the synth fallback. */
+  const CLICK_SOUND_URLS = [
+    "Click1.ogg","Click2.ogg","Click3.ogg","Click4.ogg","Click5.ogg","Click6.ogg","Click7.ogg",
+    "Click8.ogg","Click9.ogg","Click10.ogg","Click11.ogg","Click12.ogg","Click13.ogg","Click14.ogg"
+  ];
+  const GROUP_TO_CLICKS = {
+    'buttons'   : [1, 2, 3, 7, 8, 9, 14],
+    'navigation': [5],
+    'inputs'    : [4, 6],
+    'reserved'  : [10, 11, 12, 13]
+  };
+  const CLICK_TO_GROUP = {};
+  Object.keys(GROUP_TO_CLICKS).forEach(g => GROUP_TO_CLICKS[g].forEach(n => { CLICK_TO_GROUP[n] = g; }));
+
+  function masterOn(){ try { return localStorage.getItem(LS_MASTER) === '1'; } catch(e){ return false; } }
+  function groupEnabled(id){
+    try { const s = JSON.parse(localStorage.getItem(LS_GROUPS) || '{}'); return s[id] === true; }
+    catch(e){ return false; }
+  }
+
+  const audioCache = {};
+  let _ac = null, _navBuffer = null;
+  function getAC(){
+    if (_ac) return _ac;
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (Ctx) {
+        _ac = new Ctx();
+        const comp = _ac.createDynamicsCompressor();
+        comp.threshold.value = -10; comp.knee.value = 6; comp.ratio.value = 12;
+        comp.attack.value = 0.001; comp.release.value = 0.05;
+        const g = _ac.createGain(); g.gain.value = 1.0;
+        comp.connect(g).connect(_ac.destination);
+        _ac._busIn = comp;
+      }
+    } catch(e){}
+    return _ac;
+  }
+  function ensureNavBuffer(){
+    const ac = getAC(); if (!ac || _navBuffer) return _navBuffer;
+    const sr = ac.sampleRate, dur = 0.09, len = Math.floor(sr * dur);
+    const buf = ac.createBuffer(1, len, sr), data = buf.getChannelData(0);
+    const f0 = 520, f1 = 300;
+    for (let i = 0; i < len; i++) {
+      const t = i / sr, k = i / len, f = f0 + (f1 - f0) * k;
+      const env = Math.min(1, i / (sr * 0.004)) * Math.pow(1 - k, 2.2);
+      data[i] = Math.sin(2 * Math.PI * f * t) * env * 0.95;
+    }
+    _navBuffer = buf; return buf;
+  }
+  function primeAudio(){
+    if (!masterOn()) return;
+    const ac = getAC();
+    if (ac && ac.state === 'suspended') ac.resume().catch(()=>{});
+    ensureNavBuffer();
+  }
+  ['pointerdown','touchstart','keydown','click'].forEach(ev => {
+    document.addEventListener(ev, primeAudio, { capture: true, passive: true });
+  });
+
+  function isRealUrl(u){
+    if (!u || typeof u !== 'string') return false;
+    return /^(https?:|data:|blob:|\/|\.\/|\.\.\/)/i.test(u) || /\//.test(u);
+  }
+
+  const SYNTH = {
+    1:{f:880,d:.05,w:'triangle',g:.18}, 2:{f:520,d:.07,w:'sine',g:.22}, 3:{f:660,d:.08,w:'square',g:.16},
+    4:{f:1200,d:.03,w:'sine',g:.12}, 5:{f:740,d:.05,w:'triangle',g:.18}, 6:{f:1000,d:.025,w:'sine',g:.10},
+    7:{f:600,d:.05,w:'square',g:.16}, 8:{f:820,d:.05,w:'triangle',g:.18}, 9:{f:420,d:.06,w:'sine',g:.18},
+    10:{f:480,d:.05,w:'triangle',g:.16}, 11:{f:560,d:.05,w:'triangle',g:.16},
+    12:{f:640,d:.05,w:'triangle',g:.16}, 13:{f:720,d:.05,w:'triangle',g:.16}, 14:{f:440,d:.08,w:'sine',g:.60}
+  };
+  function synthClick(n){
+    const ac = getAC(); if (!ac) return;
+    if (ac.state === 'suspended') ac.resume().catch(()=>{});
+    const r = SYNTH[n] || SYNTH[7], t0 = ac.currentTime;
+    const osc = ac.createOscillator(), gain = ac.createGain();
+    osc.type = r.w;
+    osc.frequency.setValueAtTime(r.f, t0);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(80, r.f * 0.6), t0 + r.d);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(r.g, t0 + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + r.d);
+    osc.connect(gain).connect(ac._busIn || ac.destination);
+    osc.start(t0); osc.stop(t0 + r.d + 0.02);
+  }
+  function playNavClick(){
+    const ac = getAC(); if (!ac) { synthClick(14); return; }
+    if (ac.state === 'suspended') ac.resume().catch(()=>{});
+    const buf = ensureNavBuffer(); if (!buf) { synthClick(14); return; }
+    const src = ac.createBufferSource(); src.buffer = buf;
+    const g = ac.createGain(); g.gain.value = 2.0;
+    src.connect(g).connect(ac._busIn || ac.destination);
+    src.start();
+  }
+
+  function playClick(n, opts){
+    opts = opts || {};
+    if (!opts.force) {
+      if (!masterOn()) return;                       // LearnEra sound option OFF
+      const groupId = CLICK_TO_GROUP[n];
+      if (!groupId || !groupEnabled(groupId)) return; // category OFF
+    }
+    const url = CLICK_SOUND_URLS[n - 1];
+    if (isRealUrl(url)) {
+      try {
+        if (n === 14) { const a = new Audio(url); a.volume = 1.0; a.play().catch(() => playNavClick()); return; }
+        if (!audioCache[n]) { const a = new Audio(url); a.volume = 0.5; a.preload = 'auto'; audioCache[n] = a; }
+        const a = audioCache[n]; a.currentTime = 0;
+        const p = a.play(); if (p && p.catch) p.catch(() => synthClick(n));
+        return;
+      } catch(e){}
+    }
+    if (n === 14) playNavClick(); else synthClick(n);
+  }
+  window.playTouchSound = playClick;
+
+  /* Global wiring for this screen. */
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.section-switch button')) { playClick(14); return; }
+    if (e.target.closest('.category-pill, .card, .utility-card')) { playClick(5); return; }
+    if (e.target.closest('.filter-toggle-btn, .btn, .iconbtn, .keys button, .sci-modes button')) playClick(1);
+  }, true);
+  document.addEventListener('focusin', (e) => {
+    const el = e.target; if (!el) return;
+    const tag = (el.tagName || '').toLowerCase();
+    if (tag === 'textarea') { playClick(4); return; }
+    if (tag === 'input') {
+      const type = (el.type || 'text').toLowerCase();
+      if (['text','search','email','password','number','tel','url'].indexOf(type) !== -1) playClick(4);
+    }
+  }, true);
+})();
+const triggerSound = (n) => { if (window.playTouchSound) window.playTouchSound(n); };
+</script>
+
+<script>
+/* ---------------- ENGINE ---------------- */
+const grid=document.getElementById('grid'),chips=document.getElementById('chips'),modal=document.getElementById('modal'),
+      sheet=document.getElementById('sheet'),q=document.getElementById('q'),countEl=document.getElementById('count'),
+      headerCard=document.getElementById('headerCard'),searchRow=document.getElementById('searchRow'),
+      filterBtn=document.getElementById('filterBtn'),sectionSwitch=document.getElementById('sectionSwitch'),
+      toolsSection=document.getElementById('toolsSection'),utilitiesSection=document.getElementById('utilitiesSection'),
+      utilGrid=document.getElementById('utilGrid'),utilCount=document.getElementById('utilCount');
+
+CALCS.unshift({c:'Math',n:'Scientific Calculator',d:'Full neumorphic keypad with trig, logs, powers, memory and DEG/RAD.',f:[],fn:null,special:'sci'});
+
+/* ============================================================
+   UTILITIES — add entries here. Each item supports a parallax
+   image: { n: name, d: description, img: url, open: fn }
+   ============================================================ */
+const UTILITIES = [];
+
+const cats=['All',...new Set(CALCS.map(c=>c.c))];
+let active='All';
+let currentSection='tools';
+let filterCollapsed=true;
+let loading=true;
+
+/* ---- Filter pills (News.html logic) ---- */
+function buildChips(){
+  chips.innerHTML='';
+  cats.forEach(c=>{
+    const b=document.createElement('div');
+    b.className='category-pill'+(c===active?' active':'');
+    b.innerHTML='<span></span>';
+    b.querySelector('span').textContent=(c==='All'?'All ('+CALCS.length+')':c);
+    b.onclick=()=>{
+      if(currentSection!=='tools')return;
+      active=c;q.value='';
+      [...chips.children].forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      startSkeleton(600);
+    };
+    chips.appendChild(b);
+  });
+}
+
+filterBtn.onclick=()=>{
+  if(currentSection!=='tools')return;
+  filterCollapsed=!filterCollapsed;
+  chips.classList.toggle('collapsed',filterCollapsed);
+  filterBtn.classList.toggle('active',!filterCollapsed);
+};
+q.addEventListener('focus',()=>{
+  if(currentSection!=='tools')return;
+  searchRow.classList.add('search-active');
+  filterCollapsed=true;chips.classList.add('collapsed');filterBtn.classList.remove('active');
+});
+q.addEventListener('blur',()=>{setTimeout(()=>searchRow.classList.remove('search-active'),150)});
+
+/* ---- Header hide on scroll down (News.html float behaviour) ---- */
+let lastY=0;
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY;
+  headerCard.classList.toggle('hidden', y>140 && y>lastY);
+  lastY=y;
+  parallaxTick();
+},{passive:true});
+
+/* ---- Skeleton loading ---- */
+function skeletons(n,host,h){
+  host.innerHTML='';
+  for(let i=0;i<n;i++){
+    const d=document.createElement('div');
+    d.className='skeleton-loading';
+    if(h)d.style.height=h;
+    host.appendChild(d);
+  }
+}
+function startSkeleton(delay){
+  loading=true;
+  skeletons(12,grid);
+  countEl.textContent='Loading…';
+  clearTimeout(window.__loadT);
+  window.__loadT=setTimeout(()=>{loading=false;render();},delay||1200);
+}
+
+/* ---- Reveal animation ---- */
+let io=null;
+function observeCards(){
+  if(io)io.disconnect();
+  io=new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting)e.target.classList.add('in-view');
+  }),{threshold:.08});
+  document.querySelectorAll('.card').forEach(c=>io.observe(c));
+}
+
+function render(){
+  if(loading)return;
+  const term=q.value.trim().toLowerCase();
+  const list=CALCS.filter(c=>(active==='All'||c.c===active)&&(!term||(c.n+' '+c.d+' '+c.c).toLowerCase().includes(term)));
+  grid.innerHTML='';
+  list.forEach(c=>{
+    const b=document.createElement('button');b.className='card';
+    b.innerHTML='<div class="cat"></div><h3></h3><p></p>';
+    b.querySelector('.cat').textContent=c.c;
+    b.querySelector('h3').textContent=c.n;
+    b.querySelector('p').textContent=c.d;
+    b.onclick=()=>openCalc(c);
+    grid.appendChild(b);
+  });
+  if(!list.length){
+    const e=document.createElement('div');e.className='empty-state';
+    e.textContent='No tools found matching your search.';
+    grid.appendChild(e);
+  }
+  countEl.textContent=list.length+' calculator'+(list.length===1?'':'s')+' shown · '+CALCS.length+' total';
+  observeCards();
+  requestAnimationFrame(()=>document.querySelectorAll('.card').forEach((c,i)=>{
+    setTimeout(()=>c.classList.add('in-view'),Math.min(i*18,400));
+  }));
+}
+
+q.oninput=()=>{ if(currentSection!=='tools')return; active='All';
+  [...chips.children].forEach((x,i)=>x.classList.toggle('active',i===0));
+  startSkeleton(700);
+};
+
+/* ============================================================
+   UTILITIES SECTION + PARALLAX
+   ============================================================ */
+function renderUtilities(){
+  utilGrid.innerHTML='';
+  if(!UTILITIES.length){
+    const e=document.createElement('div');e.className='empty-state';
+    e.style.gridColumn='1/-1';
+    e.textContent='Utilities are coming soon.';
+    utilGrid.appendChild(e);
+    utilCount.textContent='0 utilities';
+    return;
+  }
+  UTILITIES.forEach(u=>{
+    const b=document.createElement('button');b.className='utility-card';
+    b.innerHTML='<div class="utility-media"><img alt="" loading="lazy"/></div>'+
+                '<div class="utility-body"><h3></h3><p></p></div>';
+    const img=b.querySelector('img');
+    img.src=u.img||'';img.alt=u.n||'';
+    b.querySelector('h3').textContent=u.n||'';
+    b.querySelector('p').textContent=u.d||'';
+    if(typeof u.open==='function')b.onclick=u.open;
+    utilGrid.appendChild(b);
+  });
+  utilCount.textContent=UTILITIES.length+' utilit'+(UTILITIES.length===1?'y':'ies');
+  parallaxTick();
+}
+
+/* Each utility card image drifts against the scroll = parallax. */
+function parallaxTick(){
+  if(currentSection!=='utilities')return;
+  const vh=window.innerHeight;
+  document.querySelectorAll('.utility-media').forEach(m=>{
+    const r=m.getBoundingClientRect();
+    if(r.bottom<-200||r.top>vh+200)return;
+    const progress=(r.top+r.height/2-vh/2)/vh;   // -1 .. 1
+    const img=m.querySelector('img');
+    if(img)img.style.transform='translate3d(0,'+(progress*26).toFixed(2)+'px,0) scale(1.06)';
+  });
+}
+window.addEventListener('resize',parallaxTick,{passive:true});
+
+/* ============================================================
+   SECTION SWITCHING — Utilities disables search + filters (13)
+   ============================================================ */
+function setSection(name){
+  currentSection=name;
+  [...sectionSwitch.children].forEach(b=>b.classList.toggle('active',b.dataset.section===name));
+  const utilities = name==='utilities';
+  toolsSection.style.display = utilities?'none':'';
+  utilitiesSection.style.display = utilities?'':'none';
+
+  // Disable / re-enable the search bar and filter buttons.
+  searchRow.classList.toggle('controls-disabled', utilities);
+  headerCard.classList.toggle('controls-off', utilities);
+  q.disabled = utilities;
+  filterBtn.disabled = utilities;
+  if(utilities){
+    q.blur();
+    filterCollapsed=true;
+    chips.classList.add('collapsed');
+    filterBtn.classList.remove('active');
+    skeletons(6,utilGrid,'220px');
+    setTimeout(()=>{renderUtilities();},900);
+  }else{
+    startSkeleton(700);
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+sectionSwitch.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-section]');
+  if(b)setSection(b.dataset.section);
+});
+
+/* ============================================================
+   CALCULATOR MODAL
+   ============================================================ */
+function openCalc(c){
+  if(c.special==='sci')return openSci();
+  sheet.innerHTML='';
+  const bar=document.createElement('div');
+  bar.innerHTML='<button class="iconbtn closex" id="cx">✕</button><div class="cat" style="font:800 .62em Poppins;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent2)"></div>';
+  bar.querySelector('.cat').textContent=c.c;
+  sheet.appendChild(bar);
+  const h=document.createElement('h2');h.textContent=c.n;sheet.appendChild(h);
+  const p=document.createElement('p');p.className='sub';p.textContent=c.d;sheet.appendChild(p);
+  const form=document.createElement('div');sheet.appendChild(form);
+  c.f.forEach(f=>{
+    const d=document.createElement('div');d.className='field';
+    const l=document.createElement('label');l.textContent=f.l;d.appendChild(l);
+    let el;
+    if(f.o){el=document.createElement('select');f.o.forEach(([v,t])=>{const o=document.createElement('option');o.value=v;o.textContent=t;el.appendChild(o)});}
+    else{el=document.createElement('input');el.type=f.date?'date':f.text?'text':'number';el.step=f.step||'any';}
+    el.value=f.v;el.dataset.k=f.k;el.dataset.t=(f.text||f.date||f.o)?'s':'n';
+    el.addEventListener('input',calc);el.addEventListener('change',calc);
+    d.appendChild(el);form.appendChild(d);
+  });
+  const res=document.createElement('div');res.className='result';sheet.appendChild(res);
+  const btns=document.createElement('div');btns.className='btns';
+  btns.innerHTML='<button class="btn" id="go">Calculate</button><button class="btn ghost" id="cl">Close</button>';
+  sheet.appendChild(btns);
+  function calc(){
+    const i={};form.querySelectorAll('input,select').forEach(e=>{i[e.dataset.k]=e.dataset.t==='n'?parseFloat(e.value):e.value;});
+    let rows;try{rows=c.fn(i)}catch(e){rows=[['Error','Check your inputs',1]]}
+    res.innerHTML=rows.map(r=>'<div class="rrow'+(r[2]?' hero':'')+'"><span>'+r[0]+'</span><span>'+r[1]+'</span></div>').join('');
+  }
+  calc();
+  sheet.querySelector('#go').onclick=calc;
+  sheet.querySelector('#cl').onclick=close_;
+  bar.querySelector('#cx').onclick=close_;
+  modal.classList.add('on');document.body.style.overflow='hidden';window.scrollTo(0,0);
+}
+function close_(){modal.classList.remove('on');document.body.style.overflow='';}
+modal.onclick=e=>{if(e.target===modal)close_()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')close_()});
+
+/* ============================================================
+   NEUMORPHIC SCIENTIFIC CALCULATOR
+   (soft squircle keys + deep inset display, jh3y QWYPaax feel)
+   ============================================================ */
+function openSci(){
+  sheet.innerHTML=
+    '<button class="iconbtn closex" id="cx">✕</button>'+
+    '<h2>Scientific Calculator</h2>'+
+    '<p class="sub">Type or tap. Trig, logs, roots, powers, factorial, memory and DEG/RAD.</p>'+
+    '<div class="sci-shell">'+
+      '<div class="sci-disp"><div class="expr" id="expr">&nbsp;</div><div class="out" id="out">0</div></div>'+
+      '<div class="sci-modes">'+
+        '<button id="mDeg" class="on">DEG</button><button id="mRad">RAD</button>'+
+        '<button id="mInv">INV</button><button id="mMR">MR</button>'+
+        '<button id="mMPlus">M+</button><button id="mMC">MC</button>'+
+      '</div>'+
+      '<div class="keys" id="keys"></div>'+
+    '</div>';
+
+  const expr=sheet.querySelector('#expr'),out=sheet.querySelector('#out'),keys=sheet.querySelector('#keys');
+  let s='',deg=true,inv=false,mem=0;
+
+  const K=[
+    ['sin','fn'],['cos','fn'],['tan','fn'],['(', 'op'],[')','op'],
+    ['ln','fn'],['log','fn'],['√','fn'],['x²','fn'],['^','op'],
+    ['7'],['8'],['9'],['÷','op'],['C','op'],
+    ['4'],['5'],['6'],['×','op'],['⌫','op'],
+    ['1'],['2'],['3'],['−','op'],['n!','fn'],
+    ['0'],['.'],['π','fn'],['+','op'],['=','eq']
+  ];
+  K.forEach(([t,cl])=>{
+    const b=document.createElement('button');
+    b.textContent=t;
+    if(cl)b.className=cl;
+    b.onclick=()=>{press(t);b.classList.add('pressed');setTimeout(()=>b.classList.remove('pressed'),120);};
+    keys.appendChild(b);
+  });
+
+  const mDeg=sheet.querySelector('#mDeg'),mRad=sheet.querySelector('#mRad'),mInv=sheet.querySelector('#mInv');
+  mDeg.onclick=()=>{deg=true;mDeg.classList.add('on');mRad.classList.remove('on');};
+  mRad.onclick=()=>{deg=false;mRad.classList.add('on');mDeg.classList.remove('on');};
+  mInv.onclick=()=>{inv=!inv;mInv.classList.toggle('on',inv);};
+  sheet.querySelector('#mMR').onclick=()=>{s+=String(mem);paint();};
+  sheet.querySelector('#mMPlus').onclick=()=>{const v=safeEval(s);if(isFinite(v))mem+=v;};
+  sheet.querySelector('#mMC').onclick=()=>{mem=0;};
+
+  function press(t){
+    if(t==='C'){s='';}
+    else if(t==='⌫'){s=s.slice(0,-1);}
+    else if(t==='='){const v=safeEval(s);expr.textContent=s||' ';s=isFinite(v)?String(v):'';out.textContent=isFinite(v)?String(v):'Error';return;}
+    else if(t==='x²'){s+='^2';}
+    else if(t==='n!'){s+='!';}
+    else if(['sin','cos','tan','ln','log','√'].includes(t)){
+      s+= (inv && ['sin','cos','tan'].includes(t) ? 'a'+t : t) + '(';
+    }
+    else s+=t;
+    paint();
+  }
+  function paint(){
+    out.textContent=s||'0';
+    const v=safeEval(s);
+    expr.textContent=(s && isFinite(v) && String(v)!==s)?('= '+v):'\u00a0';
+  }
+  function fact(n){ if(n<0||n!==Math.floor(n)||n>170)return NaN; let r=1; for(let i=2;i<=n;i++)r*=i; return r; }
+  function safeEval(src){
+    if(!src)return NaN;
+    try{
+      let js=src
+        .replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-')
+        .replace(/π/g,'Math.PI')
+        .replace(/(\d+(?:\.\d+)?)!/g,'__f($1)')
+        .replace(/asin\(/g,'__as(').replace(/acos\(/g,'__ac(').replace(/atan\(/g,'__at(')
+        .replace(/sin\(/g,'__s(').replace(/cos\(/g,'__c(').replace(/tan\(/g,'__t(')
+        .replace(/√\(/g,'Math.sqrt(').replace(/ln\(/g,'Math.log(').replace(/log\(/g,'Math.log10(')
+        .replace(/\^/g,'**');
+      if(/[^0-9+\-*/().,\s^_A-Za-z]/.test(js))return NaN;
+      const D=deg?Math.PI/180:1, R=deg?180/Math.PI:1;
+      const fn=Function('__s','__c','__t','__as','__ac','__at','__f','"use strict";return ('+js+')');
+      const v=fn(
+        x=>Math.sin(x*D), x=>Math.cos(x*D), x=>Math.tan(x*D),
+        x=>Math.asin(x)*R, x=>Math.acos(x)*R, x=>Math.atan(x)*R, fact
+      );
+      if(typeof v!=='number'||!isFinite(v))return NaN;
+      return Math.round(v*1e10)/1e10;
+    }catch(e){return NaN;}
+  }
+
+  document.addEventListener('keydown',keyHandler);
+  function keyHandler(e){
+    if(!modal.classList.contains('on'))return;
+    const k=e.key;
+    if(/^[0-9.]$/.test(k))press(k);
+    else if(k==='+')press('+');
+    else if(k==='-')press('−');
+    else if(k==='*')press('×');
+    else if(k==='/')press('÷');
+    else if(k==='(' || k===')')press(k);
+    else if(k==='^')press('^');
+    else if(k==='Enter'||k==='=')press('=');
+    else if(k==='Backspace')press('⌫');
+  }
+
+  sheet.querySelector('#cx').onclick=()=>{document.removeEventListener('keydown',keyHandler);close_();};
+  modal.classList.add('on');document.body.style.overflow='hidden';window.scrollTo(0,0);
+}
+
+/* ============================================================
+   BOOT — skeleton loading effect at start
+   ============================================================ */
+(function boot(){
+  chips.innerHTML='';
+  for(let i=0;i<6;i++){const d=document.createElement('div');d.className='skeleton-loading skeleton-pill';chips.appendChild(d);}
+  skeletons(12,grid);
+  countEl.textContent='Loading…';
+  setTimeout(()=>{
+    buildChips();
+    loading=false;
+    render();
+  },1400);
+})();
+</script>
+</body></html>
