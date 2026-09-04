@@ -1,14 +1,16 @@
-name: Android Engine
+name: Dynamic Android APK Builder
 on:
   workflow_dispatch:
     inputs:
       app_name: { required: true }
       target_url: { required: true }
       package_name: { required: true }
+      version_code: { required: true, default: "1" }
       edge_to_edge: { required: true }
       hide_status_bar: { required: true }
       immersive: { required: true }
-      orientation: { required: true }
+      icon_base64: { required: false }
+      offline_base64: { required: false }
 
 jobs:
   build:
@@ -21,28 +23,49 @@ jobs:
           java-version: '17'
           cache: 'gradle'
       - uses: android-actions/setup-android@v3
-      - name: Configure Template
+
+      - name: Configure Android Project
         run: |
           mkdir -p app/src/main/assets
           cat <<EOF > app/src/main/assets/app_config.json
           {"url":"${{ github.event.inputs.target_url }}","isLocal":false}
           EOF
+
           cat <<EOF > app/src/main/assets/ui_config.json
-          {"edgeToEdge":${{ github.event.inputs.edge_to_edge }},"hideStatusBar":${{ github.event.inputs.hide_status_bar }},"immersiveFullscreen":${{ github.event.inputs.immersive }},"javascript":true,"fileUpload":true,"downloads":true}
+          {"edgeToEdge":${{ github.event.inputs.edge_to_edge }},"hideStatusBar":${{ github.event.inputs.hide_status_bar }},"immersiveFullscreen":${{ github.event.inputs.immersive }}}
           EOF
-          cat <<EOF > app/src/main/assets/offline.html
-          <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#0c0f17;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;}button{background:#3b82f6;border:0;color:#fff;padding:10px 20px;border-radius:6px;font-size:16px;cursor:pointer;margin-top:15px;}</style></head><body><h2>Connection Lost</h2><p>Unable to connect to the server.</p><button onclick="AndroidBridge.retryConnection()">Retry</button></body></html>
+
+          # Custom Offline Support
+          if [ -n "${{ github.event.inputs.offline_base64 }}" ]; then
+            echo "${{ github.event.inputs.offline_base64 }}" | base64 -d > app/src/main/assets/offline.html
+          else
+            cat <<EOF > app/src/main/assets/offline.html
+            <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#0c0f17;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;}button{background:#2563eb;border:0;color:#fff;padding:12px 24px;border-radius:24px;font-weight:bold;cursor:pointer;margin-top:16px;}</style></head><body><h2>No Connection</h2><p>Could not connect to server.</p><button onclick="AndroidBridge.retryConnection()">Retry</button></body></html>
           EOF
+          fi
+
+          # Custom Logo Injection across densities
+          if [ -n "${{ github.event.inputs.icon_base64 }}" ]; then
+            echo "${{ github.event.inputs.icon_base64 }}" | base64 -d > /tmp/icon.png
+            sudo apt-get install -y imagemagick
+            for res in "48:mdpi" "72:hdpi" "96:xhdpi" "144:xxhdpi" "192:xxxhdpi"; do
+              IFS=":" read -r sz name <<< "$res"
+              mkdir -p "app/src/main/res/mipmap-$name"
+              convert /tmp/icon.png -resize "${sz}x${sz}" "app/src/main/res/mipmap-$name/ic_launcher.png"
+            done
+          fi
 
           APP="${{ github.event.inputs.app_name }}"
           PKG="${{ github.event.inputs.package_name }}"
-          ORI="${{ github.event.inputs.orientation }}"
+          VCODE="${{ github.event.inputs.version_code }}"
 
+          # String and Configuration Updates
           sed -i "s|<string name=\"app_name\">.*</string>|<string name=\"app_name\">$APP</string>|g" app/src/main/res/values/strings.xml
-          sed -i "s|android:screenOrientation=\".*\"|android:screenOrientation=\"$ORI\"|g" app/src/main/AndroidManifest.xml
           sed -i "s|namespace = \".*\"|namespace = \"$PKG\"|g" app/build.gradle.kts
           sed -i "s|applicationId = \".*\"|applicationId = \"$PKG\"|g" app/build.gradle.kts
+          sed -i "s|versionCode = .*|versionCode = $VCODE|g" app/build.gradle.kts
 
+          # Package Namespace Refactoring
           TARGET_DIR="app/src/main/java/$(echo $PKG | tr '.' '/')"
           mkdir -p "$TARGET_DIR"
           for f in app/src/main/java/com/web2apk/template/*.kt; do
@@ -51,9 +74,15 @@ jobs:
           done
           rm -rf app/src/main/java/com/web2apk
           sed -i "s|com.web2apk.template.MainActivity|$PKG.MainActivity|g" app/src/main/AndroidManifest.xml
+
+          # Completely Hide Scrollbars on Generated App WebView
+          sed -i '/webView.settings.apply {/a \            webView.isVerticalScrollBarEnabled = false\n            webView.isHorizontalScrollBarEnabled = false\n            webView.overScrollMode = android.view.View.OVER_SCROLL_NEVER' "$TARGET_DIR/MainActivity.kt"
+
           chmod +x gradlew
+
       - name: Build Debug APK
         run: ./gradlew assembleDebug --no-daemon
+
       - uses: actions/upload-artifact@v4
         with:
           name: app-debug
