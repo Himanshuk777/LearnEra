@@ -2,12 +2,30 @@ name: Dynamic Android APK Builder
 on:
   workflow_dispatch:
     inputs:
-      app_name: { required: true }
-      target_url: { required: true }
-      package_name: { required: true }
-      version_name: { required: true, default: "1.0.0" }
-      version_code: { required: true, default: "1" }
-      edge_to_edge: { required: true }
+      app_name:
+        description: "App Name"
+        required: false
+        default: "LearnEra"
+      target_url:
+        description: "Target URL"
+        required: false
+        default: "https://himanshuk777.github.io/LearnEra/"
+      package_name:
+        description: "Package ID"
+        required: false
+        default: "com.learnera.app"
+      version_name:
+        description: "Version Name"
+        required: false
+        default: "1.0.0"
+      version_code:
+        description: "Version Code"
+        required: false
+        default: "1"
+      icon_base64:
+        description: "App Icon Base64"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -24,50 +42,52 @@ jobs:
           cache: 'gradle'
       - uses: android-actions/setup-android@v3
 
-      - name: Configure Android Project & Player Engine
+      - name: Configure Android Project & Video Fullscreen
         run: |
           mkdir -p app/src/main/assets
-          cat <<EOF > app/src/main/assets/app_config.json
-          {"url":"${{ github.event.inputs.target_url }}","isLocal":false}
-          EOF
+          
+          APP="${{ github.event.inputs.app_name || 'LearnEra' }}"
+          URL="${{ github.event.inputs.target_url || 'https://himanshuk777.github.io/LearnEra/' }}"
+          PKG="${{ github.event.inputs.package_name || 'com.learnera.app' }}"
+          VNAME="${{ github.event.inputs.version_name || '1.0.0' }}"
+          VCODE="${{ github.event.inputs.version_code || '1' }}"
 
-          cat <<EOF > app/src/main/assets/ui_config.json
-          {"edgeToEdge":${{ github.event.inputs.edge_to_edge }}}
+          cat <<EOF > app/src/main/assets/app_config.json
+          {"url":"$URL","isLocal":false}
           EOF
 
           if [ ! -f "app/src/main/assets/offline.html" ]; then
             cat <<EOF > app/src/main/assets/offline.html
-            <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#0c0f17;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;}button{background:#2563eb;border:0;color:#fff;padding:12px 24px;border-radius:24px;font-weight:bold;cursor:pointer;margin-top:16px;}</style></head><body><h2>No Connection</h2><p>Could not connect to server.</p><button onclick="AndroidBridge.retryConnection()">Retry</button></body></html>
+            <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#0c0f17;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;}button{background:#2563eb;border:0;color:#fff;padding:12px 24px;border-radius:24px;font-weight:bold;cursor:pointer;margin-top:16px;}</style></head><body><h2>No Connection</h2><p>Could not connect to server.</p><button onclick="location.reload()">Retry</button></body></html>
           EOF
           fi
 
-          APP="${{ github.event.inputs.app_name }}"
-          PKG="${{ github.event.inputs.package_name }}"
-          VNAME="${{ github.event.inputs.version_name }}"
-          VCODE="${{ github.event.inputs.version_code }}"
+          # Apply Icon across mipmaps if provided
+          if [ -n "${{ github.event.inputs.icon_base64 }}" ]; then
+            mkdir -p app/src/main/res/drawable
+            echo "${{ github.event.inputs.icon_base64 }}" | base64 -d > app/src/main/res/drawable/ic_launcher.png
+            for dir in app/src/main/res/mipmap-*; do
+              cp app/src/main/res/drawable/ic_launcher.png "$dir/ic_launcher.png" || true
+            done
+          fi
 
-          # String & Version Injections
-          sed -i "s|<string name=\"app_name\">.*</string>|<string name=\"app_name\">$APP</string>|g" app/src/main/res/values/strings.xml
-          sed -i "s|namespace = \".*\"|namespace = \"$PKG\"|g" app/build.gradle.kts
-          sed -i "s|applicationId = \".*\"|applicationId = \"$PKG\"|g" app/build.gradle.kts
-          sed -i "s/versionCode = .*/versionCode = $VCODE/g" app/build.gradle.kts
-          sed -i "s/versionName = .*/versionName = \"$VNAME\"/g" app/build.gradle.kts
+          # Replace string resources safely
+          sed -i "s|<string name=\"app_name\">.*</string>|<string name=\"app_name\">$APP</string>|g" app/src/main/res/values/strings.xml || true
+          sed -i "s|namespace = \".*\"|namespace = \"$PKG\"|g" app/build.gradle.kts || true
+          sed -i "s|applicationId = \".*\"|applicationId = \"$PKG\"|g" app/build.gradle.kts || true
+          sed -i "s/versionCode = .*/versionCode = $VCODE/g" app/build.gradle.kts || true
+          sed -i "s/versionName = .*/versionName = \"$VNAME\"/g" app/build.gradle.kts || true
 
-          # Package Namespace Refactoring
+          # Create Target Package Directory
           TARGET_DIR="app/src/main/java/$(echo $PKG | tr '.' '/')"
           mkdir -p "$TARGET_DIR"
-          for f in app/src/main/java/com/web2apk/template/*.kt; do
-            sed -i "s|package com.web2apk.template|package $PKG|g" "$f"
-            mv "$f" "$TARGET_DIR/"
-          done
-          rm -rf app/src/main/java/com/web2apk
-          sed -i "s|com.web2apk.template.MainActivity|$PKG.MainActivity|g" app/src/main/AndroidManifest.xml
 
-          # Hardware Acceleration & Fullscreen Video Configuration
-          sed -i 's/<application/<application android:hardwareAccelerated="true"/g' app/src/main/AndroidManifest.xml
-          sed -i 's/<activity/<activity android:hardwareAccelerated="true" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"/g' app/src/main/AndroidManifest.xml
+          # Hardware Acceleration & Orientation Support in Manifest
+          sed -i 's/<application/<application android:hardwareAccelerated="true"/g' app/src/main/AndroidManifest.xml || true
+          sed -i 's/<activity/<activity android:hardwareAccelerated="true" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"/g' app/src/main/AndroidManifest.xml || true
+          sed -i "s|com.web2apk.template.MainActivity|$PKG.MainActivity|g" app/src/main/AndroidManifest.xml || true
 
-          # Inject Fullscreen Video Player & Scrollbar Hiding Engine
+          # Write Clean, Self-Contained MainActivity with Fullscreen Video Support
           cat << 'EOF' > "$TARGET_DIR/MainActivity.kt"
           package PKG_REPLACE
 
@@ -115,6 +135,7 @@ jobs:
                       mediaPlaybackRequiresUserGesture = false
                       useWideViewPort = true
                       loadWithOverviewMode = true
+                      allowFileAccess = true
                   }
 
                   webView.webChromeClient = object : WebChromeClient() {
@@ -184,18 +205,6 @@ jobs:
 
       - name: Compile Debug APK
         run: ./gradlew assembleDebug --no-daemon
-
-      - name: Publish Direct Release APK
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG="v${{ github.event.inputs.version_name }}-${{ github.event.inputs.version_code }}"
-          gh release delete "$TAG" --yes || true
-          git tag -d "$TAG" || true
-          cp app/build/outputs/apk/debug/app-debug.apk "${{ github.event.inputs.app_name }}.apk"
-          gh release create "$TAG" "${{ github.event.inputs.app_name }}.apk" \
-            --title "${{ github.event.inputs.app_name }} v${{ github.event.inputs.version_name }}" \
-            --notes "Direct APK build for ${{ github.event.inputs.app_name }}."
 
       - uses: actions/upload-artifact@v4
         with:
