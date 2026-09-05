@@ -5,12 +5,11 @@ on:
       app_name: { required: true }
       target_url: { required: true }
       package_name: { required: true }
+      version_name: { required: true, default: "1.0.0" }
       version_code: { required: true, default: "1" }
       edge_to_edge: { required: true }
       hide_status_bar: { required: true }
       immersive: { required: true }
-      icon_base64: { required: false }
-      offline_base64: { required: false }
 
 jobs:
   build:
@@ -24,7 +23,7 @@ jobs:
           cache: 'gradle'
       - uses: android-actions/setup-android@v3
 
-      - name: Configure Android Project
+      - name: Inject Fullscreen Player & Build Configuration
         run: |
           mkdir -p app/src/main/assets
           cat <<EOF > app/src/main/assets/app_config.json
@@ -35,37 +34,26 @@ jobs:
           {"edgeToEdge":${{ github.event.inputs.edge_to_edge }},"hideStatusBar":${{ github.event.inputs.hide_status_bar }},"immersiveFullscreen":${{ github.event.inputs.immersive }}}
           EOF
 
-          # Custom Offline Support
-          if [ -n "${{ github.event.inputs.offline_base64 }}" ]; then
-            echo "${{ github.event.inputs.offline_base64 }}" | base64 -d > app/src/main/assets/offline.html
-          else
+          # Ensure default offline exists if not previously committed
+          if [ ! -f "app/src/main/assets/offline.html" ]; then
             cat <<EOF > app/src/main/assets/offline.html
             <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#0c0f17;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;}button{background:#2563eb;border:0;color:#fff;padding:12px 24px;border-radius:24px;font-weight:bold;cursor:pointer;margin-top:16px;}</style></head><body><h2>No Connection</h2><p>Could not connect to server.</p><button onclick="AndroidBridge.retryConnection()">Retry</button></body></html>
           EOF
           fi
 
-          # Custom Logo Injection across densities
-          if [ -n "${{ github.event.inputs.icon_base64 }}" ]; then
-            echo "${{ github.event.inputs.icon_base64 }}" | base64 -d > /tmp/icon.png
-            sudo apt-get install -y imagemagick
-            for res in "48:mdpi" "72:hdpi" "96:xhdpi" "144:xxhdpi" "192:xxxhdpi"; do
-              IFS=":" read -r sz name <<< "$res"
-              mkdir -p "app/src/main/res/mipmap-$name"
-              convert /tmp/icon.png -resize "${sz}x${sz}" "app/src/main/res/mipmap-$name/ic_launcher.png"
-            done
-          fi
-
           APP="${{ github.event.inputs.app_name }}"
           PKG="${{ github.event.inputs.package_name }}"
+          VNAME="${{ github.event.inputs.version_name }}"
           VCODE="${{ github.event.inputs.version_code }}"
 
-          # String and Configuration Updates
+          # Direct Gradle Version String Replacement
           sed -i "s|<string name=\"app_name\">.*</string>|<string name=\"app_name\">$APP</string>|g" app/src/main/res/values/strings.xml
           sed -i "s|namespace = \".*\"|namespace = \"$PKG\"|g" app/build.gradle.kts
           sed -i "s|applicationId = \".*\"|applicationId = \"$PKG\"|g" app/build.gradle.kts
-          sed -i "s|versionCode = .*|versionCode = $VCODE|g" app/build.gradle.kts
+          sed -i "s/versionCode = .*/versionCode = $VCODE/g" app/build.gradle.kts
+          sed -i "s/versionName = .*/versionName = \"$VNAME\"/g" app/build.gradle.kts
 
-          # Package Namespace Refactoring
+          # Package Namespace Structure
           TARGET_DIR="app/src/main/java/$(echo $PKG | tr '.' '/')"
           mkdir -p "$TARGET_DIR"
           for f in app/src/main/java/com/web2apk/template/*.kt; do
@@ -75,9 +63,126 @@ jobs:
           rm -rf app/src/main/java/com/web2apk
           sed -i "s|com.web2apk.template.MainActivity|$PKG.MainActivity|g" app/src/main/AndroidManifest.xml
 
-          # Completely Hide Scrollbars on Generated App WebView
+          # Hardware Acceleration & Fullscreen Video Support in Manifest
+          sed -i 's/<application/<application android:hardwareAccelerated="true"/g' app/src/main/AndroidManifest.xml
+          sed -i 's/<activity/<activity android:hardwareAccelerated="true" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"/g' app/src/main/AndroidManifest.xml
+
+          # Completely Hide Scrollbars
           sed -i '/webView.settings.apply {/a \            webView.isVerticalScrollBarEnabled = false\n            webView.isHorizontalScrollBarEnabled = false\n            webView.overScrollMode = android.view.View.OVER_SCROLL_NEVER' "$TARGET_DIR/MainActivity.kt"
 
+          # Inject Fullscreen Custom View (Episode / Course Player Handler)
+          cat << 'EOF' > "$TARGET_DIR/MainActivity.kt"
+          package PKG_REPLACE
+
+          import android.content.pm.ActivityInfo
+          import android.graphics.Color
+          import android.os.Bundle
+          import android.view.View
+          import android.view.ViewGroup
+          import android.webkit.*
+          import android.widget.FrameLayout
+          import androidx.activity.OnBackPressedCallback
+          import androidx.appcompat.app.AppCompatActivity
+          import androidx.core.view.WindowCompat
+          import androidx.core.view.WindowInsetsCompat
+          import androidx.core.view.WindowInsetsControllerCompat
+          import org.json.JSONObject
+
+          class MainActivity : AppCompatActivity() {
+              private lateinit var webView: WebView
+              private var customView: View? = null
+              private var customViewCallback: WebChromeClient.CustomViewCallback? = null
+              private lateinit var fullscreenContainer: FrameLayout
+
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+
+                  val root = FrameLayout(this)
+                  webView = WebView(this)
+                  fullscreenContainer = FrameLayout(this).apply {
+                      visibility = View.GONE
+                      setBackgroundColor(Color.BLACK)
+                  }
+
+                  root.addView(webView, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+                  root.addView(fullscreenContainer, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+                  setContentView(root)
+
+                  webView.isVerticalScrollBarEnabled = false
+                  webView.isHorizontalScrollBarEnabled = false
+                  webView.overScrollMode = View.OVER_SCROLL_NEVER
+
+                  webView.settings.apply {
+                      javaScriptEnabled = true
+                      domStorageEnabled = true
+                      mediaPlaybackRequiresUserGesture = false
+                      useWideViewPort = true
+                      loadWithOverviewMode = true
+                  }
+
+                  webView.webChromeClient = object : WebChromeClient() {
+                      override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
+                          if (customView != null) {
+                              onHideCustomView()
+                              return
+                          }
+                          customView = view
+                          customViewCallback = callback
+                          webView.visibility = View.GONE
+                          fullscreenContainer.visibility = View.VISIBLE
+                          fullscreenContainer.addView(view, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+
+                          val controller = WindowCompat.getInsetsController(window, window.decorView)
+                          controller.hide(WindowInsetsCompat.Type.systemBars())
+                          controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                          requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                      }
+
+                      override fun onHideCustomView() {
+                          if (customView == null) return
+                          fullscreenContainer.removeView(customView)
+                          fullscreenContainer.visibility = View.GONE
+                          webView.visibility = View.VISIBLE
+                          customView = null
+                          customViewCallback?.onCustomViewHidden()
+                          customViewCallback = null
+
+                          val controller = WindowCompat.getInsetsController(window, window.decorView)
+                          controller.show(WindowInsetsCompat.Type.systemBars())
+                          requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                      }
+                  }
+
+                  webView.webViewClient = object : WebViewClient() {
+                      override fun onPageFinished(view: WebView?, url: String?) {
+                          super.onPageFinished(view, url)
+                          view?.evaluateJavascript("var s = document.createElement('style'); s.innerHTML = '::-webkit-scrollbar { display: none !important; } * { scrollbar-width: none !important; }'; document.head.appendChild(s);", null)
+                      }
+                  }
+
+                  onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+                      override fun handleOnBackPressed() {
+                          if (customView != null) {
+                              webView.webChromeClient?.onHideCustomView()
+                          } else if (webView.canGoBack()) {
+                              webView.goBack()
+                          } else {
+                              finish()
+                          }
+                      }
+                  })
+
+                  try {
+                      val cfg = JSONObject(assets.open("app_config.json").bufferedReader().use { it.readText() })
+                      webView.loadUrl(cfg.getString("url"))
+                  } catch (e: Exception) {
+                      webView.loadUrl("https://himanshuk777.github.io/LearnEra/")
+                  }
+              }
+          }
+          EOF
+
+          sed -i "s|package PKG_REPLACE|package $PKG|g" "$TARGET_DIR/MainActivity.kt"
           chmod +x gradlew
 
       - name: Build Debug APK
