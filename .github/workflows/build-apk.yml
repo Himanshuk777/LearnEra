@@ -8,8 +8,9 @@ on:
       version_name: { required: true, default: "1.0.0" }
       version_code: { required: true, default: "1" }
       edge_to_edge: { required: true }
-      hide_status_bar: { required: true }
-      immersive: { required: true }
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -23,7 +24,7 @@ jobs:
           cache: 'gradle'
       - uses: android-actions/setup-android@v3
 
-      - name: Inject Fullscreen Player & Build Configuration
+      - name: Configure Android Project & Player Engine
         run: |
           mkdir -p app/src/main/assets
           cat <<EOF > app/src/main/assets/app_config.json
@@ -31,10 +32,9 @@ jobs:
           EOF
 
           cat <<EOF > app/src/main/assets/ui_config.json
-          {"edgeToEdge":${{ github.event.inputs.edge_to_edge }},"hideStatusBar":${{ github.event.inputs.hide_status_bar }},"immersiveFullscreen":${{ github.event.inputs.immersive }}}
+          {"edgeToEdge":${{ github.event.inputs.edge_to_edge }}}
           EOF
 
-          # Ensure default offline exists if not previously committed
           if [ ! -f "app/src/main/assets/offline.html" ]; then
             cat <<EOF > app/src/main/assets/offline.html
             <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#0c0f17;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;}button{background:#2563eb;border:0;color:#fff;padding:12px 24px;border-radius:24px;font-weight:bold;cursor:pointer;margin-top:16px;}</style></head><body><h2>No Connection</h2><p>Could not connect to server.</p><button onclick="AndroidBridge.retryConnection()">Retry</button></body></html>
@@ -46,14 +46,14 @@ jobs:
           VNAME="${{ github.event.inputs.version_name }}"
           VCODE="${{ github.event.inputs.version_code }}"
 
-          # Direct Gradle Version String Replacement
+          # String & Version Injections
           sed -i "s|<string name=\"app_name\">.*</string>|<string name=\"app_name\">$APP</string>|g" app/src/main/res/values/strings.xml
           sed -i "s|namespace = \".*\"|namespace = \"$PKG\"|g" app/build.gradle.kts
           sed -i "s|applicationId = \".*\"|applicationId = \"$PKG\"|g" app/build.gradle.kts
           sed -i "s/versionCode = .*/versionCode = $VCODE/g" app/build.gradle.kts
           sed -i "s/versionName = .*/versionName = \"$VNAME\"/g" app/build.gradle.kts
 
-          # Package Namespace Structure
+          # Package Namespace Refactoring
           TARGET_DIR="app/src/main/java/$(echo $PKG | tr '.' '/')"
           mkdir -p "$TARGET_DIR"
           for f in app/src/main/java/com/web2apk/template/*.kt; do
@@ -63,14 +63,11 @@ jobs:
           rm -rf app/src/main/java/com/web2apk
           sed -i "s|com.web2apk.template.MainActivity|$PKG.MainActivity|g" app/src/main/AndroidManifest.xml
 
-          # Hardware Acceleration & Fullscreen Video Support in Manifest
+          # Hardware Acceleration & Fullscreen Video Configuration
           sed -i 's/<application/<application android:hardwareAccelerated="true"/g' app/src/main/AndroidManifest.xml
           sed -i 's/<activity/<activity android:hardwareAccelerated="true" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"/g' app/src/main/AndroidManifest.xml
 
-          # Completely Hide Scrollbars
-          sed -i '/webView.settings.apply {/a \            webView.isVerticalScrollBarEnabled = false\n            webView.isHorizontalScrollBarEnabled = false\n            webView.overScrollMode = android.view.View.OVER_SCROLL_NEVER' "$TARGET_DIR/MainActivity.kt"
-
-          # Inject Fullscreen Custom View (Episode / Course Player Handler)
+          # Inject Fullscreen Video Player & Scrollbar Hiding Engine
           cat << 'EOF' > "$TARGET_DIR/MainActivity.kt"
           package PKG_REPLACE
 
@@ -185,8 +182,20 @@ jobs:
           sed -i "s|package PKG_REPLACE|package $PKG|g" "$TARGET_DIR/MainActivity.kt"
           chmod +x gradlew
 
-      - name: Build Debug APK
+      - name: Compile Debug APK
         run: ./gradlew assembleDebug --no-daemon
+
+      - name: Publish Direct Release APK
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v${{ github.event.inputs.version_name }}-${{ github.event.inputs.version_code }}"
+          gh release delete "$TAG" --yes || true
+          git tag -d "$TAG" || true
+          cp app/build/outputs/apk/debug/app-debug.apk "${{ github.event.inputs.app_name }}.apk"
+          gh release create "$TAG" "${{ github.event.inputs.app_name }}.apk" \
+            --title "${{ github.event.inputs.app_name }} v${{ github.event.inputs.version_name }}" \
+            --notes "Direct APK build for ${{ github.event.inputs.app_name }}."
 
       - uses: actions/upload-artifact@v4
         with:
