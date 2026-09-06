@@ -2,30 +2,25 @@ name: Dynamic Android APK Builder
 on:
   workflow_dispatch:
     inputs:
-      app_name:
-        description: "App Name"
-        required: false
-        default: "LearnEra"
-      target_url:
-        description: "Target URL"
-        required: false
-        default: "https://himanshuk777.github.io/LearnEra/"
-      package_name:
-        description: "Package ID"
-        required: false
-        default: "com.learnera.app"
-      version_name:
-        description: "Version Name"
-        required: false
-        default: "1.0.0"
-      version_code:
-        description: "Version Code"
-        required: false
-        default: "1"
-      icon_base64:
-        description: "App Icon Base64"
-        required: false
-        default: ""
+      app_name: { required: false, default: "LearnEra" }
+      target_url: { required: false, default: "https://himanshuk777.github.io/LearnEra/" }
+      package_name: { required: false, default: "com.learnera.app" }
+      version_name: { required: false, default: "1.0.0" }
+      version_code: { required: false, default: "1" }
+      edge_to_edge: { required: false, default: "true" }
+      hide_status_bar: { required: false, default: "false" }
+      immersive: { required: false, default: "false" }
+      javascript: { required: false, default: "true" }
+      file_upload: { required: false, default: "true" }
+      camera: { required: false, default: "false" }
+      microphone: { required: false, default: "false" }
+      location: { required: false, default: "false" }
+      downloads: { required: false, default: "true" }
+      orientation: { required: false, default: "portrait" }
+      is_local: { required: false, default: "false" }
+      html_base64: { required: false, default: "" }
+      offline_base64: { required: false, default: "" }
+      icon_base64: { required: false, default: "" }
 
 permissions:
   contents: write
@@ -42,21 +37,44 @@ jobs:
           cache: 'gradle'
       - uses: android-actions/setup-android@v3
 
-      - name: Configure Android Project & Video Fullscreen
+      - name: Configure Android Project & 10+ Features
         run: |
-          mkdir -p app/src/main/assets
+          mkdir -p app/src/main/assets/www
           
           APP="${{ github.event.inputs.app_name || 'LearnEra' }}"
           URL="${{ github.event.inputs.target_url || 'https://himanshuk777.github.io/LearnEra/' }}"
           PKG="${{ github.event.inputs.package_name || 'com.learnera.app' }}"
           VNAME="${{ github.event.inputs.version_name || '1.0.0' }}"
           VCODE="${{ github.event.inputs.version_code || '1' }}"
+          IS_LOCAL="${{ github.event.inputs.is_local || 'false' }}"
+
+          # Handle Direct HTML packaging mode
+          if [ "$IS_LOCAL" = "true" ] && [ -n "${{ github.event.inputs.html_base64 }}" ]; then
+            echo "${{ github.event.inputs.html_base64 }}" | base64 -d > app/src/main/assets/www/index.html
+            FINAL_URL="https://appassets.androidplatform.net/assets/www/index.html"
+          else
+            FINAL_URL="$URL"
+          fi
 
           cat <<EOF > app/src/main/assets/app_config.json
-          {"url":"$URL","isLocal":false}
+          {"url":"$FINAL_URL","isLocal":$IS_LOCAL}
           EOF
 
-          if [ ! -f "app/src/main/assets/offline.html" ]; then
+          cat <<EOF > app/src/main/assets/ui_config.json
+          {
+            "edgeToEdge": ${{ github.event.inputs.edge_to_edge || 'true' }},
+            "hideStatusBar": ${{ github.event.inputs.hide_status_bar || 'false' }},
+            "immersive": ${{ github.event.inputs.immersive || 'false' }},
+            "javascript": ${{ github.event.inputs.javascript || 'true' }},
+            "fileUpload": ${{ github.event.inputs.file_upload || 'true' }},
+            "downloads": ${{ github.event.inputs.downloads || 'true' }}
+          }
+          EOF
+
+          # Custom No Internet Offline Screen
+          if [ -n "${{ github.event.inputs.offline_base64 }}" ]; then
+            echo "${{ github.event.inputs.offline_base64 }}" | base64 -d > app/src/main/assets/offline.html
+          elif [ ! -f "app/src/main/assets/offline.html" ]; then
             cat <<EOF > app/src/main/assets/offline.html
             <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#0c0f17;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;}button{background:#2563eb;border:0;color:#fff;padding:12px 24px;border-radius:24px;font-weight:bold;cursor:pointer;margin-top:16px;}</style></head><body><h2>No Connection</h2><p>Could not connect to server.</p><button onclick="location.reload()">Retry</button></body></html>
           EOF
@@ -71,38 +89,61 @@ jobs:
             done
           fi
 
-          # Replace string resources safely
+          # Replace string & version resources
           sed -i "s|<string name=\"app_name\">.*</string>|<string name=\"app_name\">$APP</string>|g" app/src/main/res/values/strings.xml || true
           sed -i "s|namespace = \".*\"|namespace = \"$PKG\"|g" app/build.gradle.kts || true
           sed -i "s|applicationId = \".*\"|applicationId = \"$PKG\"|g" app/build.gradle.kts || true
           sed -i "s/versionCode = .*/versionCode = $VCODE/g" app/build.gradle.kts || true
           sed -i "s/versionName = .*/versionName = \"$VNAME\"/g" app/build.gradle.kts || true
 
-          # Create Target Package Directory
+          # Inject permissions dynamically
+          PERMS=""
+          if [ "${{ github.event.inputs.camera }}" = "true" ]; then
+            PERMS="$PERMS\n    <uses-permission android:name=\"android.permission.CAMERA\"/>"
+          fi
+          if [ "${{ github.event.inputs.microphone }}" = "true" ]; then
+            PERMS="$PERMS\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\"/>"
+          fi
+          if [ "${{ github.event.inputs.location }}" = "true" ]; then
+            PERMS="$PERMS\n    <uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>\n    <uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>"
+          fi
+
+          # Manifest updates
+          sed -i 's/<application/<application android:hardwareAccelerated="true"/g' app/src/main/AndroidManifest.xml || true
+          sed -i 's/<activity/<activity android:hardwareAccelerated="true" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"/g' app/src/main/AndroidManifest.xml || true
+          sed -i "s|android:screenOrientation=\".*\"|android:screenOrientation=\"${{ github.event.inputs.orientation || 'portrait' }}\"|g" app/src/main/AndroidManifest.xml || true
+          sed -i "s|com.web2apk.template.MainActivity|$PKG.MainActivity|g" app/src/main/AndroidManifest.xml || true
+          if [ -n "$PERMS" ]; then
+            sed -i "/<manifest/a $PERMS" app/src/main/AndroidManifest.xml || true
+          fi
+
+          # Write Target MainActivity Package Directory
           TARGET_DIR="app/src/main/java/$(echo $PKG | tr '.' '/')"
           mkdir -p "$TARGET_DIR"
 
-          # Hardware Acceleration & Orientation Support in Manifest
-          sed -i 's/<application/<application android:hardwareAccelerated="true"/g' app/src/main/AndroidManifest.xml || true
-          sed -i 's/<activity/<activity android:hardwareAccelerated="true" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"/g' app/src/main/AndroidManifest.xml || true
-          sed -i "s|com.web2apk.template.MainActivity|$PKG.MainActivity|g" app/src/main/AndroidManifest.xml || true
-
-          # Write Clean, Self-Contained MainActivity with Fullscreen Video Support
           cat << 'EOF' > "$TARGET_DIR/MainActivity.kt"
           package PKG_REPLACE
 
+          import android.annotation.SuppressLint
+          import android.app.DownloadManager
+          import android.content.Intent
           import android.content.pm.ActivityInfo
           import android.graphics.Color
+          import android.net.Uri
           import android.os.Bundle
+          import android.os.Environment
           import android.view.View
           import android.view.ViewGroup
           import android.webkit.*
           import android.widget.FrameLayout
+          import android.widget.Toast
           import androidx.activity.OnBackPressedCallback
+          import androidx.activity.result.contract.ActivityResultContracts
           import androidx.appcompat.app.AppCompatActivity
           import androidx.core.view.WindowCompat
           import androidx.core.view.WindowInsetsCompat
           import androidx.core.view.WindowInsetsControllerCompat
+          import androidx.webkit.WebViewAssetLoader
           import org.json.JSONObject
 
           class MainActivity : AppCompatActivity() {
@@ -110,9 +151,28 @@ jobs:
               private var customView: View? = null
               private var customViewCallback: WebChromeClient.CustomViewCallback? = null
               private lateinit var fullscreenContainer: FrameLayout
+              private lateinit var assetLoader: WebViewAssetLoader
+              private var fileUploadCallback: ValueCallback<Array<Uri>>? = null
 
+              private val fileChooserLauncher = registerForActivityResult(
+                  ActivityResultContracts.StartActivityForResult()
+              ) { result ->
+                  val results = WebChromeClient.FileChooserParams.parseResult(result.resultCode, result.data)
+                  fileUploadCallback?.onReceiveValue(results)
+                  fileUploadCallback = null
+              }
+
+              @SuppressLint("SetJavaScriptEnabled")
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
+
+                  val uiConfig = loadUiConfig()
+                  applyDisplayConfigurations(uiConfig)
+
+                  assetLoader = WebViewAssetLoader.Builder()
+                      .setDomain("appassets.androidplatform.net")
+                      .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
+                      .build()
 
                   val root = FrameLayout(this)
                   webView = WebView(this)
@@ -130,12 +190,13 @@ jobs:
                   webView.overScrollMode = View.OVER_SCROLL_NEVER
 
                   webView.settings.apply {
-                      javaScriptEnabled = true
+                      javaScriptEnabled = uiConfig.optBoolean("javascript", true)
                       domStorageEnabled = true
                       mediaPlaybackRequiresUserGesture = false
                       useWideViewPort = true
                       loadWithOverviewMode = true
                       allowFileAccess = true
+                      setGeolocationEnabled(true)
                   }
 
                   webView.webChromeClient = object : WebChromeClient() {
@@ -169,12 +230,55 @@ jobs:
                           controller.show(WindowInsetsCompat.Type.systemBars())
                           requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                       }
+
+                      override fun onShowFileChooser(v: WebView?, callback: ValueCallback<Array<Uri>>?, p: FileChooserParams?): Boolean {
+                          if (!uiConfig.optBoolean("fileUpload", true)) return false
+                          fileUploadCallback?.onReceiveValue(null)
+                          fileUploadCallback = callback
+                          val intent = p?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply { type = "*/*" }
+                          fileChooserLauncher.launch(intent)
+                          return true
+                      }
+
+                      override fun onGeolocationPermissionsShowPrompt(origin: String?, callback: GeolocationPermissions.Callback?) {
+                          callback?.invoke(origin, true, false)
+                      }
                   }
 
                   webView.webViewClient = object : WebViewClient() {
+                      override fun shouldInterceptRequest(view: WebView, req: WebResourceRequest): WebResourceResponse? {
+                          return assetLoader.shouldInterceptRequest(req.url)
+                      }
+
                       override fun onPageFinished(view: WebView?, url: String?) {
                           super.onPageFinished(view, url)
                           view?.evaluateJavascript("var s = document.createElement('style'); s.innerHTML = '::-webkit-scrollbar { display: none !important; } * { scrollbar-width: none !important; }'; document.head.appendChild(s);", null)
+                      }
+
+                      override fun onReceivedError(view: WebView, req: WebResourceRequest, err: WebResourceError) {
+                          if (req.isForMainFrame) {
+                              webView.loadUrl("https://appassets.androidplatform.net/assets/offline.html")
+                          }
+                      }
+                  }
+
+                  if (uiConfig.optBoolean("downloads", true)) {
+                      webView.setDownloadListener { url, userAgent, contentDisposition, mimetype, _ ->
+                          try {
+                              val request = DownloadManager.Request(Uri.parse(url)).apply {
+                                  setMimeType(mimetype)
+                                  addRequestHeader("User-Agent", userAgent)
+                                  setDescription("Downloading file...")
+                                  setTitle(URLUtil.guessFileName(url, contentDisposition, mimetype))
+                                  setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                                  setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, URLUtil.guessFileName(url, contentDisposition, mimetype))
+                              }
+                              val dm = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+                              dm.enqueue(request)
+                              Toast.makeText(this, "Downloading file...", Toast.LENGTH_SHORT).show()
+                          } catch (e: Exception) {
+                              startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                          }
                       }
                   }
 
@@ -195,6 +299,28 @@ jobs:
                       webView.loadUrl(cfg.getString("url"))
                   } catch (e: Exception) {
                       webView.loadUrl("https://himanshuk777.github.io/LearnEra/")
+                  }
+              }
+
+              private fun loadUiConfig(): JSONObject {
+                  return try {
+                      val txt = assets.open("ui_config.json").bufferedReader().use { it.readText() }
+                      JSONObject(txt)
+                  } catch (_: Exception) { JSONObject() }
+              }
+
+              private fun applyDisplayConfigurations(uiConfig: JSONObject) {
+                  val edgeToEdge = uiConfig.optBoolean("edgeToEdge", true)
+                  val hideStatusBar = uiConfig.optBoolean("hideStatusBar", false)
+                  val immersive = uiConfig.optBoolean("immersive", false)
+
+                  WindowCompat.setDecorFitsSystemWindows(window, !edgeToEdge)
+                  val controller = WindowCompat.getInsetsController(window, window.decorView)
+
+                  if (hideStatusBar) controller.hide(WindowInsetsCompat.Type.statusBars())
+                  if (immersive) {
+                      controller.hide(WindowInsetsCompat.Type.systemBars())
+                      controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                   }
               }
           }
