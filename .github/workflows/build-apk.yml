@@ -18,9 +18,6 @@ on:
       downloads: { required: false, default: "true" }
       orientation: { required: false, default: "portrait" }
       is_local: { required: false, default: "false" }
-      html_base64: { required: false, default: "" }
-      offline_base64: { required: false, default: "" }
-      icon_base64: { required: false, default: "" }
 
 permissions:
   contents: write
@@ -37,7 +34,7 @@ jobs:
           cache: 'gradle'
       - uses: android-actions/setup-android@v3
 
-      - name: Configure Android Project & 10+ Features
+      - name: Configure Android Project & Features
         run: |
           mkdir -p app/src/main/assets/www
           
@@ -49,8 +46,7 @@ jobs:
           IS_LOCAL="${{ github.event.inputs.is_local || 'false' }}"
 
           # Handle Direct HTML packaging mode
-          if [ "$IS_LOCAL" = "true" ] && [ -n "${{ github.event.inputs.html_base64 }}" ]; then
-            echo "${{ github.event.inputs.html_base64 }}" | base64 -d > app/src/main/assets/www/index.html
+          if [ "$IS_LOCAL" = "true" ] && [ -f "app/src/main/assets/www/index.html" ]; then
             FINAL_URL="https://appassets.androidplatform.net/assets/www/index.html"
           else
             FINAL_URL="$URL"
@@ -71,19 +67,15 @@ jobs:
           }
           EOF
 
-          # Custom No Internet Offline Screen
-          if [ -n "${{ github.event.inputs.offline_base64 }}" ]; then
-            echo "${{ github.event.inputs.offline_base64 }}" | base64 -d > app/src/main/assets/offline.html
-          elif [ ! -f "app/src/main/assets/offline.html" ]; then
+          # Ensure default offline page exists
+          if [ ! -f "app/src/main/assets/offline.html" ]; then
             cat <<EOF > app/src/main/assets/offline.html
             <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#0c0f17;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;}button{background:#2563eb;border:0;color:#fff;padding:12px 24px;border-radius:24px;font-weight:bold;cursor:pointer;margin-top:16px;}</style></head><body><h2>No Connection</h2><p>Could not connect to server.</p><button onclick="location.reload()">Retry</button></body></html>
           EOF
           fi
 
-          # Apply Icon across mipmaps if provided
-          if [ -n "${{ github.event.inputs.icon_base64 }}" ]; then
-            mkdir -p app/src/main/res/drawable
-            echo "${{ github.event.inputs.icon_base64 }}" | base64 -d > app/src/main/res/drawable/ic_launcher.png
+          # Replicate uploaded icon across mipmaps
+          if [ -f "app/src/main/res/drawable/ic_launcher.png" ]; then
             for dir in app/src/main/res/mipmap-*; do
               cp app/src/main/res/drawable/ic_launcher.png "$dir/ic_launcher.png" || true
             done
@@ -108,7 +100,7 @@ jobs:
             PERMS="$PERMS\n    <uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>\n    <uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>"
           fi
 
-          # Manifest updates
+          # Manifest settings
           sed -i 's/<application/<application android:hardwareAccelerated="true"/g' app/src/main/AndroidManifest.xml || true
           sed -i 's/<activity/<activity android:hardwareAccelerated="true" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"/g' app/src/main/AndroidManifest.xml || true
           sed -i "s|android:screenOrientation=\".*\"|android:screenOrientation=\"${{ github.event.inputs.orientation || 'portrait' }}\"|g" app/src/main/AndroidManifest.xml || true
@@ -117,10 +109,10 @@ jobs:
             sed -i "/<manifest/a $PERMS" app/src/main/AndroidManifest.xml || true
           fi
 
-          # Write Target MainActivity Package Directory
           TARGET_DIR="app/src/main/java/$(echo $PKG | tr '.' '/')"
           mkdir -p "$TARGET_DIR"
 
+          # Native MainActivity with Fullscreen Video & Chooser
           cat << 'EOF' > "$TARGET_DIR/MainActivity.kt"
           package PKG_REPLACE
 
@@ -157,8 +149,12 @@ jobs:
               private val fileChooserLauncher = registerForActivityResult(
                   ActivityResultContracts.StartActivityForResult()
               ) { result ->
-                  val results = WebChromeClient.FileChooserParams.parseResult(result.resultCode, result.data)
-                  fileUploadCallback?.onReceiveValue(results)
+                  val uris: Array<Uri>? = if (result.resultCode == RESULT_OK) {
+                      WebChromeClient.FileChooserParams.parseResult(result.resultCode, result.data)
+                  } else {
+                      null
+                  }
+                  fileUploadCallback?.onReceiveValue(uris)
                   fileUploadCallback = null
               }
 
@@ -235,9 +231,18 @@ jobs:
                           if (!uiConfig.optBoolean("fileUpload", true)) return false
                           fileUploadCallback?.onReceiveValue(null)
                           fileUploadCallback = callback
-                          val intent = p?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply { type = "*/*" }
-                          fileChooserLauncher.launch(intent)
-                          return true
+                          val intent = p?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply { 
+                              addCategory(Intent.CATEGORY_OPENABLE)
+                              type = "*/*" 
+                          }
+                          return try {
+                              fileChooserLauncher.launch(intent)
+                              true
+                          } catch (e: Exception) {
+                              fileUploadCallback?.onReceiveValue(null)
+                              fileUploadCallback = null
+                              false
+                          }
                       }
 
                       override fun onGeolocationPermissionsShowPrompt(origin: String?, callback: GeolocationPermissions.Callback?) {
